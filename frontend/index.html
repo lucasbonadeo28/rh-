@@ -2246,7 +2246,17 @@
             const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
             const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
 
-            document.querySelectorAll('.chk-talle').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.chk-talle').forEach(cb => {
+             cb.checked = false;
+             cb.onchange = function() {
+                 if (this.checked) {
+                     document.querySelectorAll('.chk-talle').forEach(otro => {
+                         if (otro !== this) otro.checked = false;
+                     });
+                 }
+                 aplicarFiltrosCatalogo();
+             };
+         });
 
             if (vistaGuardada === 'favoritos') {
                 mostrarFavoritos();
