@@ -16,15 +16,22 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 // ==========================================
-// 1. CONFIGURACIÓN DE POSTGRESQL (DOCKER)
+// 1. CONFIGURACIÓN DE POSTGRESQL (NUBE Y LOCAL)
 // ==========================================
-const pool = new Pool({
+const poolConfig = {
     user: process.env.DB_USER || 'postgres',
     host: process.env.DB_HOST || 'localhost',
     database: process.env.DB_NAME || 'lucas', 
     password: process.env.DB_PASSWORD || 'skou28', 
     port: process.env.DB_PORT || 5432,
-});
+};
+
+// Si detecta que está en Render, activa la llave de seguridad SSL
+if (process.env.DB_HOST && process.env.DB_HOST !== 'localhost') {
+    poolConfig.ssl = { rejectUnauthorized: false };
+}
+
+const pool = new Pool(poolConfig);
 
 const inicializarBaseDeDatos = async () => {
     try {
@@ -116,6 +123,23 @@ app.get('/api/productos/nuevos', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Error interno" }); }
 });
 
+// Ruta para crear nuevos productos
+app.post('/api/productos', async (req, res) => {
+    const { nombre, categoria, precio_efectivo, precio_tarjeta, descripcion, inventario_talles, imagen_url } = req.body;
+    try {
+        const query = `
+            INSERT INTO productos (nombre, categoria, precio_efectivo, precio_tarjeta, descripcion, inventario_talles, imagen_url) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+        `;
+        const valores = [nombre, categoria, precio_efectivo, precio_tarjeta, descripcion, inventario_talles, imagen_url];
+        const resultado = await pool.query(query, valores);
+        res.json({ success: true, producto: resultado.rows[0] });
+    } catch (error) {
+        console.error("Error al crear producto:", error);
+        res.status(500).json({ success: false, message: "Error al guardar en la base de datos" });
+    }
+});
+
 app.delete('/api/productos/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -136,6 +160,17 @@ app.get('/api/ventas', async (req, res) => {
         }
         res.json(ventas);
     } catch (error) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// NUEVO: Ruta para ELIMINAR pedidos
+app.delete('/api/ventas/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM ventas WHERE id = $1', [id]);
+        res.json({ success: true, message: "Pedido eliminado correctamente" });
+    } catch (error) { 
+        res.status(500).json({ success: false, error: "No se pudo borrar el pedido" }); 
+    }
 });
 
 // ==========================================
@@ -354,7 +389,7 @@ app.post('/api/crear_preferencia', async (req, res) => {
     res.json({ init_point: 'https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=ficticia-12345' });
 });
 
-// ACÁ ESTÁ LA MAGIA CORREGIDA: Para que cualquier ruta devuelva el index.html
+// Para que cualquier ruta devuelva el index.html
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
