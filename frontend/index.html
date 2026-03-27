@@ -1231,10 +1231,7 @@
             margin-top: 10px;
         }
 
-        .talle-radio { 
-            display: none; 
-        }
-
+        /* ACÁ CAMBIÉ EL CSS PARA QUE FUNCIONE POR JAVASCRIPT DIRECTO */
         .talle-label { 
             border: 1px solid #ddd; 
             padding: 12px 18px; 
@@ -1249,7 +1246,7 @@
             text-align: center;
         }
 
-        .talle-radio:checked + .talle-label { 
+        .talle-label.selected { 
             border-color: var(--brand-brown); 
             background-color: var(--brand-brown); 
             color: var(--white); 
@@ -1823,18 +1820,18 @@
 
     <div class="top-marquee">
         <div class="marquee-content">
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
         </div>
         <div class="marquee-content">
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   LUCAS STORE</span>
         </div>
     </div>
 
@@ -2100,7 +2097,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© LUCAS STORE. Todos los derechos reservados.</p>
+            <p>Copyright rh(+) - Todos los derechos reservados.</p>
         </div>
     </footer>
 
@@ -2200,7 +2197,8 @@
     </div>
 
     <script>
-        const API = 'http://localhost:3000/api'; 
+       const API = '/api'; 
+        
         let carrito = []; 
         let productosCargados = []; 
         let productosNuevos = []; 
@@ -2214,9 +2212,14 @@
         let currentSlide = 0;
         let slideInterval;
         
+        // Variables para detectar el dedo en el celular
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
         let vistaActual = 'home';
         let categoriaActual = 'Todos';
         let ordenActual = 'default';
+        let talleTemporal = null; 
 
         window.onload = async () => { 
             window.scrollTo(0, 0);
@@ -2326,6 +2329,7 @@
             dotsContainer.innerHTML = banners.map((b, i) => `<div class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`).join('');
             
             iniciarAutoplay();
+            iniciarSwipe(); // Activamos el control táctil
         }
 
         function updateCarousel() {
@@ -2362,12 +2366,42 @@
         }
         
         function iniciarAutoplay() { 
-            slideInterval = setInterval(nextSlide, 10000); 
+            // BAJADO A 5 SEGUNDOS (5000 milisegundos)
+            slideInterval = setInterval(nextSlide, 5000); 
         }
         
         function reiniciarAutoplay() { 
             clearInterval(slideInterval); 
             iniciarAutoplay(); 
+        }
+
+        // ==========================================
+        // FUNCIONES PARA EL SWIPE (DEDO EN CELULAR)
+        // ==========================================
+        function iniciarSwipe() {
+            const track = document.getElementById('carousel-track');
+            if(!track) return;
+
+            track.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+                clearInterval(slideInterval); // Pausa el carrusel si el usuario toca la pantalla
+            }, {passive: true});
+
+            track.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+                iniciarAutoplay(); // Vuelve a arrancar los 5 segundos
+            }, {passive: true});
+        }
+
+        function handleSwipe() {
+            const swipeThreshold = 50; // Cuántos píxeles tiene que mover el dedo para que cuente
+            if (touchStartX - touchEndX > swipeThreshold) {
+                nextSlide(); // Movió el dedo a la izquierda
+            }
+            if (touchEndX - touchStartX > swipeThreshold) {
+                prevSlide(); // Movió el dedo a la derecha
+            }
         }
 
         async function enviarCodigoEmailAutomatico() {
@@ -2668,7 +2702,6 @@
             }
         }
 
-        // FUNCIÓN BLINDADA PARA QUE NO EXCLUYA NINGÚN PRODUCTO VÁLIDO
         function generarGridHTML(lista) {
             if(!lista || !Array.isArray(lista) || lista.length === 0) {
                 let msj = filtrandoFavoritos ? "Aún no tenés productos en favoritos." : "No hay productos en esta categoría.";
@@ -2806,9 +2839,19 @@
             }
         }
 
+        function seleccionarTalleDOM(elemento, talle) {
+            const hermanos = elemento.parentElement.querySelectorAll('.talle-label');
+            hermanos.forEach(el => el.classList.remove('selected'));
+            
+            elemento.classList.add('selected');
+            talleTemporal = talle;
+        }
+
         function abrirDetalle(id) { 
             prodSeleccionado = productosCargados.find(p => p.id === id); 
             if(!prodSeleccionado) return;
+
+            talleTemporal = null; 
 
             document.getElementById('det-img-url').src = prodSeleccionado.imagen_url || 'https://via.placeholder.com/400x500?text=Sin+Imagen'; 
             document.getElementById('det-titulo').innerText = prodSeleccionado.nombre || 'Producto'; 
@@ -2828,16 +2871,20 @@
             
             if(prodSeleccionado.inventario_talles) { 
                 if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
-                    containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p><input type="radio" name="talleElegido" value="ÚNICO" checked style="display:none;">`; 
+                    containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p>`; 
+                    talleTemporal = 'ÚNICO';
                 } else { 
+                    let htmlTalles = '';
                     Object.entries(prodSeleccionado.inventario_talles).forEach(([talle, stock]) => { 
                         const sinStock = stock <= 0 ? 'sin-stock' : ''; 
-                        const disabled = stock <= 0 ? 'disabled' : ''; 
-                        containerTalles.innerHTML += `<label><input type="radio" name="talleElegido" value="${talle}" class="talle-radio" ${disabled}><div class="talle-label ${sinStock}">${talle}</div></label>`; 
+                        const onclick = stock > 0 ? `onclick="seleccionarTalleDOM(this, '${talle}')"` : ''; 
+                        htmlTalles += `<div class="talle-label ${sinStock}" ${onclick}>${talle}</div>`; 
                     }); 
+                    containerTalles.innerHTML = htmlTalles;
                 } 
             } else {
-                containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p><input type="radio" name="talleElegido" value="ÚNICO" checked style="display:none;">`;
+                containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p>`;
+                talleTemporal = 'ÚNICO';
             }
             document.getElementById('modal-detalle-producto').style.display = 'flex'; 
         }
@@ -2849,10 +2896,11 @@
         function agregarDesdeDetalle() { 
             let talleElegido = "Único"; 
             if(prodSeleccionado.inventario_talles && prodSeleccionado.inventario_talles['ÚNICO'] === undefined) { 
-                const radio = document.querySelector('input[name="talleElegido"]:checked'); 
-                if(!radio) return mostrarToast("Por favor elegí un talle", "error"); 
-                talleElegido = radio.value; 
-            } 
+                if(!talleTemporal) return mostrarToast("Por favor elegí un talle", "error"); 
+                talleElegido = talleTemporal; 
+            } else {
+                talleElegido = 'ÚNICO';
+            }
             
             const idUnico = `${prodSeleccionado.id}-${talleElegido}`; 
             const item = carrito.find(i => i.idUnico === idUnico); 
