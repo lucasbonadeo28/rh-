@@ -18,6 +18,9 @@ app.use(express.static(path.join(__dirname, 'frontend')));
 // ==========================================
 // 1. CONFIGURACIÓN DE POSTGRESQL (NUBE Y LOCAL)
 // ==========================================
+// Forzamos a leer las variables de entorno si existen. 
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER || process.env.DB_HOST !== 'localhost';
+
 const poolConfig = {
     user: process.env.DB_USER || 'postgres',
     host: process.env.DB_HOST || 'localhost',
@@ -26,12 +29,28 @@ const poolConfig = {
     port: process.env.DB_PORT || 5432,
 };
 
-// Si detecta que está en Render, activa la llave de seguridad SSL
-if (process.env.DB_HOST && process.env.DB_HOST !== 'localhost') {
-    poolConfig.ssl = { rejectUnauthorized: false };
+// Configuración SSL ultra-permisiva (Necesario para bases de datos gratuitas en Render)
+if (isProduction && process.env.DB_HOST) {
+    poolConfig.ssl = { 
+        rejectUnauthorized: false,
+        require: true // Obligamos a que use SSL
+    };
+    console.log("🔌 Conectando a Base de Datos en la Nube...");
+} else {
+    console.log("💻 Conectando a Base de Datos Local...");
 }
 
 const pool = new Pool(poolConfig);
+
+// Chequeo de conexión para que nos avise en el log si pudo entrar
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('❌ Error fatal adquiriendo cliente de base de datos:', err.stack);
+    } else {
+        console.log('✅ Conexión exitosa a PostgreSQL comprobada.');
+        release();
+    }
+});
 
 const inicializarBaseDeDatos = async () => {
     try {
@@ -162,7 +181,7 @@ app.get('/api/ventas', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Error interno" }); }
 });
 
-// NUEVO: Ruta para ELIMINAR pedidos
+// Ruta para ELIMINAR pedidos
 app.delete('/api/ventas/:id', async (req, res) => {
     const { id } = req.params;
     try {
