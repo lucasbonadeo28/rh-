@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # 1. LA BASE DE DATOS POSTGRES
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: skou28
+      POSTGRES_DB: lucas
+    ports:
+      # Exponemos el puerto para poder meternos con PgAdmin si queremos
+      - "5432:5432"
+    volumes:
+      # Guarda la información de PostgreSQL acá para no perder las ventas ni los productos si se apaga Docker
+      - pgdata:/var/lib/postgresql/data 
+
+  # 2. TU TIENDA (NODE.JS)
+  app:
+    build: .
+    restart: always
+    ports:
+      # El puerto 3000 es el que usás para entrar en el navegador
+      - "3000:3000"
+    environment:
+      # Estas variables le dicen al server.js cómo conectarse al contenedor "db"
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=skou28
+      - DB_NAME=lucas
+      - DB_PORT=5432
+    depends_on:
+      - db # Espera a que prenda la BD antes de prender el servidor de la tienda
+
+volumes:
+  pgdata:
