@@ -806,6 +806,36 @@
             border-radius: var(--radius-md); 
         }
 
+        /* --- NUEVOS ESTILOS PARA PRODUCTOS AGOTADOS --- */
+        .badge-agotado {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            border-radius: var(--radius-sm);
+            z-index: 5;
+            text-transform: uppercase;
+        }
+
+        .img-wrapper.agotado img {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        .btn-card-add.disabled {
+            background: #ccc;
+            color: #888;
+            cursor: not-allowed;
+            pointer-events: none; /* Esto bloquea el click por completo */
+        }
+        /* ---------------------------------------------- */
+
         .btn-fav { 
             position: absolute; 
             top: 10px; 
@@ -2115,7 +2145,7 @@
                     <h4 id="titulo-talles" style="margin-bottom: 12px; font-size: 0.9rem; color: #555; text-transform: uppercase;">SELECCIONAR TALLE:</h4>
                     <div id="det-talles-container" class="talles-selector"></div>
                 </div>
-                <div style="margin-bottom: 15px;"><button class="btn-agregar-derecha" onclick="agregarDesdeDetalle()"><i class="fas fa-shopping-bag"></i> Añadir al Carrito</button></div>
+                <div style="margin-bottom: 15px;"><button id="btn-add-modal" class="btn-agregar-derecha" onclick="agregarDesdeDetalle()"><i class="fas fa-shopping-bag"></i> Añadir al Carrito</button></div>
             </div>
         </div>
     </div>
@@ -2196,7 +2226,7 @@
 
     <script>
        const API = '/api'; 
-        
+       
         let carrito = []; 
         let productosCargados = []; 
         let productosNuevos = []; 
@@ -2710,6 +2740,9 @@
             }
         }
 
+        // ==============================================================
+        // ACÁ ESTÁ EL GENERADOR DE PRODUCTOS CON EL ESCUDO DE STOCK
+        // ==============================================================
         function generarGridHTML(lista) {
             if(!lista || !Array.isArray(lista) || lista.length === 0) {
                 let msj = filtrandoFavoritos ? "Aún no tenés productos en favoritos." : "No hay productos en esta categoría.";
@@ -2718,6 +2751,14 @@
             
             return lista.map(p => { 
                 if (!p) return ''; 
+                
+                // Calculamos si el total de la prenda da CERO
+                let stockTotalPrenda = 0;
+                if (p.inventario_talles && typeof p.inventario_talles === 'object') {
+                    Object.values(p.inventario_talles).forEach(cant => stockTotalPrenda += (parseInt(cant) || 0));
+                }
+                const productoAgotado = stockTotalPrenda <= 0; // ¿Está agotado?
+
                 const esFav = favoritos.includes(p.id) ? 'active' : ''; 
                 const imgUrl = p.imagen_url || 'https://via.placeholder.com/400x500?text=Sin+Imagen';
                 const nombre = p.nombre || 'Producto sin nombre';
@@ -2726,8 +2767,9 @@
 
                 return `
                 <div class="card">
-                    <div class="img-wrapper" onclick="abrirDetalle(${p.id})">
+                    <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="abrirDetalle(${p.id})">
                         <button class="btn-fav ${esFav}" onclick="toggleFavorito(${p.id}, event)" title="Añadir a favoritos"><i class="fas fa-heart"></i></button>
+                        ${productoAgotado ? '<div class="badge-agotado">SIN STOCK</div>' : ''}
                         <img src="${imgUrl}">
                     </div>
                     <div class="card-info">
@@ -2736,7 +2778,9 @@
                             <p class="p-tarj">$${pTarj}</p>
                             <p class="p-efvo"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
                         </div>
-                        <button class="btn-card-add" onclick="abrirDetalle(${p.id})">AGREGAR AL CARRITO</button>
+                        <button class="btn-card-add ${productoAgotado ? 'disabled' : ''}" ${productoAgotado ? 'disabled' : `onclick="abrirDetalle(${p.id})"`}>
+                            ${productoAgotado ? 'AGOTADO' : 'AGREGAR AL CARRITO'}
+                        </button>
                     </div>
                 </div>`; 
             }).join(''); 
@@ -2874,18 +2918,42 @@
                 btnFavModal.classList.remove('active'); 
             }
 
+            // Calculamos el stock para ver si bloqueamos el boton de compra en esta ventana
+            let totalStock = 0;
+            if (prodSeleccionado.inventario_talles) {
+                Object.values(prodSeleccionado.inventario_talles).forEach(cant => totalStock += parseInt(cant) || 0);
+            }
+            const estaAgotado = totalStock <= 0;
+            const btnComprarModal = document.getElementById('btn-add-modal');
+
+            if (estaAgotado) {
+                btnComprarModal.innerHTML = '<i class="fas fa-times-circle"></i> Producto Agotado';
+                btnComprarModal.disabled = true;
+                btnComprarModal.style.background = '#ccc';
+            } else {
+                btnComprarModal.innerHTML = '<i class="fas fa-shopping-bag"></i> Añadir al Carrito';
+                btnComprarModal.disabled = false;
+                btnComprarModal.style.background = ''; // Resetea al color original
+            }
+
             const containerTalles = document.getElementById('det-talles-container'); 
             containerTalles.innerHTML = ''; 
             
             if(prodSeleccionado.inventario_talles) { 
                 if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
-                    containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p>`; 
-                    talleTemporal = 'ÚNICO';
+                    const stockUnico = parseInt(prodSeleccionado.inventario_talles['ÚNICO']) || 0;
+                    if(stockUnico <= 0) {
+                        containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--danger); font-weight:700; margin:0;">Agotado</p>`; 
+                        talleTemporal = null;
+                    } else {
+                        containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p>`; 
+                        talleTemporal = 'ÚNICO';
+                    }
                 } else { 
                     let htmlTalles = '';
                     Object.entries(prodSeleccionado.inventario_talles).forEach(([talle, stock]) => { 
                         const sinStock = stock <= 0 ? 'sin-stock' : ''; 
-                        const onclick = stock > 0 ? `onclick="seleccionarTalleDOM(this, '${talle}')"` : ''; 
+                        const onclick = stock > 0 ? `onclick="seleccionarTalleDOM(this, '${talle}')"` : `onclick="mostrarToast('Este talle se encuentra agotado', 'error')"`; 
                         htmlTalles += `<div class="talle-label ${sinStock}" ${onclick}>${talle}</div>`; 
                     }); 
                     containerTalles.innerHTML = htmlTalles;
@@ -2904,7 +2972,7 @@
         function agregarDesdeDetalle() { 
             let talleElegido = "Único"; 
             if(prodSeleccionado.inventario_talles && prodSeleccionado.inventario_talles['ÚNICO'] === undefined) { 
-                if(!talleTemporal) return mostrarToast("Por favor elegí un talle", "error"); 
+                if(!talleTemporal) return mostrarToast("Por favor elegí un talle disponible", "error"); 
                 talleElegido = talleTemporal; 
             } else {
                 talleElegido = 'ÚNICO';

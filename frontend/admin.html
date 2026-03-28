@@ -702,7 +702,6 @@
                 label.classList.remove('selected'); 
                 icon.className = labelId === 'label-add-img' || labelId === 'label-add-banner-file' ? 'fas fa-camera' : 'fas fa-image';
             }
-            // ACÁ ESTÁ EL ARREGLO:
             label.classList.remove('input-error');
         }
 
@@ -1112,11 +1111,15 @@
             }
 
             let inventarioFinal = {};
+            let stockIngresado = 0; // ACA SUMAMOS EL STOCK PARA VALIDAR
 
             if (esUnico) {
                 const stock = document.getElementById('add-stock-unico').value;
                 if (!stock) { document.getElementById('add-stock-unico').classList.add('input-error'); error = true; }
-                else { inventarioFinal["ÚNICO"] = parseInt(stock); }
+                else { 
+                    inventarioFinal["ÚNICO"] = parseInt(stock); 
+                    stockIngresado = parseInt(stock);
+                }
             } else {
                 const tallesTxt = document.getElementById('add-talles').value.trim();
                 if (!tallesTxt) { document.getElementById('add-talles').classList.add('input-error'); error = true; }
@@ -1124,13 +1127,20 @@
                     tallesTxt.split(',').forEach(item => {
                         const parts = item.split(':');
                         if(parts.length === 2) {
-                            inventarioFinal[parts[0].trim().toUpperCase()] = parseInt(parts[1].trim());
+                            let cant = parseInt(parts[1].trim());
+                            inventarioFinal[parts[0].trim().toUpperCase()] = cant;
+                            stockIngresado += cant;
                         }
                     });
                 }
             }
 
             if(error) return showCustomAlert("Por favor, completá todos los recuadros en rojo y seleccioná una foto.", "error", false);
+
+            // ESTE ES EL NUEVO CANDADO DE SEGURIDAD
+            if(stockIngresado <= 0) {
+                return showCustomAlert("El stock no puede ser 0. Ingresá al menos 1 unidad válida.", "error", false);
+            }
 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
             btn.disabled = true;
