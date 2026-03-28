@@ -395,7 +395,7 @@
                         <tr>
                             <th>N° Venta</th>
                             <th>Fecha</th>
-                            <th>Cliente</th>
+                            <th>Cliente y Contacto</th>
                             <th>Pago</th>
                             <th>Estado</th>
                             <th>Detalle</th>
@@ -457,6 +457,7 @@
             
             <div class="admin-header-row" style="margin-top: 50px;">
                 <h2>Inventario</h2>
+                <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0; background: #27ae60;" onclick="descargarExcelInventario()"><i class="fas fa-file-excel"></i> Exportar Stock a Excel</button>
             </div>
             
             <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid #ccc;" onkeyup="filtrarInventario()" oninput="validarLetras(this)">
@@ -701,7 +702,8 @@
                 label.classList.remove('selected'); 
                 icon.className = labelId === 'label-add-img' || labelId === 'label-add-banner-file' ? 'fas fa-camera' : 'fas fa-image';
             }
-            input.classList.remove('input-error');
+            // ACÁ ESTÁ EL ARREGLO:
+            label.classList.remove('input-error');
         }
 
         async function fetchSeguro(url, opciones = {}) {
@@ -759,11 +761,19 @@
                         detalleTxt = v.detalles.map(d => `<b>${d.cantidad}x</b> ${d.nombre_producto} <small>(Talle: ${d.talle})</small>`).join('<br>');
                     }
                     
+                    const telLimpio = v.cliente_telefono ? v.cliente_telefono.replace(/[^0-9]/g, '') : '';
+
                     return `
                     <tr>
                         <td>#${v.id}</td>
                         <td><strong>${fecha}</strong></td>
-                        <td>${v.cliente_nombre} ${v.cliente_apellido}<br><small style="color:gray;">Tel: ${v.cliente_telefono}</small></td>
+                        <td>
+                            <div style="font-weight:600; color:#2c3e50;">${v.cliente_nombre} ${v.cliente_apellido}</div>
+                            <a href="https://wa.me/${telLimpio}" target="_blank" style="color:#25D366; text-decoration:none; font-weight:bold; display:block; margin: 4px 0;" title="Abrir WhatsApp">
+                                <i class="fab fa-whatsapp" style="font-size:1.1em;"></i> ${v.cliente_telefono || 'Sin teléfono'}
+                            </a>
+                            <small style="color:#888;">${v.cliente_email || ''}</small>
+                        </td>
                         <td><span style="background:#ecf0f1; padding:4px 8px; border-radius:4px; font-size:0.8rem; text-transform:capitalize;">${v.metodo_pago}</span></td>
                         <td><span style="background:${v.estado === 'Completado' ? '#e8f8f5' : '#fff3cd'}; color:${v.estado === 'Completado' ? '#27ae60' : '#f39c12'}; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">${v.estado}</span></td>
                         <td style="font-size: 0.85rem; line-height: 1.4;">${detalleTxt}</td>
@@ -1267,6 +1277,61 @@
             const link = document.createElement("a"); 
             link.setAttribute("href", encodeURI(csvContent)); 
             link.setAttribute("download", "Reporte_Mensual_Ventas.csv"); 
+            document.body.appendChild(link); 
+            link.click(); 
+            document.body.removeChild(link); 
+        }
+
+        function descargarExcelInventario() { 
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+            
+            csvContent += "PRENDAS,SEMANA 1,,,,SEMANA 2,,,,SEMANA 3,,,,SEMANA 4,,,,TOTAL\n"; 
+            csvContent += "Articulo,VEN TA,ENT RA,SA LE,SAL DO,VEN TA,ENT RA,SA LE,SAL DO,VEN TA,ENT RA,SA LE,SAL DO,VEN TA,ENT RA,SA LE,SAL DO,VENTA MENSUAL\n"; 
+
+            const now = new Date();
+            const mesActual = now.getMonth();
+            const anioActual = now.getFullYear();
+
+            pTotales.forEach(p => { 
+                let nombreLimpio = p.nombre ? p.nombre.replace(/,/g, '') : ''; 
+
+                let v1 = 0, v2 = 0, v3 = 0, v4 = 0;
+
+                ventasDataGlobal.forEach(v => {
+                    const fechaVenta = new Date(v.fecha_creacion);
+                    if (fechaVenta.getMonth() === mesActual && fechaVenta.getFullYear() === anioActual) {
+                        let dia = fechaVenta.getDate();
+                        let cantVendida = 0;
+                        
+                        if (v.detalles) {
+                            v.detalles.forEach(item => {
+                                if (item.producto_id === p.id) {
+                                    cantVendida += parseInt(item.cantidad) || 0;
+                                }
+                            });
+                        }
+
+                        if (dia <= 7) v1 += cantVendida;
+                        else if (dia <= 14) v2 += cantVendida;
+                        else if (dia <= 21) v3 += cantVendida;
+                        else v4 += cantVendida;
+                    }
+                });
+
+                let ventaMensual = v1 + v2 + v3 + v4;
+                
+                let stockActual = 0;
+                if (p.inventario_talles && typeof p.inventario_talles === 'object') {
+                    Object.values(p.inventario_talles).forEach(c => stockActual += parseInt(c) || 0);
+                }
+
+                csvContent += `${nombreLimpio},${v1},,,,${v2},,,,${v3},,,,${v4},,,${stockActual},${ventaMensual}\n`; 
+            }); 
+            
+            const encodedUri = encodeURI(csvContent); 
+            const link = document.createElement("a"); 
+            link.setAttribute("href", encodedUri); 
+            link.setAttribute("download", "Control_Mensual_RH.csv"); 
             document.body.appendChild(link); 
             link.click(); 
             document.body.removeChild(link); 
