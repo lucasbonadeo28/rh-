@@ -1111,7 +1111,7 @@
             }
 
             let inventarioFinal = {};
-            let stockIngresado = 0; // ACA SUMAMOS EL STOCK PARA VALIDAR
+            let stockIngresado = 0;
 
             if (esUnico) {
                 const stock = document.getElementById('add-stock-unico').value;
@@ -1137,7 +1137,6 @@
 
             if(error) return showCustomAlert("Por favor, completá todos los recuadros en rojo y seleccioná una foto.", "error", false);
 
-            // ESTE ES EL NUEVO CANDADO DE SEGURIDAD
             if(stockIngresado <= 0) {
                 return showCustomAlert("El stock no puede ser 0. Ingresá al menos 1 unidad válida.", "error", false);
             }
