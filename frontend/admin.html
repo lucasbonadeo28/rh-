@@ -457,7 +457,6 @@
             
             <div class="admin-header-row" style="margin-top: 50px;">
                 <h2>Inventario</h2>
-                <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0; background: #27ae60;" onclick="descargarExcelInventario()"><i class="fas fa-file-excel"></i> Exportar Stock a Excel</button>
             </div>
             
             <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid #ccc;" onkeyup="filtrarInventario()" oninput="validarLetras(this)">
@@ -576,7 +575,7 @@
         <div id="tab-historial" class="tab-content">
             <div class="admin-header-row">
                 <h2>Resumen Mensual de Ventas</h2>
-                <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0;" onclick="descargarExcel()"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
+                <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0; background: #27ae60;" onclick="descargarExcel()"><i class="fas fa-file-excel"></i> Exportar Planilla Mensual</button>
             </div>
             <div class="table-responsive">
                 <table>
@@ -1273,25 +1272,8 @@
             pagina = 1; 
             renderStock(); 
         }
-        
-        function descargarExcel() { 
-            let csvContent = "data:text/csv;charset=utf-8,Mes,Ventas Totales,Recaudado\n"; 
-            document.querySelectorAll('#body-meses tr.fila-mes').forEach(tr => { 
-                const tds = tr.querySelectorAll('td'); 
-                if(tds.length === 3) {
-                    csvContent += `${tds[0].innerText.replace(' 🔽','')},${tds[1].innerText.replace(' Pedidos','')},${tds[2].innerText.replace('$','').replace('.','')}\n`; 
-                }
-            }); 
-            
-            const link = document.createElement("a"); 
-            link.setAttribute("href", encodeURI(csvContent)); 
-            link.setAttribute("download", "Reporte_Mensual_Ventas.csv"); 
-            document.body.appendChild(link); 
-            link.click(); 
-            document.body.removeChild(link); 
-        }
 
-        function descargarExcelInventario() { 
+        function descargarExcel() { 
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
             
             csvContent += "PRENDAS,SEMANA 1,,,,SEMANA 2,,,,SEMANA 3,,,,SEMANA 4,,,,TOTAL\n"; 
