@@ -9,6 +9,7 @@
     --light: #ffffff; 
     --white: #ffffff; 
     --border: #eeeeee;
+    --brand-brown: #d4bb93;
 }
 
 * { box-sizing: border-box; }
@@ -220,7 +221,7 @@ nav h2 { margin: 0; cursor: pointer; font-weight: 800; font-size: 1.4rem; letter
 /* ======================================================= */
 /* === FOOTER ============================================ */
 /* ======================================================= */
-.footer { background-color: var(--primary); color: var(--white); padding: 80px 40px 30px; margin-top: auto; }
+.footer { background-color: var(--brand-brown); color: var(--white); padding: 80px 40px 30px; margin-top: auto; }
 .footer-container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 50px; border-bottom: 1px solid #333; padding-bottom: 50px; }
 .footer-col h4 { font-size: 1rem; margin-bottom: 25px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--white); }
 .footer-col ul { list-style: none; padding: 0; margin: 0; }
