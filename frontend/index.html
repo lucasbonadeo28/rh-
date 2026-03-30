@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RH+ Jeans Store</title>
     
-    <link rel="icon" type="image/jpeg" href="rh.jpg?v=1">
+    <link rel="icon" type="image/jpeg" href="./rh.jpg?v=5">
 
     <script>
         if ('scrollRestoration' in history) {
@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="css/styles.css?v=6">
+    <link rel="stylesheet" href="./css/styles.css?v=25">
 </head>
 <body>
     <a href="https://wa.me/5493424123456" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -28,26 +28,18 @@
 
     <div class="top-marquee">
         <div class="marquee-content">
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-        </div>
-        <div class="marquee-content">
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   RH+ JEANS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
         </div>
     </div>
 
     <nav>
         <button class="btn-menu-mobile" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
         
-        <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer;">
-            <img src="rh.jpg?v=1" alt="RH+" style="height: 45px; object-fit: contain;">
+        <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <img src="./rh.jpg?v=5" alt="RH+ Jeans Store" style="height: 55px; width: 55px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
@@ -66,7 +58,6 @@
     </nav>
 
     <div class="main-wrapper">
-        
         <div id="vista-home">
             <section class="hero-carousel">
                 <div class="carousel-track" id="carousel-track"></div>
@@ -82,7 +73,7 @@
             </div>
             
             <div class="pre-footer-banner">
-                <a href="https://instagram.com/tu_tienda" target="_blank" class="pf-instagram">
+                <a href="https://instagram.com/rhplus.store" target="_blank" class="pf-instagram">
                     <i class="fab fa-instagram"></i>
                     <div class="pf-ig-text">
                         <span>Seguinos en Instagram</span>
@@ -94,22 +85,16 @@
                     <div class="pf-benefits" id="pf-benefits-slider">
                         <div class="pf-benefit-item"><i class="fas fa-truck pf-benefit-icon"></i><div class="pf-benefit-text"><strong>ENVÍOS A TODO EL PAÍS</strong><span>Gratis a partir de $80.000</span></div></div>
                         <div class="pf-benefit-item"><i class="far fa-credit-card pf-benefit-icon"></i><div class="pf-benefit-text"><strong>3 CUOTAS SIN INTERÉS</strong><span>Tarjetas de crédito</span></div></div>
-                        <div class="pf-benefit-item"><i class="fas fa-dollar-sign pf-benefit-icon" style="font-size: 2.2rem; padding: 0 5px;"></i><div class="pf-benefit-text"><strong>10% DE DESCUENTO</strong><span>Con transferencia</span></div></div>
-                    </div>
-                    <div class="pf-dots" id="pf-dots-container">
-                        <div class="dot active"></div>
-                        <div class="dot"></div>
-                        <div class="dot"></div>
+                        <div class="pf-benefit-item"><i class="fas fa-dollar-sign pf-benefit-icon"></i><div class="pf-benefit-text"><strong>10% DE DESCUENTO</strong><span>Con transferencia</span></div></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="vista-catalogo">
-            
             <div class="catalogo-top-bar" id="catalogo-top-bar" style="max-width: 1400px; margin: 0 auto; padding: 20px 40px 0 40px;">
                 <div class="breadcrumb-cat">
-                    <span onclick="cambiarVista('home')" style="cursor: pointer; color: #888; transition: 0.2s;" onmouseover="this.style.color='#111'" onmouseout="this.style.color='#888'">Inicio</span> / <strong id="bread-cat-nombre">Productos</strong>
+                    <span onclick="cambiarVista('home')" style="cursor: pointer;">Inicio</span> / <strong id="bread-cat-nombre">Productos</strong>
                 </div>
                 <div class="catalogo-controls">
                     <div class="sort-control">
@@ -123,11 +108,6 @@
                                 <div class="custom-option selected" data-value="default">Más vendidos</div>
                                 <div class="custom-option" data-value="menor">Precio: menor a mayor</div>
                                 <div class="custom-option" data-value="mayor">Precio: mayor a menor</div>
-                                <div class="custom-option" data-value="a-z">A - Z</div>
-                                <div class="custom-option" data-value="z-a">Z - A</div>
-                                <div class="custom-option" data-value="nuevo">Más nuevo al más viejo</div>
-                                <div class="custom-option" data-value="viejo">Más viejo al más nuevo</div>
-                                <div class="custom-option" data-value="destacado">Destacado</div>
                             </div>
                         </div>
                     </div>
@@ -143,100 +123,14 @@
                             <li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>
                             <li><a onclick="cambiarCategoriaMobile('Remeras')" class="cat-link">Remeras</a></li>
                             <li><a onclick="cambiarCategoriaMobile('Pantalones')" class="cat-link">Pantalones</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Buzos')" class="cat-link">Buzos</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Accesorios')" class="cat-link">Accesorios</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="filter-group filtros-extra">
-                        <h5>Talles Superiores</h5>
-                        <ul class="filter-checkbox-list">
-                            <li><label class="checkbox-label"><input type="checkbox" value="XS" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> XS</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="S" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> S</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="M" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> M</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="L" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> L</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="XL" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> XL</label></li>
-                        </ul>
-
-                        <h5 style="margin-top: 25px;">Talles Pantalones</h5>
-                        <ul class="filter-checkbox-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                            <li><label class="checkbox-label"><input type="checkbox" value="38" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 38</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="40" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 40</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="42" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 42</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="44" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 44</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="46" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 46</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" value="48" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 48</label></li>
                         </ul>
                     </div>
                 </aside>
                 
                 <main class="main-catalogo">
-                    <h2 id="titulo-catalogo" class="titulo-catalogo" style="display: none;">Todos los Productos</h2>
                     <div id="grid-catalogo" class="productos-grid"></div>
                 </main>
             </div>
-        </div>
-
-    </div>
-
-    <div id="filter-overlay" class="cart-overlay" onclick="cerrarFiltrosMobile()"></div>
-    <div id="filter-sidebar" class="filter-sidebar">
-        <div class="filter-sidebar-header">
-            <button onclick="cerrarFiltrosMobile()"><i class="fas fa-chevron-left"></i> Filtrar por:</button>
-        </div>
-        <div class="filter-sidebar-body">
-            
-            <div class="mobile-filter-group">
-                <h4>Categorías</h4>
-                <div class="pills-container">
-                    <button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Remeras')">REMERAS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Pantalones')">PANTALONES</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Buzos')">BUZOS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Accesorios')">ACCESORIOS</button>
-                </div>
-            </div>
-
-            <div class="mobile-filter-group" style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 30px;">
-                <h4>Talles Superiores</h4>
-                <ul class="mobile-checkbox-list">
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="XS" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> XS</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="S" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> S</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="M" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> M</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="L" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> L</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="XL" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> XL</label></li>
-                </ul>
-
-                <h4 style="margin-top: 30px;">Talles Pantalones</h4>
-                <ul class="mobile-checkbox-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="38" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 38</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="40" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 40</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="42" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 42</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="44" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 44</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="46" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 46</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" value="48" class="chk-talle" onchange="aplicarFiltrosCatalogo()"> 48</label></li>
-                </ul>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="cart-overlay" class="cart-overlay" onclick="cerrarCarritoSidebar()"></div>
-    <div id="cart-sidebar" class="cart-sidebar">
-        <div class="cart-header"><h2>Tu Carrito</h2><button class="btn-close-sidebar" onclick="cerrarCarritoSidebar()"><i class="fas fa-times"></i></button></div>
-        <div id="lista-carrito-sidebar" class="cart-body"></div>
-        <div class="cart-footer">
-            <div class="totals-block">
-                <div id="fila-descuento-sidebar" style="display: none; justify-content: space-between; font-size: 0.95rem; color: var(--success); margin-bottom: 8px; font-weight: bold;">
-                    <span id="nombre-descuento-sidebar">Descuento</span>
-                    <span id="valor-descuento-sidebar">-$0</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; color: var(--primary);">
-                    <span>Total</span><span style="color: var(--success);">$<span id="subtotal-sidebar">0</span></span>
-                </div>
-            </div>
-            <button class="btn-agregar-derecha" onclick="irAlCheckout()">Finalizar Compra</button>
-            <button class="btn-secundario" style="margin-top: 10px;" onclick="cerrarCarritoSidebar()">Seguir Comprando</button>
         </div>
     </div>
 
@@ -245,8 +139,7 @@
             <div class="footer-col" style="display: flex; flex-direction: column;">
                 <h4>REDES SOCIALES</h4>
                 <div class="social-links">
-                    <a href="https://instagram.com/tu_tienda" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="https://tiktok.com/@tu_tienda" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                    <a href="https://instagram.com/rhplus.store" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
             <div class="footer-col">
@@ -254,155 +147,24 @@
                 <ul>
                     <li><a onclick="cambiarVista('catalogo', 'Remeras')">Remeras</a></li>
                     <li><a onclick="cambiarVista('catalogo', 'Pantalones')">Pantalones</a></li>
-                    <li><a onclick="cambiarVista('catalogo', 'Accesorios')">Accesorios</a></li>
                 </ul>
             </div>
-            <div class="footer-col" style="min-width: 250px;">
-                <h4>MEDIOS DE PAGO</h4>
-                <div class="medios-pago-grid">
-                    <div class="p-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" style="height:16px;"></div>
-                    <div class="p-badge"><div style="background:#007bc1; color:white; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:5px; font-weight:bold; font-family:sans-serif; line-height:1.2;"><span>AMERICAN</span><span>EXPRESS</span></div></div>
-                    <div class="p-badge"><div style="background:#e31837; color:white; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:10px; font-weight:bold; font-style:italic;">Banelco</div></div>
-                    <div class="p-badge"><div style="background:#005596; color:white; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:9px; font-weight:bold;"><> CABAL</div></div>
-                    <div class="p-badge"><div style="color:#005596; width:100%; height:100%; display:flex; justify-content:center; align-items:center;"><div style="background:#ffcc00; border-radius:50%; width:20px; height:20px; display:flex; justify-content:center; align-items:center; font-size:6px; font-weight:bold;">LINK</div></div></div>
-                    <div class="p-badge"><div style="color:#ff5900; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:9px; font-weight:bold; gap:2px;"><span style="font-size:12px;">N</span> Naranja</div></div>
-                    <div class="p-badge"><div style="color:#005596; width:100%; height:100%; display:flex; justify-content:center; align-items:center;"><div style="border:1px solid #ff9900; border-radius:3px; padding:1px 3px; font-size:6px; font-weight:bold;">cencosud</div></div></div>
-                    <div class="p-badge"><div style="color:#e31837; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; font-weight:bold; line-height:1;"><span style="font-size:12px;">a</span><span style="font-size:4px; color:black;">Argencard</span></div></div>
-                    <div class="p-badge"><div style="background:#005596; color:white; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; font-weight:bold; line-height:1.1;"><span style="font-size:8px;"><> CABAL</span><span style="font-size:4px; background:white; color:#005596; padding:0 2px;">DÉBITO</span></div></div>
-                    <div class="p-badge"><div style="color:#005596; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:6px; font-weight:bold; text-align:center;">Provincia<br>NET</div></div>
-                    <div class="p-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Maestro_logo.svg" style="height:16px;"></div>
-                    <div class="p-badge"><div style="color:#1a1f71; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; font-weight:bold; line-height:1; font-style:italic;"><span style="font-size:10px;">VISA</span><span style="font-size:5px; color:#007bc1; font-style:normal;">Débito</span></div></div>
-                    <div class="p-badge"><div style="background:#ffcc00; color:#1a1f71; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; font-weight:bold; line-height:1; font-style:italic;"><span style="background:#e31837; color:white; font-size:6px; padding:0 2px;">PAGO</span><span style="font-size:8px;">Fácil</span></div></div>
-                    <div class="p-badge"><div style="color:#1a1f71; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:8px; font-style:italic; gap:1px;"><span style="color:#e31837;">rapi</span>pago</div></div>
-                </div>
-                <h4 style="margin-top: 25px;">FORMAS DE ENVÍO</h4>
-                <div class="formas-envio-grid">
-                    <div class="p-badge" style="width:70px; height:32px; color:#e31837; font-weight:bold; font-size:8px; font-style:italic; justify-content:center; gap:3px;"><span style="border:1px solid #e31837; border-radius:50%; width:12px; height:12px; display:flex; align-items:center; justify-content:center; font-size:8px;">A</span> ANDREANI</div>
-                    <div class="p-badge" style="width:70px; height:32px; background:#ffcc00; color:#005596; font-weight:bold; font-size:6px; justify-content:center; gap:3px; text-align:left;"><i class="fas fa-box" style="font-size:12px;"></i> Correo<br>Argentino</div>
-                </div>
-            </div>
-            
             <div class="footer-col">
                 <h4>CONTACTO</h4>
-                <p>
-                    <i class="fab fa-whatsapp"></i> 
-                    <a href="https://wa.me/5493424123456" target="_blank" class="contact-link">+54 9 342 4123456</a>
-                </p>
-                <p>
-                    <i class="fas fa-envelope"></i> 
-                    <a href="mailto:ventas@lucas.com.ar?subject=Consulta%20-%20Lucas%20Store&body=Hola!%20Tengo%20una%20consulta:%20" class="contact-link">ventas@lucas.com.ar</a>
-                </p>
-                <p>
-                    <i class="fas fa-map-marker-alt"></i> 
-                    <a href="https://www.google.com/maps/search/?api=1&query=San+Martin+2024,+Santa+Fe,+Argentina" target="_blank" class="contact-link">San Martín 2024, Santa Fe</a>
-                </p>
-                
-                <div style="background-color: #00A0D8; padding: 6px; width: 55px; border-radius: 4px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: Arial, sans-serif; margin-top: 15px; user-select: none;">
+                <p><i class="fab fa-whatsapp"></i> +54 9 342 4123456</p>
+                <p><i class="fas fa-envelope"></i> ventas@rhplus.com.ar</p>
+                <div style="background-color: #00A0D8; padding: 6px; width: 55px; border-radius: 4px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; color: white; margin-top: 15px;">
                     <div style="background: white; width: 100%; padding: 4px 0; display: flex; justify-content: center; align-items: center; border-radius: 2px;"><i class="fas fa-qrcode" style="color: #111; font-size: 28px;"></i></div>
-                    <span style="font-size: 7px; font-weight: bold; margin-top: 4px; text-align: center; line-height: 1.1; letter-spacing: 0.5px;">DATA<br>FISCAL</span>
+                    <span style="font-size: 7px; font-weight: bold; margin-top: 4px; text-align: center;">DATA FISCAL</span>
                 </div>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>Copyright rh(+) - Todos los derechos reservados.</p>
-        </div>
+        <div class="footer-bottom"><p>Copyright rh(+) - Todos los derechos reservados.</p></div>
     </footer>
 
-    <div id="modal-detalle-producto" class="product-detail-modal">
-        <div class="detail-box">
-            <div class="detail-img">
-                <img id="det-img-url" src="" alt="Producto">
-                <button id="btn-fav-modal" class="btn-fav-modal" onclick="toggleFavoritoModal(event)"><i class="fas fa-heart"></i></button>
-            </div>
-            <div class="detail-info">
-                <button class="btn-close-modal" onclick="cerrarDetalle()">×</button>
-                <h2 id="det-titulo" class="detail-title">Nombre</h2>
-                <div class="price-box-detail"><p id="det-precio-tarj" class="p-tarj">$0 Tarjeta</p><p id="det-precio-efvo" class="p-efvo">$0 Transferencia</p></div>
-                <p id="det-descripcion" class="detail-desc">Descripción...</p>
-                
-                <div id="seccion-selector-talles" class="talles-selector-section" style="margin-bottom: 25px;">
-                    <h4 id="titulo-talles" style="margin-bottom: 12px; font-size: 0.9rem; color: #555; text-transform: uppercase;">SELECCIONAR TALLE:</h4>
-                    <div id="det-talles-container" class="talles-selector"></div>
-                </div>
-                <div style="margin-bottom: 15px;"><button id="btn-add-modal" class="btn-agregar-derecha" onclick="agregarDesdeDetalle()"><i class="fas fa-shopping-bag"></i> Añadir al Carrito</button></div>
-            </div>
-        </div>
-    </div>
+    <div id="modal-detalle-producto" class="product-detail-modal"></div>
+    <div id="modal-principal" class="checkout-modal"></div>
 
-    <div id="modal-principal" class="checkout-modal">
-        <div class="checkout-box" id="paso-2-formulario">
-            <div class="checkout-col">
-                <button class="btn-close-modal" onclick="cerrarCheckoutModal()">×</button>
-                <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase;">1. Datos de Envío</h3>
-                <div class="form-group"><label>Nombre</label><input type="text" id="chk-nom" maxlength="20" oninput="validarLetras(this)"></div>
-                <div class="form-group"><label>Apellido</label><input type="text" id="chk-ape" maxlength="20" oninput="validarLetras(this)"></div>
-                
-                <div class="form-group">
-                    <label>Email</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="email" id="chk-mail" placeholder="ejemplo@correo.com" style="flex:1;" oninput="this.classList.remove('input-invalido')" onblur="enviarCodigoEmailAutomatico()">
-                    </div>
-                    
-                    <div id="box-codigo" class="verificacion-box">
-                        <label style="font-size: 0.75rem; margin-bottom: 0;">Ingresá el código de 6 dígitos que te enviamos:</label>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="chk-codigo-mail" maxlength="6" style="flex:2;" placeholder="123456" oninput="validarNumeros(this)">
-                            <button type="button" id="btn-confirmar-codigo" class="btn-agregar-derecha" style="flex:1; padding:10px; font-size:0.75rem; border-radius: var(--radius-sm);" onclick="validarCodigoEmail()">Confirmar</button>
-                        </div>
-                    </div>
-                    
-                    <small id="txt-mail-verificado" style="color: var(--success); font-weight: bold; display:none; margin-top:8px; font-size:0.85rem;"><i class="fas fa-check-circle"></i> Email verificado correctamente</small>
-                </div>
-
-                <div class="form-group"><label>Teléfono</label><input type="text" id="chk-tel" value="+54" maxlength="13" oninput="validarTelefono(this)"></div>
-                
-                <div class="cp-block">
-                    <label style="color:var(--primary); font-size: 0.8rem; font-weight: 500; text-transform: uppercase; margin-bottom: 8px; display: block;">Código Postal</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="text" id="chk-cp" placeholder="Ej: 3000" maxlength="4" style="flex:2; background:white;" oninput="validarNumeros(this)">
-                        <button type="button" class="btn-secundario" style="flex:1; padding:12px; text-transform: uppercase; font-size: 0.8rem; height: 43px; width: auto;" onclick="calcularEnvio()">Calcular</button>
-                    </div>
-                    <small id="txt-costo-envio" style="color: var(--success); font-weight: bold; display:none; margin-top:8px; font-size:0.85rem;"></small>
-                </div>
-                <div class="form-group"><label>Dirección Completa</label><input type="text" id="chk-dir" placeholder="Calle y Altura"></div>
-            </div>
-            
-            <div class="checkout-col">
-                <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase;">2. Pago y Resumen</h3>
-                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom:20px;">
-                    <label class="payment-option"><input type="radio" name="metodoPago" value="transferencia" checked onchange="recalcularTotalPaso2()"> <span>🏦 Transferencia <span style="color:var(--success); font-size:0.85rem; margin-left:5px;">(10% OFF)</span></span></label>
-                    <label class="payment-option"><input type="radio" name="metodoPago" value="mercadopago" onchange="recalcularTotalPaso2()"> <img src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/5.19.5/mercadopago/logo__small@2x.png" height="18" alt="Mercado Pago" style="vertical-align: middle;"><span>Mercado Pago</span></label>
-                </div>
-                
-                <div id="resumen-checkout-paso2" style="margin-top:15px; background: #fff; border-top: 1px solid #eee; padding-top:15px;"></div>
-                <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:0.95rem; font-weight:bold; color:#555;"><span>Costo de Envío:</span><span id="checkout-envio-final">$0</span></div>
-                
-                <h2 style="text-align:right; font-size:1.6rem; margin-top:10px; font-weight: 800;">Total: <span style="color:var(--success)">$<span id="checkout-total-final">0</span></span></h2>
-                
-                <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button id="btn-pagar" class="btn-agregar-derecha" style="flex: 2;" onclick="finalizarCompra()"> Confirmar Pedido</button>
-                </div>
-
-                <div style="text-align: center; margin-top: 20px;">
-                    <button id="btn-mostrar-cupon" class="btn-cupon-letras" onclick="toggleInputCupon()"><i class="fas fa-tag"></i> Agregar cupón de descuento</button>
-                    <div id="caja-input-cupon" style="display: none; justify-content: center; gap: 10px; margin-top: 10px;">
-                        <input type="text" id="input-codigo-cupon" placeholder="Código" style="padding: 10px 15px; border: 1px solid #ccc; border-radius: var(--radius-sm); text-transform: uppercase; outline: none; font-family: 'Montserrat', sans-serif; width: 100%;">
-                        <button class="btn-secundario" style="width: auto; padding: 10px 20px;" onclick="aplicarCuponReal()">Aplicar</button>
-                    </div>
-                    <small id="mensaje-cupon" style="display: block; margin-top: 8px; font-weight: bold; font-size: 0.85rem;"></small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="checkout-box success-screen" id="pantalla-exito">
-            <div style="background: #eafaf1; color: var(--success); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 20px;"><i class="fas fa-check"></i></div>
-            <h2 style="color:var(--primary); font-size: 2rem; margin-bottom: 10px; font-weight: 800;">¡Gracias por tu compra!</h2>
-            <p id="msg-exito-p" style="font-size: 1rem; color: #555; margin-bottom: 35px; max-width: 400px; line-height: 1.5;">Para pasarte un alias y coordinar el pago, contactanos por WhatsApp.</p>
-            <a href="https://wa.me/5493424123456" target="_blank" class="btn-agregar-derecha" style="width:auto; padding: 15px 40px; margin-bottom: 15px; text-decoration: none; background: #25d366;"><i class="fab fa-whatsapp"></i> Hablanos por WhatsApp</a>
-            <button class="btn-secundario" style="width:auto; padding: 15px 40px;" onclick="location.reload()">Volver a la Tienda</button>
-        </div>
-    </div>
-
-    <script src="js/main.js?v=6"></script>
+    <script src="./js/main.js?v=25"></script>
 </body>
 </html>
