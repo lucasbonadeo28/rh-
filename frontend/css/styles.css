@@ -380,11 +380,14 @@ nav {
     filter: brightness(1.05);
 }
 
+/* ======================================================= */
+/* === PRE-FOOTER (INSTAGRAM Y BENEFICIOS) =============== */
+/* ======================================================= */
 .pre-footer-banner { 
-    background-color: var(--brand-brown); /* FONDO ARENA */
+    background-color: var(--white); /* FONDO BLANCO */
     color: var(--primary); /* TEXTO NEGRO */
-    padding: 50px 20px; 
-    border-top: 1px solid rgba(0,0,0,0.1); 
+    padding: 60px 20px; 
+    border-top: 1px solid var(--border); /* LÍNEA SUTIL ARRIBA */
     text-align: center; 
 }
 
@@ -395,7 +398,7 @@ nav {
     gap: 15px; 
     margin-bottom: 50px; 
     text-decoration: none; 
-    color: var(--primary) !important; /* TEXTO NEGRO */
+    color: var(--primary); /* TEXTO NEGRO */
     transition: 0.3s; 
 }
 
@@ -405,6 +408,7 @@ nav {
 
 .pf-instagram i { 
     font-size: 2.8rem; 
+    color: var(--brand-brown); /* ÍCONO INSTAGRAM EN COLOR ARENA */
 }
 
 .pf-ig-text { 
@@ -425,6 +429,7 @@ nav {
     display: block; 
     font-size: 1.4rem; 
     font-weight: 800; 
+    color: var(--primary); /* TEXTO NEGRO */
     letter-spacing: -0.5px; 
 }
 
@@ -462,7 +467,7 @@ nav {
 
 .pf-benefit-icon { 
     font-size: 2.2rem; 
-    color: var(--primary); /* ÍCONOS NEGROS */
+    color: var(--brand-brown); /* ÍCONOS DE ENVÍO/TARJETAS EN COLOR ARENA */
 }
 
 .pf-benefit-text { 
@@ -485,7 +490,7 @@ nav {
 
 .pf-dots { 
     display: none; 
-} 
+}
 
 /* ======================================================= */
 /* === VISTA CATÁLOGO ==================================== */
@@ -931,9 +936,10 @@ nav {
 /* === FOOTER ============================================ */
 /* ======================================================= */
 .site-footer { 
-    background-color: var(--brand-brown); 
+    background-color: var(--brand-brown); /* FONDO ARENA */
     color: var(--primary); /* TEXTO NEGRO */
     padding: 80px 40px 30px; 
+    border-top: none;
 }
 
 .footer-container { 
