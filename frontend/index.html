@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="./css/styles.css?v=30">
+    <link rel="stylesheet" href="./css/styles.css?v=34">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -43,7 +43,12 @@
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
-            </div>
+            <a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>
+            <a class="filter-link" onclick="cambiarVista('catalogo', 'Remeras')">REMERAS</a>
+            <a class="filter-link" onclick="cambiarVista('catalogo', 'Pantalones')">PANTALONES</a>
+            <a class="filter-link" onclick="cambiarVista('catalogo', 'Buzos')">BUZOS</a>
+            <a class="filter-link" onclick="cambiarVista('catalogo', 'Accesorios')">ACCESORIOS</a>
+        </div>
 
         <div class="nav-right">
             <div class="search-container"><i class="fas fa-search"></i><input type="search" id="input-buscador-nav" placeholder="Buscar..." onkeyup="ejecutarBusquedaNav(event)"></div>
@@ -115,7 +120,12 @@
                     <div class="filter-group">
                         <h4>Categorías</h4>
                         <ul class="filter-list">
-                            </ul>
+                            <li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>
+                            <li><a onclick="cambiarCategoriaMobile('Remeras')" class="cat-link">Remeras</a></li>
+                            <li><a onclick="cambiarCategoriaMobile('Pantalones')" class="cat-link">Pantalones</a></li>
+                            <li><a onclick="cambiarCategoriaMobile('Buzos')" class="cat-link">Buzos</a></li>
+                            <li><a onclick="cambiarCategoriaMobile('Accesorios')" class="cat-link">Accesorios</a></li>
+                        </ul>
                     </div>
                 </aside>
                 
@@ -135,7 +145,12 @@
             <div class="mobile-filter-group">
                 <h4>Categorías</h4>
                 <div class="pills-container">
-                    </div>
+                    <button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>
+                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Remeras')">REMERAS</button>
+                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Pantalones')">PANTALONES</button>
+                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Buzos')">BUZOS</button>
+                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Accesorios')">ACCESORIOS</button>
+                </div>
             </div>
         </div>
     </div>
@@ -170,7 +185,11 @@
             <div class="footer-col">
                 <h4>CATEGORÍAS</h4>
                 <ul>
-                     </ul>
+                    <li><a onclick="cambiarVista('catalogo', 'Remeras')">Remeras</a></li>
+                    <li><a onclick="cambiarVista('catalogo', 'Pantalones')">Pantalones</a></li>
+                    <li><a onclick="cambiarVista('catalogo', 'Buzos')">Buzos</a></li>
+                    <li><a onclick="cambiarVista('catalogo', 'Accesorios')">Accesorios</a></li>
+                </ul>
             </div>
             <div class="footer-col" style="min-width: 250px;">
                 <h4>MEDIOS DE PAGO</h4>
@@ -317,6 +336,6 @@
         </div>
     </div>
 
-    <script src="./js/main.js?v=30"></script>
+    <script src="./js/main.js?v=34"></script>
 </body>
 </html>
