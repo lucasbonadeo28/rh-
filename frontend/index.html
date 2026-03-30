@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RH+ Jeans Store</title>
     
-    <link rel="icon" type="image/jpeg" href="./rh.jpg?v=8">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dzb8l7q8z/image/upload/v1703080556/rh/2_n5i3u8.jpg">
 
     <script>
         if ('scrollRestoration' in history) {
@@ -20,10 +20,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="./css/styles.css?v=27">
+    <link rel="stylesheet" href="./css/styles.css?v=30">
 </head>
 <body>
-    <a href="https://wa.me/5493424123456" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+    <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
     <div id="toast-container" class="toast-container"></div>
 
     <div class="top-marquee">
@@ -38,17 +38,12 @@
     <nav>
         <button class="btn-menu-mobile" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
         
-        <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            <img src="./rh.jpg?v=8" alt="RH+ Jeans Store" style="height: 45px; width: auto; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.15);">
+        <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer;">
+            <img src="https://res.cloudinary.com/dzb8l7q8z/image/upload/v1703080556/rh/2_n5i3u8.jpg" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
-            <a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Remeras')">REMERAS</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Pantalones')">PANTALONES</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Buzos')">BUZOS</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Accesorios')">ACCESORIOS</a>
-        </div>
+            </div>
 
         <div class="nav-right">
             <div class="search-container"><i class="fas fa-search"></i><input type="search" id="input-buscador-nav" placeholder="Buscar..." onkeyup="ejecutarBusquedaNav(event)"></div>
@@ -73,11 +68,11 @@
             </div>
             
             <div class="pre-footer-banner">
-                <a href="https://instagram.com/rhplus.store" target="_blank" class="pf-instagram">
+                <a href="https://www.instagram.com/rh.stf/" target="_blank" class="pf-instagram">
                     <i class="fab fa-instagram"></i>
                     <div class="pf-ig-text">
                         <span>Seguinos en Instagram</span>
-                        <strong>@RHPLUS.STORE</strong>
+                        <strong>@RH.STF</strong>
                     </div>
                 </a>
                 
@@ -120,10 +115,7 @@
                     <div class="filter-group">
                         <h4>Categorías</h4>
                         <ul class="filter-list">
-                            <li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Remeras')" class="cat-link">Remeras</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Pantalones')" class="cat-link">Pantalones</a></li>
-                        </ul>
+                            </ul>
                     </div>
                 </aside>
                 
@@ -143,12 +135,7 @@
             <div class="mobile-filter-group">
                 <h4>Categorías</h4>
                 <div class="pills-container">
-                    <button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Remeras')">REMERAS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Pantalones')">PANTALONES</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Buzos')">BUZOS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Accesorios')">ACCESORIOS</button>
-                </div>
+                    </div>
             </div>
         </div>
     </div>
@@ -177,15 +164,13 @@
             <div class="footer-col" style="display: flex; flex-direction: column;">
                 <h4>REDES SOCIALES</h4>
                 <div class="social-links">
-                    <a href="https://instagram.com/rhplus.store" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.instagram.com/rh.stf/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
             <div class="footer-col">
                 <h4>CATEGORÍAS</h4>
                 <ul>
-                    <li><a onclick="cambiarVista('catalogo', 'Remeras')">Remeras</a></li>
-                    <li><a onclick="cambiarVista('catalogo', 'Pantalones')">Pantalones</a></li>
-                </ul>
+                     </ul>
             </div>
             <div class="footer-col" style="min-width: 250px;">
                 <h4>MEDIOS DE PAGO</h4>
@@ -216,7 +201,7 @@
                 <h4>CONTACTO</h4>
                 <p>
                     <i class="fab fa-whatsapp"></i> 
-                    <a href="https://wa.me/5493424123456" target="_blank" class="contact-link">+54 9 342 4123456</a>
+                    <a href="https://wa.me/5493426286435" target="_blank" class="contact-link">+54 9 3426 28-6435</a>
                 </p>
                 <p>
                     <i class="fas fa-envelope"></i> 
@@ -224,7 +209,7 @@
                 </p>
                 <p>
                     <i class="fas fa-map-marker-alt"></i> 
-                    <span class="contact-link">San Martín 2024, Santa Fe</span>
+                    <span class="contact-link">San Martín 2228, Santa Fe</span>
                 </p>
                 
                 <div style="background-color: #00A0D8; padding: 6px; width: 55px; border-radius: 4px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: Arial, sans-serif; margin-top: 15px; user-select: none;">
@@ -327,11 +312,11 @@
             <div style="background: #eafaf1; color: var(--success); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 20px;"><i class="fas fa-check"></i></div>
             <h2 style="color:var(--primary); font-size: 2rem; margin-bottom: 10px; font-weight: 800;">¡Gracias por tu compra!</h2>
             <p id="msg-exito-p" style="font-size: 1rem; color: #555; margin-bottom: 35px; max-width: 400px; line-height: 1.5;">Para pasarte un alias y coordinar el pago, contactanos por WhatsApp.</p>
-            <a href="https://wa.me/5493424123456" target="_blank" class="btn-agregar-derecha" style="width:auto; padding: 15px 40px; margin-bottom: 15px; text-decoration: none; background: #25d366;"><i class="fab fa-whatsapp"></i> Hablanos por WhatsApp</a>
+            <a href="https://wa.me/5493426286435" target="_blank" class="btn-agregar-derecha" style="width:auto; padding: 15px 40px; margin-bottom: 15px; text-decoration: none; background: #25d366;"><i class="fab fa-whatsapp"></i> Hablanos por WhatsApp</a>
             <button class="btn-secundario" style="width:auto; padding: 15px 40px;" onclick="location.reload()">Volver a la Tienda</button>
         </div>
     </div>
 
-    <script src="./js/main.js?v=27"></script>
+    <script src="./js/main.js?v=30"></script>
 </body>
 </html>
