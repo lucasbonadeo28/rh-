@@ -42,6 +42,8 @@ window.onload = async () => {
 
     await fetchBanners();
     await fetchProductos(); 
+    
+    renderizarCategoriasDinamicas();
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
@@ -64,6 +66,44 @@ window.onload = async () => {
         cambiarVista(vistaGuardada, catGuardada);
     }
 };
+
+function renderizarCategoriasDinamicas() {
+    let categoriasUnicas = [];
+    
+    if (productosCargados && productosCargados.length > 0) {
+        categoriasUnicas = [...new Set(productosCargados.map(p => p.categoria))].filter(Boolean).sort();
+    }
+    
+    if (categoriasUnicas.length === 0) {
+        categoriasUnicas = ['Accesorios', 'Buzos', 'Pantalones', 'Remeras']; 
+    }
+
+    const navCenter = document.getElementById('nav-menu-celular');
+    if (navCenter) {
+        navCenter.innerHTML = `<a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>` + 
+            categoriasUnicas.map(cat => `<a class="filter-link" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</a>`).join('');
+    }
+
+    const sidebarDesktop = document.querySelector('#sidebar-desktop .filter-list');
+    if (sidebarDesktop) {
+        sidebarDesktop.innerHTML = `<li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>` +
+            categoriasUnicas.map(cat => `<li><a onclick="cambiarCategoriaMobile('${cat}')" class="cat-link">${cat}</a></li>`).join('');
+    }
+
+    const mobilePills = document.querySelector('#filter-sidebar .pills-container');
+    if (mobilePills) {
+        mobilePills.innerHTML = `<button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>` +
+            categoriasUnicas.map(cat => `<button class="filter-pill" onclick="cambiarCategoriaMobile('${cat}')">${cat.toUpperCase()}</button>`).join('');
+    }
+
+    const footerCols = document.querySelectorAll('.footer-col');
+    if (footerCols.length > 1) {
+        const footerUl = footerCols[1].querySelector('ul');
+        if (footerUl) {
+            footerUl.innerHTML = categoriasUnicas.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')">${cat}</a></li>`).join('');
+        }
+    }
+}
 
 function guardarCarrito() {
     localStorage.setItem('carritoLucTienda', JSON.stringify(carrito));
