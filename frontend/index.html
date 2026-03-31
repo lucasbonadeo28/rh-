@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RH+ Jeans Store</title>
     
-    <link rel="icon" type="image/png" href="./rh2.png?v=42">
+    <link rel="icon" type="image/png" href="./rh2.png?v=45">
 
     <script>
         if ('scrollRestoration' in history) {
@@ -19,7 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <link rel="stylesheet" href="./css/styles.css?v=42">
+    <link rel="stylesheet" href="./css/styles.css?v=45">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -32,13 +32,19 @@
             <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
             <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
         </div>
+        <div class="marquee-content" aria-hidden="true">
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
+            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH+ JEANS STORE</span>
+        </div>
     </div>
 
     <nav>
         <button class="btn-menu-mobile" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
         
         <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer;">
-            <img src="./rh.jpg?v=42" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+            <img src="./rh.jpg?v=45" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
@@ -254,7 +260,7 @@
                 </p>
                 <p>
                     <i class="fas fa-map-marker-alt"></i> 
-                    <a href="https://www.google.com/maps/search/?api=1&query=San+Martin+2228+Santa+Fe" target="_blank" class="contact-link">San Martín 2228, Santa Fe</a>
+                    <a href="https://www.google.com/maps/search/?api=1&query=San+Martín+2228,+Santa+Fe" target="_blank" class="contact-link">San Martín 2228, Santa Fe</a>
                 </p>
                 
                 <a href="https://auth.afip.gob.ar/contribuyente_/login.xhtml?action=SYSTEM&system=denuncias" target="_blank" style="text-decoration: none;">
@@ -296,25 +302,27 @@
             <div class="checkout-col">
                 <button class="btn-close-modal" onclick="cerrarCheckoutModal()">×</button>
                 <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase;">1. Datos de Envío</h3>
-                <div class="form-group"><label>Nombre</label><input type="text" id="chk-nom" maxlength="20" oninput="validarLetras(this)"></div>
-                <div class="form-group"><label>Apellido</label><input type="text" id="chk-ape" maxlength="20" oninput="validarLetras(this)"></div>
+                
+                <div class="form-group"><label>Nombre</label><input type="text" id="chk-nom" maxlength="20" oninput="validarLetras(this)" autocomplete="given-name"></div>
+                <div class="form-group"><label>Apellido</label><input type="text" id="chk-ape" maxlength="20" oninput="validarLetras(this)" autocomplete="family-name"></div>
                 
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="chk-mail" placeholder="ejemplo@correo.com" oninput="this.classList.remove('input-invalido')">
+                    <input type="email" id="chk-mail" placeholder="ejemplo@correo.com" oninput="this.classList.remove('input-invalido')" autocomplete="email">
                 </div>
 
-                <div class="form-group"><label>Teléfono</label><input type="text" id="chk-tel" value="+54" maxlength="13" oninput="validarTelefono(this)"></div>
+                <div class="form-group"><label>Teléfono</label><input type="text" id="chk-tel" value="+54" maxlength="13" oninput="validarTelefono(this)" autocomplete="tel"></div>
                 
                 <div class="cp-block">
                     <label style="color:var(--primary); font-size: 0.8rem; font-weight: 500; text-transform: uppercase; margin-bottom: 8px; display: block;">Código Postal</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" id="chk-cp" placeholder="Ej: 3000" maxlength="4" style="flex:2; background:white;" oninput="validarNumeros(this)">
+                        <input type="text" id="chk-cp" placeholder="Ej: 3000" maxlength="4" style="flex:2; background:white;" oninput="validarNumeros(this)" autocomplete="postal-code">
                         <button type="button" class="btn-secundario" style="flex:1; padding:12px; text-transform: uppercase; font-size: 0.8rem; height: 43px; width: auto;" onclick="calcularEnvio()">Calcular</button>
                     </div>
                     <small id="txt-costo-envio" style="color: var(--success); font-weight: bold; display:none; margin-top:8px; font-size:0.85rem;"></small>
                 </div>
-                <div class="form-group"><label>Dirección Completa</label><input type="text" id="chk-dir" placeholder="Calle y Altura"></div>
+                
+                <div class="form-group"><label>Dirección Completa</label><input type="text" id="chk-dir" placeholder="Calle y Altura" autocomplete="street-address"></div>
             </div>
             
             <div class="checkout-col">
@@ -346,13 +354,15 @@
         
         <div class="checkout-box success-screen" id="pantalla-exito">
             <div style="background: #eafaf1; color: var(--success); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 20px;"><i class="fas fa-check"></i></div>
-            <h2 style="color:var(--primary); font-size: 2rem; margin-bottom: 10px; font-weight: 800;">¡Gracias por tu compra!</h2>
-            <p id="msg-exito-p" style="font-size: 1rem; color: #555; margin-bottom: 35px; max-width: 400px; line-height: 1.5;">Para pasarte un alias y coordinar el pago, contactanos por WhatsApp.</p>
-            <a href="https://wa.me/5493426286435" target="_blank" class="btn-agregar-derecha" style="width:auto; padding: 15px 40px; margin-bottom: 15px; text-decoration: none; background: #25d366;"><i class="fab fa-whatsapp"></i> Hablanos por WhatsApp</a>
+            
+            <h2 style="color:var(--primary); font-size: 2rem; margin-bottom: 10px; font-weight: 800;">¡Muchas gracias por su compra!</h2>
+            <p id="msg-exito-p" style="font-size: 1rem; color: #555; margin-bottom: 35px; max-width: 400px; line-height: 1.5;">Para proseguir con el pago, por favor contáctenos por WhatsApp.</p>
+            
+            <a id="btn-wsp-exito" href="https://wa.me/5493426286435" target="_blank" class="btn-agregar-derecha" style="width:auto; padding: 15px 40px; margin-bottom: 15px; text-decoration: none; background: #25d366;"><i class="fab fa-whatsapp"></i> Hablanos por WhatsApp</a>
             <button class="btn-secundario" style="width:auto; padding: 15px 40px;" onclick="location.reload()">Volver a la Tienda</button>
         </div>
     </div>
 
-    <script src="./js/main.js?v=42"></script>
+    <script src="./js/main.js?v=45"></script>
 </body>
 </html>
