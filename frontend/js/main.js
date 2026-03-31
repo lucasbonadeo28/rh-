@@ -8,11 +8,9 @@ let prodSeleccionado = null;
 let filtrandoFavoritos = false; 
 let costoEnvio = 0;
 let cuponAplicado = { codigo: null, descuento: 0 };
-let emailVerificado = false;
 let banners = [];
 let currentSlide = 0;
 let slideInterval;
-
 let touchStartX = 0;
 let touchEndX = 0;
 
@@ -49,16 +47,16 @@ window.onload = async () => {
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
 
     document.querySelectorAll('.chk-talle').forEach(cb => {
-     cb.checked = false;
-     cb.onchange = function() {
-         if (this.checked) {
-             document.querySelectorAll('.chk-talle').forEach(otro => {
-                 if (otro !== this) otro.checked = false;
-             });
-         }
-         aplicarFiltrosCatalogo();
-     };
- });
+        cb.checked = false;
+        cb.onchange = function() {
+            if (this.checked) {
+                document.querySelectorAll('.chk-talle').forEach(otro => {
+                    if (otro !== this) otro.checked = false;
+                });
+            }
+            aplicarFiltrosCatalogo();
+        };
+    });
 
     if (vistaGuardada === 'favoritos') {
         mostrarFavoritos();
@@ -117,7 +115,6 @@ async function fetchProductos() {
             productosCargados = Array.isArray(data) ? data : [];
         }
     } catch (err) { 
-        console.error("Error al traer productos:", err); 
         productosCargados = [];
     }
 
@@ -142,29 +139,13 @@ async function fetchBanners() {
             if(Array.isArray(data) && data.length > 0) {
                 banners = data;
             } else {
-                banners = [
-                    { id: 1, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+1' },
-                    { id: 2, imagen_url: 'https://via.placeholder.com/1400x600/eeeeee/111111?text=CARRUSEL+VACIO+2' },
-                    { id: 3, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+3' },
-                    { id: 4, imagen_url: 'https://via.placeholder.com/1400x600/eeeeee/111111?text=CARRUSEL+VACIO+4' }
-                ];
+                banners = [{ id: 1, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+1' }];
             }
         } else {
-            banners = [
-                { id: 1, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+1' },
-                { id: 2, imagen_url: 'https://via.placeholder.com/1400x600/eeeeee/111111?text=CARRUSEL+VACIO+2' },
-                { id: 3, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+3' },
-                { id: 4, imagen_url: 'https://via.placeholder.com/1400x600/eeeeee/111111?text=CARRUSEL+VACIO+4' }
-            ];
+            banners = [{ id: 1, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+1' }];
         }
     } catch (error) { 
-        console.error("Error al cargar banners:", error); 
-        banners = [
-            { id: 1, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+1' },
-            { id: 2, imagen_url: 'https://via.placeholder.com/1400x600/eeeeee/111111?text=CARRUSEL+VACIO+2' },
-            { id: 3, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+3' },
-            { id: 4, imagen_url: 'https://via.placeholder.com/1400x600/eeeeee/111111?text=CARRUSEL+VACIO+4' }
-        ];
+        banners = [{ id: 1, imagen_url: 'https://via.placeholder.com/1400x600/111111/ffffff?text=CARRUSEL+VACIO+1' }];
     }
     renderBanners();
 }
@@ -247,98 +228,6 @@ function handleSwipe() {
     }
     if (touchEndX - touchStartX > swipeThreshold) {
         prevSlide();
-    }
-}
-
-async function enviarCodigoEmailAutomatico() {
-    const emailInput = document.getElementById('chk-mail');
-    const valor = emailInput.value.trim();
-    
-    if (!valor) return; 
-
-    const regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    let invalido = false;
-    
-    if(!regexEmail.test(valor)) { 
-        invalido = true; 
-    } else {
-        const partes = valor.split('@');
-        if (partes.length === 2) {
-            if (/(.)\1{2,}/.test(partes[1])) invalido = true;
-            if (partes[1].split('.')[0].length < 2) invalido = true;
-        }
-    }
-
-    if (invalido) {
-        emailInput.classList.add('input-invalido');
-        mostrarToast("El email ingresado no es válido.", "error");
-        return;
-    }
-
-    emailInput.disabled = true;
-    mostrarToast("Enviando código de verificación...", "success");
-
-    try {
-        const res = await fetch(`${API}/enviar-codigo`, {
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ email: valor })
-        });
-        
-        if(!res.ok) throw new Error("Error backend");
-        
-        const data = await res.json();
-        
-        if(data.success) {
-            document.getElementById('box-codigo').style.display = 'flex';
-            mostrarToast("Te enviamos un código a tu correo", "success");
-        } else {
-            mostrarToast(data.message || "Error al enviar el código", "error");
-            emailInput.disabled = false;
-        }
-    } catch (err) {
-        mostrarToast("Error de servidor: No se pudo conectar con el backend.", "error");
-        emailInput.disabled = false;
-    }
-}
-
-async function validarCodigoEmail() {
-    const email = document.getElementById('chk-mail').value.trim();
-    const codigo = document.getElementById('chk-codigo-mail').value.trim();
-    const btnConfirmar = document.getElementById('btn-confirmar-codigo');
-
-    if (codigo.length !== 6) {
-        return mostrarToast("El código debe tener 6 números", "error");
-    }
-
-    btnConfirmar.disabled = true;
-    btnConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-    try {
-        const res = await fetch(`${API}/verificar-codigo`, {
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ email: email, codigo: codigo })
-        });
-        
-        if(!res.ok) throw new Error("Error backend");
-        
-        const data = await res.json();
-        
-        if(data.success) {
-            emailVerificado = true;
-            document.getElementById('box-codigo').style.display = 'none';
-            document.getElementById('txt-mail-verificado').style.display = 'block';
-            mostrarToast("Email verificado correctamente", "success");
-        } else {
-            mostrarToast("El código es incorrecto", "error");
-            btnConfirmar.disabled = false; 
-            btnConfirmar.innerText = 'Confirmar';
-        }
-    } catch (err) {
-        mostrarToast("Error de servidor: No se pudo verificar el código.", "error");
-        btnConfirmar.disabled = false; 
-        btnConfirmar.innerText = 'Confirmar';
     }
 }
 
@@ -437,7 +326,6 @@ function cambiarCategoriaMobile(cat) {
 
 function cambiarVista(vista, categoria = 'Todos') {
     document.getElementById('input-buscador-nav').value = '';
-    
     window.scrollTo(0, 0); 
 
     vistaActual = vista;
@@ -485,7 +373,6 @@ function ejecutarBusquedaNav(event) {
     }
     
     window.scrollTo(0, 0);
-
     vistaActual = 'catalogo'; 
     categoriaActual = 'Todos'; 
     filtrandoFavoritos = false;
@@ -497,7 +384,6 @@ function ejecutarBusquedaNav(event) {
     document.getElementById('titulo-catalogo').innerText = `Resultados para: "${txt}"`;
     
     const listafiltrada = productosCargados.filter(p => (p.nombre || '').toLowerCase().includes(txt));
-    
     const grid = document.getElementById('grid-catalogo');
     if (grid) {
         grid.innerHTML = generarGridHTML(listafiltrada);
@@ -540,7 +426,6 @@ function aplicarFiltrosCatalogo() {
             grid.innerHTML = generarGridHTML(listaFiltrada);
         }
     } catch (error) {
-        console.error("Error al aplicar filtros:", error);
         const grid = document.getElementById('grid-catalogo');
         if (grid) {
             grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; margin-top:50px; color:var(--secondary);">No hay productos en esta categoría.</p>';
@@ -672,24 +557,20 @@ function toggleFavoritoModal(event) {
 
 function mostrarFavoritos() { 
     window.scrollTo(0, 0);
-
     filtrandoFavoritos = true; 
     vistaActual = 'catalogo'; 
     
     sessionStorage.setItem('tiendaVista', 'favoritos');
     document.documentElement.setAttribute('data-vista-activa', 'favoritos');
-
     document.getElementById('titulo-catalogo').innerText = `Mis Favoritos (${favoritos.length})`; 
     
     const listaFavs = productosCargados.filter(p => favoritos.includes(p.id)); 
-    
     const grid = document.getElementById('grid-catalogo');
     if (grid) {
         grid.innerHTML = generarGridHTML(listaFavs);
     }
     
     document.querySelectorAll('.cat-link').forEach(a => a.classList.remove('active'));
-    
     if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) {
         toggleMenuMobile();
     }
@@ -1005,11 +886,6 @@ function validarTelefono(input) {
 }
 
 async function finalizarCompra() { 
-    if (!emailVerificado) { 
-        document.getElementById('chk-mail').classList.add('input-invalido'); 
-        return mostrarToast("Debes verificar tu email antes de confirmar el pedido.", "error"); 
-    }
-
     let errorFormulario = false; 
     let mensajeError = "Faltan datos o son incorrectos. Revisá los recuadros rojos.";
 
