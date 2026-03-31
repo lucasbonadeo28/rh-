@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RH+ Jeans Store</title>
     
-    <link rel="icon" type="image/png" href="./rh2.png?v=45">
+    <link rel="icon" type="image/png" href="./rh2.png?v=48">
 
     <script>
         if ('scrollRestoration' in history) {
@@ -19,7 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
-    <link rel="stylesheet" href="./css/styles.css?v=45">
+    
+    <link rel="stylesheet" href="./css/styles.css?v=48">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -44,7 +45,7 @@
         <button class="btn-menu-mobile" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
         
         <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer;">
-            <img src="./rh.jpg?v=45" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+            <img src="./rh.jpg?v=48" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
@@ -352,17 +353,23 @@
             </div>
         </div>
         
-        <div class="checkout-box success-screen" id="pantalla-exito">
+        <div class="checkout-box success-screen" id="pantalla-exito" style="display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 20px;">
             <div style="background: #eafaf1; color: var(--success); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 20px;"><i class="fas fa-check"></i></div>
             
             <h2 style="color:var(--primary); font-size: 2rem; margin-bottom: 10px; font-weight: 800;">¡Muchas gracias por su compra!</h2>
             <p id="msg-exito-p" style="font-size: 1rem; color: #555; margin-bottom: 35px; max-width: 400px; line-height: 1.5;">Para proseguir con el pago, por favor contáctenos por WhatsApp.</p>
             
-            <a id="btn-wsp-exito" href="https://wa.me/5493426286435" target="_blank" class="btn-agregar-derecha" style="width:auto; padding: 15px 40px; margin-bottom: 15px; text-decoration: none; background: #25d366;"><i class="fab fa-whatsapp"></i> Hablanos por WhatsApp</a>
-            <button class="btn-secundario" style="width:auto; padding: 15px 40px;" onclick="location.reload()">Volver a la Tienda</button>
+            <div style="display: flex; flex-direction: column; gap: 15px; width: 100%; align-items: center;">
+                <a id="btn-wsp-exito" href="#" target="_blank" style="background: #25d366; color: var(--primary); border: 2px solid #25d366; padding: 16px 20px; border-radius: 50px; cursor: pointer; font-weight: 800; font-size: 0.95rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); width: 100%; max-width: 350px;">
+                    <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> Hablanos por WhatsApp
+                </a>
+                <button onclick="location.reload()" style="background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 16px 20px; border-radius: 50px; cursor: pointer; font-weight: 800; font-size: 0.95rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; justify-content: center; width: 100%; max-width: 350px;">
+                    Volver a la Tienda
+                </button>
+            </div>
         </div>
     </div>
 
-    <script src="./js/main.js?v=45"></script>
+    <script src="./js/main.js?v=48"></script>
 </body>
 </html>
