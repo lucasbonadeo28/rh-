@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RH+ Jeans Store</title>
     
-    <link rel="icon" type="image/png" href="./rh2.png?v=36">
+    <link rel="icon" type="image/png" href="./rh2.png?v=37">
 
     <script>
         if ('scrollRestoration' in history) {
@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="./css/styles.css?v=36">
+    <link rel="stylesheet" href="./css/styles.css?v=37">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -39,7 +39,7 @@
         <button class="btn-menu-mobile" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
         
         <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer;">
-            <img src="./rh.jpg?v=36" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+            <img src="./rh.jpg?v=37" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
@@ -106,8 +106,11 @@
                             </div>
                             <div class="custom-options">
                                 <div class="custom-option selected" data-value="default">Más vendidos</div>
+                                <div class="custom-option" data-value="nuevo">Más nuevos</div>
                                 <div class="custom-option" data-value="menor">Precio: menor a mayor</div>
                                 <div class="custom-option" data-value="mayor">Precio: mayor a menor</div>
+                                <div class="custom-option" data-value="a-z">Alfabético: A - Z</div>
+                                <div class="custom-option" data-value="z-a">Alfabético: Z - A</div>
                             </div>
                         </div>
                     </div>
@@ -125,6 +128,18 @@
                             <li><a onclick="cambiarCategoriaMobile('Pantalones')" class="cat-link">Pantalones</a></li>
                             <li><a onclick="cambiarCategoriaMobile('Buzos')" class="cat-link">Buzos</a></li>
                             <li><a onclick="cambiarCategoriaMobile('Accesorios')" class="cat-link">Accesorios</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="filter-group filtros-extra">
+                        <h5>Talles</h5>
+                        <ul class="filter-checkbox-list">
+                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="S"> S</label></li>
+                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="M"> M</label></li>
+                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="L"> L</label></li>
+                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="XL"> XL</label></li>
+                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="XXL"> XXL</label></li>
+                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="ÚNICO"> Talle Único</label></li>
                         </ul>
                     </div>
                 </aside>
@@ -151,6 +166,18 @@
                     <button class="filter-pill" onclick="cambiarCategoriaMobile('Buzos')">BUZOS</button>
                     <button class="filter-pill" onclick="cambiarCategoriaMobile('Accesorios')">ACCESORIOS</button>
                 </div>
+            </div>
+
+            <div class="mobile-filter-group">
+                <h4>Talles</h4>
+                <ul class="mobile-checkbox-list">
+                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="S"> S</label></li>
+                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="M"> M</label></li>
+                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="L"> L</label></li>
+                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="XL"> XL</label></li>
+                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="XXL"> XXL</label></li>
+                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="ÚNICO"> Talle Único</label></li>
+                </ul>
             </div>
         </div>
     </div>
@@ -336,6 +363,6 @@
         </div>
     </div>
 
-    <script src="./js/main.js?v=36"></script>
+    <script src="./js/main.js?v=37"></script>
 </body>
 </html>
