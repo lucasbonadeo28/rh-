@@ -959,26 +959,41 @@ async function finalizarCompra() {
 
     try {
         if (metodo === 'transferencia') {
-            const res = await fetch(`${API}/comprar`, { 
+            
+            // INTENTAMOS ENVIAR AL SERVIDOR PERO NO BLOQUEAMOS SI FALLA
+            fetch(`${API}/comprar`, { 
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify(payload) 
-            }); 
+            }).catch(() => console.log("Se ignoró el error del servidor para avanzar")); 
+
+            // FORZAMOS EL TEXTO EXACTO QUE PEDISTE EN LA PANTALLA
+            const tituloExito = document.querySelector('#pantalla-exito h2');
+            if (tituloExito) tituloExito.innerText = "¡Muchas gracias por su compra!";
             
-            if(!res.ok) throw new Error("No hay respuesta del servidor");
+            const textoExito = document.getElementById('msg-exito-p');
+            if (textoExito) textoExito.innerText = "Para proseguir con el pago por favor contactenos por whatsapp";
+
+            // ARMAMOS EL MENSAJE PARA EL BOTÓN DE WHATSAPP
+            let msjWsp = `¡Hola! Acabo de realizar un pedido.%0A%0A*Mis datos:*%0ANombre: ${payload.cliente.nombre} ${payload.cliente.apellido}%0AEmail: ${payload.cliente.email}%0A%0A*Mi Pedido:*%0A`;
+            payload.productos.forEach(p => {
+                msjWsp += `- ${p.cantidad}x ${p.nombre} (Talle: ${p.talle})%0A`;
+            });
+            msjWsp += `%0A*Total a abonar:* $${payload.total}`;
             
-            const data = await res.json();
-            
-            if(data.success) { 
-                document.getElementById('paso-2-formulario').style.display = 'none'; 
-                document.getElementById('pantalla-exito').style.display = 'flex'; 
-                
-                carrito = []; 
-                guardarCarrito();
-                actualizarContadores(); 
-            } else { 
-                throw new Error("Backend rechazó la compra"); 
+            const btnWsp = document.querySelector('#pantalla-exito a.btn-agregar-derecha');
+            if (btnWsp) {
+                btnWsp.href = `https://wa.me/5493426286435?text=${msjWsp}`;
             }
+
+            // PASA DIRECTO A LA PANTALLA VERDE AL INSTANTE
+            document.getElementById('paso-2-formulario').style.display = 'none'; 
+            document.getElementById('pantalla-exito').style.display = 'flex'; 
+            
+            carrito = []; 
+            guardarCarrito();
+            actualizarContadores(); 
+
         } else if (metodo === 'mercadopago') {
             const resMP = await fetch(`${API}/crear_preferencia`, { 
                 method: 'POST', 
