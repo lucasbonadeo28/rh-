@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RH+ Jeans Store</title>
     
-    <link rel="icon" type="image/png" href="./rh2.png?v=37">
+    <link rel="icon" type="image/png" href="./rh2.png?v=42">
 
     <script>
         if ('scrollRestoration' in history) {
@@ -19,8 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
-    
-    <link rel="stylesheet" href="./css/styles.css?v=37">
+    <link rel="stylesheet" href="./css/styles.css?v=42">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -39,7 +38,7 @@
         <button class="btn-menu-mobile" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
         
         <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer;">
-            <img src="./rh.jpg?v=37" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+            <img src="./rh.jpg?v=42" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
@@ -255,13 +254,15 @@
                 </p>
                 <p>
                     <i class="fas fa-map-marker-alt"></i> 
-                    <span class="contact-link">San Martín 2228, Santa Fe</span>
+                    <a href="https://www.google.com/maps/search/?api=1&query=San+Martin+2228+Santa+Fe" target="_blank" class="contact-link">San Martín 2228, Santa Fe</a>
                 </p>
                 
-                <div style="background-color: #00A0D8; padding: 6px; width: 55px; border-radius: 4px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: Arial, sans-serif; margin-top: 15px; user-select: none;">
-                    <div style="background: white; width: 100%; padding: 4px 0; display: flex; justify-content: center; align-items: center; border-radius: 2px;"><i class="fas fa-qrcode" style="color: #111; font-size: 28px;"></i></div>
-                    <span style="font-size: 7px; font-weight: bold; margin-top: 4px; text-align: center; line-height: 1.1; letter-spacing: 0.5px;">DATA<br>FISCAL</span>
-                </div>
+                <a href="https://auth.afip.gob.ar/contribuyente_/login.xhtml?action=SYSTEM&system=denuncias" target="_blank" style="text-decoration: none;">
+                    <div style="background-color: #00A0D8; padding: 6px; width: 55px; border-radius: 4px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: Arial, sans-serif; margin-top: 15px; user-select: none; cursor: pointer;">
+                        <div style="background: white; width: 100%; padding: 4px 0; display: flex; justify-content: center; align-items: center; border-radius: 2px;"><i class="fas fa-qrcode" style="color: #111; font-size: 28px;"></i></div>
+                        <span style="font-size: 7px; font-weight: bold; margin-top: 4px; text-align: center; line-height: 1.1; letter-spacing: 0.5px;">DATA<br>FISCAL</span>
+                    </div>
+                </a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -300,18 +301,7 @@
                 
                 <div class="form-group">
                     <label>Email</label>
-                    <div style="display:flex; gap:10px;">
-                        <input type="email" id="chk-mail" placeholder="ejemplo@correo.com" style="flex:1;" oninput="this.classList.remove('input-invalido')" onblur="enviarCodigoEmailAutomatico()">
-                    </div>
-                    
-                    <div id="box-codigo" class="verificacion-box">
-                        <label style="font-size: 0.75rem; margin-bottom: 0;">Ingresá el código de 6 dígitos que te enviamos:</label>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="chk-codigo-mail" maxlength="6" style="flex:2;" placeholder="123456" oninput="validarNumeros(this)">
-                            <button type="button" id="btn-confirmar-codigo" class="btn-agregar-derecha" style="flex:1; padding:10px; font-size:0.75rem; border-radius: var(--radius-sm);" onclick="validarCodigoEmail()">Confirmar</button>
-                        </div>
-                    </div>
-                    <small id="txt-mail-verificado" style="color: var(--success); font-weight: bold; display:none; margin-top:8px; font-size:0.85rem;"><i class="fas fa-check-circle"></i> Email verificado correctamente</small>
+                    <input type="email" id="chk-mail" placeholder="ejemplo@correo.com" oninput="this.classList.remove('input-invalido')">
                 </div>
 
                 <div class="form-group"><label>Teléfono</label><input type="text" id="chk-tel" value="+54" maxlength="13" oninput="validarTelefono(this)"></div>
@@ -363,6 +353,6 @@
         </div>
     </div>
 
-    <script src="./js/main.js?v=37"></script>
+    <script src="./js/main.js?v=42"></script>
 </body>
 </html>
