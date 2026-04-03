@@ -467,3 +467,20 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor de RH+ Jeans Store corriendo en el puerto ${PORT}`);
 });
+
+// ==========================================
+// RUTA DE LOGIN DEL ADMINISTRADOR
+// ==========================================
+app.post('/api/admin/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    // ACÁ DEFINÍS TU USUARIO Y CONTRASEÑA PARA ENTRAR
+    const ADMIN_EMAIL = 'admin@tienda.com';
+    const ADMIN_PASS = 'lucas123'; 
+
+    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
+        res.json({ success: true, message: 'Ingreso exitoso' });
+    } else {
+        res.status(401).json({ success: false, message: 'Usuario o contraseña incorrectos' });
+    }
+});
