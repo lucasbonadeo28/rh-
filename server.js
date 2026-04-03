@@ -142,7 +142,8 @@ app.post('/api/admin/login', (req, res) => {
     const { email, password } = req.body;
     
     const ADMIN_EMAIL = 'admin@tienda.com';
-    const ADMIN_PASS = 'lucas123'; 
+    // AQUÍ ESTÁ LA CORRECCIÓN DE LA CONTRASEÑA
+    const ADMIN_PASS = 'admin123'; 
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
         res.json({ success: true, message: 'Ingreso exitoso' });
