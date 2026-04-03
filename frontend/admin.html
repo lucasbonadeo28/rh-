@@ -12,231 +12,281 @@
     </script>
 
     <link rel="stylesheet" href="css/admin.css?v=1">
+
+    <style>
+        .login-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: #f4f7f6; display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center;
+        }
+        .login-box h2 { color: #111; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; font-family: 'Montserrat', sans-serif;}
+        .login-error { color: #e74c3c; font-size: 0.9rem; margin-bottom: 20px; display: none; font-weight: 600; font-family: 'Montserrat', sans-serif;}
+        .login-input-group { margin-bottom: 20px; text-align: left; position: relative; }
+        .login-input-group input {
+            width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px;
+            font-size: 1rem; font-family: 'Montserrat', sans-serif; outline: none; box-sizing: border-box;
+        }
+        .login-input-group input:focus { border-color: #111; }
+        .toggle-pass {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: #888; font-size: 1.2rem; transition: 0.2s;
+        }
+        .toggle-pass:hover { color: #111; }
+        .btn-login {
+            background: #111; color: white; border: none; padding: 15px; width: 100%;
+            border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .btn-login:hover { background: #333; }
+    </style>
 </head>
 <body>
-    <nav class="admin-nav">
-        <h2><i class="fas fa-cog"></i> PANEL ADMIN</h2>
-        <div class="admin-tabs">
-            <a class="tab-link" onclick="verTab('tab-pedidos')">Pedidos</a>
-            <a class="tab-link" onclick="verTab('tab-inventario')">Inventario</a>
-            <a class="tab-link" onclick="verTab('tab-banners')">Banners</a>
-            <a class="tab-link" onclick="verTab('tab-cupones')">Cupones</a>
-            <a class="tab-link" onclick="verTab('tab-historial')">Estadísticas Mensuales</a>
-        </div>
-        <div>
-            <a onclick="cerrarSesion()" style="color: white; cursor: pointer; text-decoration: none;"><i class="fas fa-sign-out-alt"></i> Salir</a>
-        </div>
-    </nav>
 
-    <div class="container">
-        <div id="tab-pedidos" class="tab-content">
-            <div class="admin-header-row">
-                <h2>Últimos Pedidos Realizados</h2>
-            </div>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>N° Venta</th>
-                            <th>Fecha</th>
-                            <th>Cliente y Contacto</th>
-                            <th>Pago</th>
-                            <th>Estado</th>
-                            <th>Detalle</th>
-                            <th>Total</th>
-                            <th style="text-align: center;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body-pedidos"></tbody>
-                </table>
-            </div>
-            <div class="paginacion-container">
-                <button id="pagi-anterior-pedidos" class="btn-pagi" onclick="paginaAnteriorPedidos()">← Anterior</button>
-                <span id="pagi-info-pedidos" style="color: #666;">Página 1</span>
-                <button id="pagi-siguiente-pedidos" class="btn-pagi" onclick="paginaSiguientePedidos()">Siguiente →</button>
-            </div>
-        </div>
-
-        <div id="tab-inventario" class="tab-content">
-            <div class="admin-header-row">
-                <h2>Cargar Nueva Prenda</h2>
-            </div>
-            <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
-                <div class="form-row-flex" style="display:flex; gap:15px; width:100%;">
-                    <input type="text" id="add-nombre" placeholder="Nombre (Ej: Jean Recto...)" style="flex: 2;" oninput="this.classList.remove('input-error'); validarLetras(this)">
-                    <select id="add-categoria" style="flex: 1;" onchange="this.classList.remove('input-error');">
-                        <option value="" disabled selected>Categoría...</option>
-                        <option value="Remeras">Remeras</option>
-                        <option value="Pantalones">Pantalones</option>
-                        <option value="Buzos">Buzos</option>
-                        <option value="Accesorios">Accesorios</option>
-                    </select>
-                    <input type="text" id="add-precio-tarj" placeholder="Precio Tarjeta ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
-                    <input type="text" id="add-precio-efvo" placeholder="Precio Transf. ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
+    <div id="login-wrapper" class="login-wrapper">
+        <div class="login-box">
+            <h2>Ingreso Admin</h2>
+            <div id="login-error" class="login-error">Error de conexión. ¿Está prendido el servidor?</div>
+            
+            <form id="form-login">
+                <div class="login-input-group">
+                    <input type="email" id="login-email" placeholder="admin@tienda.com" required>
                 </div>
-                <div class="form-row-flex" style="display:flex; gap:15px; width:100%; align-items: flex-start;">
-                    <input type="text" id="add-descripcion" placeholder="Breve descripción (solo letras)..." style="flex: 2;" oninput="this.classList.remove('input-error'); validarLetras(this)">
-                    
-                    <div style="flex: 2; display:flex; flex-direction:column; gap:8px; background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed #ccc;">
-                        <label style="font-size:0.9rem; font-weight:600; color:#555; cursor: pointer;">
-                            <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()"> Es Talle Único o Accesorio
-                        </label>
-                        <input type="text" id="add-talles" placeholder="Talles (Ej: S:10, M:5 o Jeans: 38:5...)" style="width:100%;" oninput="this.classList.remove('input-error');">
-                        <input type="text" id="add-stock-unico" placeholder="Stock Total Disponible" style="width:100%; display:none;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
-                    </div>
-                    
-                    <div style="flex: 1.5;">
-                        <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Foto del producto:</label>
-                        <label for="add-img" class="custom-file-upload" id="label-add-img">
-                            <i class="fas fa-camera"></i> <span>Abrir Galería</span>
-                        </label>
-                        <input type="file" id="add-img" accept="image/*" style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
-                    </div>
-                    
-                    <button class="btn-agregar-derecha" id="btn-crear-producto" style="flex: 1; height: 50px;" onclick="crearProducto()">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
+                <div class="login-input-group">
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                    <i class="fas fa-eye toggle-pass" id="toggle-eye" onclick="togglePassword()"></i>
                 </div>
-            </div>
-            
-            <div class="admin-header-row" style="margin-top: 50px;">
-                <h2>Inventario</h2>
-            </div>
-            
-            <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid #ccc;" onkeyup="filtrarInventario()" oninput="validarLetras(this)">
-            
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Foto</th>
-                            <th>Producto</th>
-                            <th>Efectivo ($)</th>
-                            <th>Tarjeta ($)</th>
-                            <th>Talles y Stock Real</th>
-                            <th>Borrar</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body-inventario"></tbody>
-                </table>
-            </div>
-            
-            <div class="paginacion-container">
-                <button id="pagi-anterior" class="btn-pagi" onclick="paginaAnterior()">← Anterior</button>
-                <span id="pagi-info" style="color: #666;">Página 1</span>
-                <button id="pagi-siguiente" class="btn-pagi" onclick="paginaSiguiente()">Siguiente →</button>
-            </div>
-        </div>
-
-        <div id="tab-banners" class="tab-content">
-            <div class="admin-header-row">
-                <h2>Imágenes del Carrusel Principal</h2>
-            </div>
-
-            <div style="background: #eafaf1; border-left: 4px solid var(--success); padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                <p style="margin: 0; font-size: 0.9rem; color: #333;"><strong><i class="fas fa-info-circle"></i> Regla de la tienda:</strong> El carrusel muestra exactamente <strong>4 imágenes</strong>. Si agregás una quinta, el sistema borrará automáticamente la foto más vieja.</p>
-            </div>
-            
-            <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
-                <form class="form-row-flex" id="form-banner" onsubmit="agregarBanner(event)" style="display:flex; gap:30px; width:100%; align-items: flex-end;">
-                    
-                    <div style="flex: 3; display: flex; flex-direction: column;">
-                        <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px;">Foto del carrusel:</label>
-                        <label for="add-banner-file" class="custom-file-upload" id="label-add-banner-file">
-                            <i class="fas fa-camera"></i> <span>Abrir Galería</span>
-                        </label>
-                        <input type="file" id="add-banner-file" accept="image/*" style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-banner-file', 'Abrir Galería')" required>
-                    </div>
-                    
-                    <div style="flex: 1; display: flex;">
-                        <button type="submit" class="btn-agregar-derecha" id="btn-submit-banner" style="height: 48px; margin: 0; width: 100%;">
-                            <i class="fas fa-plus"></i> Añadir Foto
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">ID</th>
-                            <th style="width: 200px;">Vista Previa</th>
-                            <th>Info de la foto</th>
-                            <th style="width: 100px; text-align: center;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body-banners">
-                        <tr><td colspan="4" style="text-align:center; padding:30px;">Cargando imágenes...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="tab-cupones" class="tab-content">
-            <div class="admin-header-row">
-                <h2>Cupones de Descuento</h2>
-            </div>
-            
-            <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
-                <form class="form-row-flex" onsubmit="agregarCupon(event)" style="display:flex; gap:15px; width:100%; align-items: flex-end;">
-                    <div style="flex: 2;">
-                        <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Código del Cupón</label>
-                        <input type="text" id="add-cupon-codigo" placeholder="Ej: VERANO20" style="width:100%; text-transform: uppercase;" required>
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">% Descuento</label>
-                        <input type="number" id="add-cupon-porcentaje" placeholder="Ej: 15" style="width:100%;" min="1" max="100" required>
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Cant. de Usos</label>
-                        <input type="number" id="add-cupon-usos" placeholder="Ej: 50" style="width:100%;" min="1" required>
-                    </div>
-                    
-                    <button type="submit" class="btn-agregar-derecha" id="btn-submit-cupon" style="flex: 1; height: 46px; margin: 0;">
-                        <i class="fas fa-plus"></i> Crear
-                    </button>
-                </form>
-            </div>
-
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Descuento</th>
-                            <th>Usos Restantes</th>
-                            <th style="text-align: center;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body-cupones">
-                        <tr><td colspan="4" style="text-align:center; padding:30px;">Cargando cupones...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="tab-historial" class="tab-content">
-            <div class="admin-header-row">
-                <h2>Resumen Mensual de Ventas</h2>
-                <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0; background: #27ae60;" onclick="descargarExcel()"><i class="fas fa-file-excel"></i> Exportar Planilla Mensual</button>
-            </div>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Año y Mes</th>
-                            <th>Ventas Totales</th>
-                            <th>Total Recaudado</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body-meses"></tbody>
-                </table>
-            </div>
+                <button type="submit" class="btn-login" id="btn-submit-login">Ingresar</button>
+            </form>
         </div>
     </div>
 
-    <div id="custom-alert-modal" class="custom-alert-overlay" onclick="cerrarCustomAlert()">
+    <div id="panel-dashboard" style="display: none;">
+        <nav class="admin-nav">
+            <h2><i class="fas fa-cog"></i> PANEL ADMIN</h2>
+            <div class="admin-tabs">
+                <a class="tab-link" onclick="verTab('tab-pedidos')">Pedidos</a>
+                <a class="tab-link" onclick="verTab('tab-inventario')">Inventario</a>
+                <a class="tab-link" onclick="verTab('tab-banners')">Banners</a>
+                <a class="tab-link" onclick="verTab('tab-cupones')">Cupones</a>
+                <a class="tab-link" onclick="verTab('tab-historial')">Estadísticas Mensuales</a>
+            </div>
+            <div>
+                <a onclick="cerrarSesionLocal()" style="color: white; cursor: pointer; text-decoration: none;"><i class="fas fa-sign-out-alt"></i> Salir</a>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div id="tab-pedidos" class="tab-content">
+                <div class="admin-header-row">
+                    <h2>Últimos Pedidos Realizados</h2>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>N° Venta</th>
+                                <th>Fecha</th>
+                                <th>Cliente y Contacto</th>
+                                <th>Pago</th>
+                                <th>Estado</th>
+                                <th>Detalle</th>
+                                <th>Total</th>
+                                <th style="text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-pedidos"></tbody>
+                    </table>
+                </div>
+                <div class="paginacion-container">
+                    <button id="pagi-anterior-pedidos" class="btn-pagi" onclick="paginaAnteriorPedidos()">← Anterior</button>
+                    <span id="pagi-info-pedidos" style="color: #666;">Página 1</span>
+                    <button id="pagi-siguiente-pedidos" class="btn-pagi" onclick="paginaSiguientePedidos()">Siguiente →</button>
+                </div>
+            </div>
+
+            <div id="tab-inventario" class="tab-content">
+                <div class="admin-header-row">
+                    <h2>Cargar Nueva Prenda</h2>
+                </div>
+                <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
+                    <div class="form-row-flex" style="display:flex; gap:15px; width:100%;">
+                        <input type="text" id="add-nombre" placeholder="Nombre (Ej: Jean Recto...)" style="flex: 2;" oninput="this.classList.remove('input-error'); validarLetras(this)">
+                        <select id="add-categoria" style="flex: 1;" onchange="this.classList.remove('input-error');">
+                            <option value="" disabled selected>Categoría...</option>
+                            <option value="Remeras">Remeras</option>
+                            <option value="Pantalones">Pantalones</option>
+                            <option value="Buzos">Buzos</option>
+                            <option value="Accesorios">Accesorios</option>
+                        </select>
+                        <input type="text" id="add-precio-tarj" placeholder="Precio Tarjeta ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
+                        <input type="text" id="add-precio-efvo" placeholder="Precio Transf. ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
+                    </div>
+                    <div class="form-row-flex" style="display:flex; gap:15px; width:100%; align-items: flex-start;">
+                        <input type="text" id="add-descripcion" placeholder="Breve descripción (solo letras)..." style="flex: 2;" oninput="this.classList.remove('input-error'); validarLetras(this)">
+                        
+                        <div style="flex: 2; display:flex; flex-direction:column; gap:8px; background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed #ccc;">
+                            <label style="font-size:0.9rem; font-weight:600; color:#555; cursor: pointer;">
+                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()"> Es Talle Único o Accesorio
+                            </label>
+                            <input type="text" id="add-talles" placeholder="Talles (Ej: S:10, M:5 o Jeans: 38:5...)" style="width:100%;" oninput="this.classList.remove('input-error');">
+                            <input type="text" id="add-stock-unico" placeholder="Stock Total Disponible" style="width:100%; display:none;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
+                        </div>
+                        
+                        <div style="flex: 1.5;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Foto del producto:</label>
+                            <label for="add-img" class="custom-file-upload" id="label-add-img">
+                                <i class="fas fa-camera"></i> <span>Abrir Galería</span>
+                            </label>
+                            <input type="file" id="add-img" accept="image/*" style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
+                        </div>
+                        
+                        <button class="btn-agregar-derecha" id="btn-crear-producto" style="flex: 1; height: 50px;" onclick="crearProducto()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-header-row" style="margin-top: 50px;">
+                    <h2>Inventario</h2>
+                </div>
+                
+                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid #ccc;" onkeyup="filtrarInventario()" oninput="validarLetras(this)">
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Foto</th>
+                                <th>Producto</th>
+                                <th>Efectivo ($)</th>
+                                <th>Tarjeta ($)</th>
+                                <th>Talles y Stock Real</th>
+                                <th>Borrar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-inventario"></tbody>
+                    </table>
+                </div>
+                
+                <div class="paginacion-container">
+                    <button id="pagi-anterior" class="btn-pagi" onclick="paginaAnterior()">← Anterior</button>
+                    <span id="pagi-info" style="color: #666;">Página 1</span>
+                    <button id="pagi-siguiente" class="btn-pagi" onclick="paginaSiguiente()">Siguiente →</button>
+                </div>
+            </div>
+
+            <div id="tab-banners" class="tab-content">
+                <div class="admin-header-row">
+                    <h2>Imágenes del Carrusel Principal</h2>
+                </div>
+
+                <div style="background: #eafaf1; border-left: 4px solid var(--success); padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #333;"><strong><i class="fas fa-info-circle"></i> Regla de la tienda:</strong> El carrusel muestra exactamente <strong>4 imágenes</strong>. Si agregás una quinta, el sistema borrará automáticamente la foto más vieja.</p>
+                </div>
+                
+                <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
+                    <form class="form-row-flex" id="form-banner" onsubmit="agregarBanner(event)" style="display:flex; gap:30px; width:100%; align-items: flex-end;">
+                        
+                        <div style="flex: 3; display: flex; flex-direction: column;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px;">Foto del carrusel:</label>
+                            <label for="add-banner-file" class="custom-file-upload" id="label-add-banner-file">
+                                <i class="fas fa-camera"></i> <span>Abrir Galería</span>
+                            </label>
+                            <input type="file" id="add-banner-file" accept="image/*" style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-banner-file', 'Abrir Galería')" required>
+                        </div>
+                        
+                        <div style="flex: 1; display: flex;">
+                            <button type="submit" class="btn-agregar-derecha" id="btn-submit-banner" style="height: 48px; margin: 0; width: 100%;">
+                                <i class="fas fa-plus"></i> Añadir Foto
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">ID</th>
+                                <th style="width: 200px;">Vista Previa</th>
+                                <th>Info de la foto</th>
+                                <th style="width: 100px; text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-banners">
+                            <tr><td colspan="4" style="text-align:center; padding:30px;">Cargando imágenes...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-cupones" class="tab-content">
+                <div class="admin-header-row">
+                    <h2>Cupones de Descuento</h2>
+                </div>
+                
+                <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
+                    <form class="form-row-flex" onsubmit="agregarCupon(event)" style="display:flex; gap:15px; width:100%; align-items: flex-end;">
+                        <div style="flex: 2;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Código del Cupón</label>
+                            <input type="text" id="add-cupon-codigo" placeholder="Ej: VERANO20" style="width:100%; text-transform: uppercase;" required>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">% Descuento</label>
+                            <input type="number" id="add-cupon-porcentaje" placeholder="Ej: 15" style="width:100%;" min="1" max="100" required>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Cant. de Usos</label>
+                            <input type="number" id="add-cupon-usos" placeholder="Ej: 50" style="width:100%;" min="1" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-agregar-derecha" id="btn-submit-cupon" style="flex: 1; height: 46px; margin: 0;">
+                            <i class="fas fa-plus"></i> Crear
+                        </button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descuento</th>
+                                <th>Usos Restantes</th>
+                                <th style="text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-cupones">
+                            <tr><td colspan="4" style="text-align:center; padding:30px;">Cargando cupones...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-historial" class="tab-content">
+                <div class="admin-header-row">
+                    <h2>Resumen Mensual de Ventas</h2>
+                    <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0; background: #27ae60;" onclick="descargarExcel()"><i class="fas fa-file-excel"></i> Exportar Planilla Mensual</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Año y Mes</th>
+                                <th>Ventas Totales</th>
+                                <th>Total Recaudado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-meses"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div> <div id="custom-alert-modal" class="custom-alert-overlay" onclick="cerrarCustomAlert()">
         <div class="custom-alert-box" onclick="event.stopPropagation()">
             <div id="custom-alert-icon" class="custom-alert-icon"></div>
             <div id="custom-alert-text" class="custom-alert-text">Mensaje aquí</div>
@@ -254,6 +304,82 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Función para mostrar/ocultar la contraseña
+        function togglePassword() {
+            const passInput = document.getElementById('login-password');
+            const eyeIcon = document.getElementById('toggle-eye');
+            
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Lógica de conexión con el servidor
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorMsg = document.getElementById('login-error');
+            const btn = document.getElementById('btn-submit-login');
+
+            btn.innerText = 'Verificando...';
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                // Llama a la ruta del servidor
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await res.json();
+
+                if (data.success) {
+                    sessionStorage.setItem('adminLogueado', 'true');
+                    // OCULTA EL LOGIN Y MUESTRA TU PANEL
+                    document.getElementById('login-wrapper').style.display = 'none';
+                    document.getElementById('panel-dashboard').style.display = 'block';
+                } else {
+                    errorMsg.innerText = data.message || 'Credenciales incorrectas';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.innerText = 'Error de conexión. ¿Está prendido el servidor?';
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.innerText = 'Ingresar';
+                btn.disabled = false;
+            }
+        });
+
+        // Revisar si ya estaba logueado al recargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('adminLogueado') === 'true') {
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('panel-dashboard').style.display = 'block';
+            }
+        });
+
+        // Botón salir
+        function cerrarSesionLocal() {
+            sessionStorage.removeItem('adminLogueado');
+            document.getElementById('login-wrapper').style.display = 'flex';
+            document.getElementById('panel-dashboard').style.display = 'none';
+            document.getElementById('login-password').value = '';
+            // Si tenías una función original de cerrar sesión, descomentá la línea de abajo:
+            // if(typeof cerrarSesion === 'function') cerrarSesion();
+        }
+    </script>
 
     <script src="js/admin.js?v=1"></script>
 </body>
