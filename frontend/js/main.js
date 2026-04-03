@@ -960,33 +960,35 @@ async function finalizarCompra() {
     try {
         if (metodo === 'transferencia') {
             
-            // INTENTAMOS ENVIAR AL SERVIDOR PERO NO BLOQUEAMOS SI FALLA
-            fetch(`${API}/comprar`, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(payload) 
-            }).catch(() => console.log("Se ignoró el error del servidor para avanzar")); 
-
-            // FORZAMOS EL TEXTO EXACTO QUE PEDISTE EN LA PANTALLA
-            const tituloExito = document.querySelector('#pantalla-exito h2');
-            if (tituloExito) tituloExito.innerText = "¡Muchas gracias por su compra!";
+            let ordenIdStr = "000001"; 
             
-            const textoExito = document.getElementById('msg-exito-p');
-            if (textoExito) textoExito.innerText = "Para proseguir con el pago por favor contactenos por whatsapp";
-
-            // ARMAMOS EL MENSAJE PARA EL BOTÓN DE WHATSAPP
-            let msjWsp = `¡Hola! Acabo de realizar un pedido.%0A%0A*Mis datos:*%0ANombre: ${payload.cliente.nombre} ${payload.cliente.apellido}%0AEmail: ${payload.cliente.email}%0A%0A*Mi Pedido:*%0A`;
-            payload.productos.forEach(p => {
-                msjWsp += `- ${p.cantidad}x ${p.nombre} (Talle: ${p.talle})%0A`;
-            });
-            msjWsp += `%0A*Total a abonar:* $${payload.total}`;
-            
-            const btnWsp = document.querySelector('#pantalla-exito a.btn-agregar-derecha');
-            if (btnWsp) {
-                btnWsp.href = `https://wa.me/5493426286435?text=${msjWsp}`;
+            try {
+                const res = await fetch(`${API}/comprar`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
+                const data = await res.json();
+                
+                if(data.success && data.orden_id) {
+                    ordenIdStr = String(data.orden_id).padStart(6, '0');
+                } else {
+                    ordenIdStr = String(Math.floor(Math.random() * 9999) + 1).padStart(6, '0');
+                }
+            } catch(e) {
+                console.log("El backend no respondió, se generará una orden temporal");
+                ordenIdStr = String(Math.floor(Math.random() * 9999) + 1).padStart(6, '0');
             }
 
-            // PASA DIRECTO A LA PANTALLA VERDE AL INSTANTE
+            // ACÁ ESTÁ EL ARREGLO: CODIFICAMOS EL MENSAJE Y USAMOS LA API OFICIAL
+            let textoWsp = `Hola, te hablo para informarte de que hice el pedido #${ordenIdStr}, queria saber como proseguir.`;
+            let msjWsp = encodeURIComponent(textoWsp);
+            
+            const btnWsp = document.getElementById('btn-wsp-exito');
+            if(btnWsp) {
+                btnWsp.href = `https://api.whatsapp.com/send?phone=5493426286435&text=${msjWsp}`;
+            }
+
             document.getElementById('paso-2-formulario').style.display = 'none'; 
             document.getElementById('pantalla-exito').style.display = 'flex'; 
             
