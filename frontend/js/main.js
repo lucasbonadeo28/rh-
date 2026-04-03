@@ -832,7 +832,7 @@ function calcularEnvio() {
     costoEnvio = (cp === '3000') ? 2500 : 6500; 
     const txt = document.getElementById('txt-costo-envio'); 
     txt.style.display = 'block'; 
-    txt.innerText = (cp === '3000') ? `Envío a Santa Fe Capital: $${costoEnvio}` : `Envío Nacional: $${costoEnvio}`; 
+    txt.innerText = (cp === '3000') ? `Envío a Santa Fe Capital: $${costoEnvio}` : `Envío por Correo Argentino: $${costoEnvio}`; 
     
     recalcularTotalPaso2(); 
     mostrarToast('Costo de envío actualizado', 'success'); 
@@ -931,7 +931,7 @@ async function finalizarCompra() {
     const totalFinal = document.getElementById('checkout-total-final').innerText; 
     const btn = document.getElementById('btn-pagar');
 
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...'; 
+    btn.innerHTML = '<i class="fas fa-spinner ruedita-girando"></i> PROCESANDO...'; 
     btn.disabled = true; 
     btn.style.opacity = '0.7';
 
@@ -980,7 +980,6 @@ async function finalizarCompra() {
                 ordenIdStr = String(Math.floor(Math.random() * 9999) + 1).padStart(6, '0');
             }
 
-            // ACÁ ESTÁ EL ARREGLO: CODIFICAMOS EL MENSAJE Y USAMOS LA API OFICIAL
             let textoWsp = `Hola, te hablo para informarte de que hice el pedido #${ordenIdStr}, queria saber como proseguir.`;
             let msjWsp = encodeURIComponent(textoWsp);
             
