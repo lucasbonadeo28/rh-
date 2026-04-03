@@ -3,8 +3,6 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
 const path = require('path');
-
-// IMPORTAMOS MERCADO PAGO
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 
 const app = express();
@@ -14,7 +12,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ==========================================
-// CONFIGURACIÓN DE MERCADO PAGO CON TU ACCESS TOKEN
+// CONFIGURACIÓN DE MERCADO PAGO
 // ==========================================
 const client = new MercadoPagoConfig({ accessToken: 'APP_USR-7652296623154597-040310-78d815d425ff8547f42b94ea091eb766-3310775921' });
 
@@ -120,13 +118,36 @@ inicializarBaseDeDatos();
 // ==========================================
 // 2. CONFIGURACIÓN DE NODEMAILER (GMAIL)
 // ==========================================
-const codigosVerificacion = {}; 
-
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'rhpositivostf@gmail.com', 
         pass: 'svoxehqvjxqaqicl'  
+    }
+});
+
+// ESTO NOS AVISA SI EL MAIL ESTÁ BIEN CONECTADO CUANDO PRENDE EL SERVIDOR
+transporter.verify(function(error, success) {
+  if (error) {
+    console.log("❌ Error en la configuración de mail de Google:", error);
+  } else {
+    console.log("🚀 Servidor listo para enviar correos de comprobantes.");
+  }
+});
+
+// ==========================================
+// RUTA DE LOGIN DEL ADMINISTRADOR
+// ==========================================
+app.post('/api/admin/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    const ADMIN_EMAIL = 'admin@tienda.com';
+    const ADMIN_PASS = 'lucas123'; 
+
+    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
+        res.json({ success: true, message: 'Ingreso exitoso' });
+    } else {
+        res.status(401).json({ success: false, message: 'Usuario o contraseña incorrectos' });
     }
 });
 
@@ -282,33 +303,8 @@ app.delete('/api/cupones/:id', async (req, res) => {
 });
 
 // ==========================================
-// 6. RUTAS DE CORREO Y COMPRA
+// 6. RUTAS DE COMPRA Y ENVÍO DE MAIL
 // ==========================================
-app.post('/api/enviar-codigo', async (req, res) => {
-    const { email } = req.body;
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString(); 
-    codigosVerificacion[email] = codigo;
-    try {
-        await transporter.sendMail({
-            from: '"RH+ Jeans Store" <rhpositivostf@gmail.com>', 
-            to: email,
-            subject: 'Tu código de verificación - RH+ Jeans Store',
-            html: `<h3>¡Hola!</h3><p>Tu código para finalizar la compra en <b>RH+ JEANS STORE</b> es:</p><h2 style="color:#563318; font-size: 24px; letter-spacing: 2px;">${codigo}</h2><p>Si no solicitaste este código, ignorá este correo.</p>`
-        });
-        res.json({ success: true });
-    } catch (error) { res.status(500).json({ success: false, message: 'No se pudo enviar el correo' }); }
-});
-
-app.post('/api/verificar-codigo', (req, res) => {
-    const { email, codigo } = req.body;
-    if (codigosVerificacion[email] && codigosVerificacion[email] === codigo) {
-        delete codigosVerificacion[email]; 
-        res.json({ success: true });
-    } else {
-        res.status(400).json({ success: false, message: 'Código incorrecto' });
-    }
-});
-
 app.post('/api/comprar', async (req, res) => {
     const { total, metodo_pago, costoEnvio, cliente, productos, cupon_usado } = req.body;
     
@@ -388,26 +384,30 @@ app.post('/api/comprar', async (req, res) => {
             </div>
         `;
 
-        try {
-            await transporter.sendMail({
-                from: '"RH+ Jeans Store" <rhpositivostf@gmail.com>', 
-                to: cliente.email, 
-                subject: `¡Gracias por tu compra! Comprobante de Orden #${ventaId}`,
-                html: plantillaReciboHTML
-            });
-        } catch (mailError) {
-            console.error("Error al enviar el recibo por mail:", mailError);
-        }
+        // ENVÍO DE MAIL CON REPORTE DE ERRORES EN CONSOLA
+        transporter.sendMail({
+            from: '"RH+ Jeans Store" <rhpositivostf@gmail.com>', 
+            to: cliente.email, 
+            subject: `¡Gracias por tu compra! Comprobante de Orden #${ventaId}`,
+            html: plantillaReciboHTML
+        }, (errorMail, info) => {
+            if (errorMail) {
+                console.error(`❌ Error al enviar el recibo por mail a ${cliente.email}:`, errorMail);
+            } else {
+                console.log(`📧 Mail enviado con éxito a ${cliente.email}:`, info.response);
+            }
+        });
 
         res.json({ success: true, message: 'Compra registrada con éxito', orden_id: ventaId });
     } catch (error) {
         await pool.query('ROLLBACK');
+        console.error("❌ Error interno al procesar la compra:", error);
         res.status(500).json({ success: false, message: 'Error interno al procesar la compra' });
     }
 });
 
 // ==========================================
-// NUEVA RUTA PARA COBRAR CON MERCADO PAGO
+// RUTA PARA COBRAR CON MERCADO PAGO
 // ==========================================
 app.post('/api/crear_preferencia', async (req, res) => {
     const { items, cliente, costoEnvio } = req.body;
@@ -441,7 +441,6 @@ app.post('/api/crear_preferencia', async (req, res) => {
                     email: cliente.email
                 },
                 back_urls: {
-                    // IMPORTANTE: Cuando tengas tu dominio web oficial (ej: www.rhjeans.com.ar), ponelo acá
                     success: "https://google.com", 
                     failure: "https://google.com",
                     pending: "https://google.com"
@@ -466,21 +465,4 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor de RH+ Jeans Store corriendo en el puerto ${PORT}`);
-});
-
-// ==========================================
-// RUTA DE LOGIN DEL ADMINISTRADOR
-// ==========================================
-app.post('/api/admin/login', (req, res) => {
-    const { email, password } = req.body;
-    
-    // ACÁ DEFINÍS TU USUARIO Y CONTRASEÑA PARA ENTRAR
-    const ADMIN_EMAIL = 'admin@tienda.com';
-    const ADMIN_PASS = 'lucas123'; 
-
-    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
-        res.json({ success: true, message: 'Ingreso exitoso' });
-    } else {
-        res.status(401).json({ success: false, message: 'Usuario o contraseña incorrectos' });
-    }
 });
