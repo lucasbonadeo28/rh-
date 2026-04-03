@@ -718,3 +718,84 @@ const API = '/api';
             localStorage.removeItem('tokenTienda'); 
             window.location.href = 'login.html'; 
         }
+
+        /* ==========================================
+   LÓGICA DEL LOGIN DEL ADMIN
+========================================== */
+
+function togglePassword() {
+    const passInput = document.getElementById('login-password');
+    const eyeIcon = document.getElementById('toggle-eye');
+    
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        passInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
+const formLogin = document.getElementById('form-login');
+if(formLogin) {
+    formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const errorMsg = document.getElementById('login-error');
+        const btn = document.getElementById('btn-submit-login');
+
+        btn.innerText = 'Verificando...';
+        btn.disabled = true;
+        errorMsg.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await res.json();
+
+            if (data.success) {
+                sessionStorage.setItem('adminLogueado', 'true');
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('panel-dashboard').style.display = 'block';
+            } else {
+                errorMsg.innerText = data.message || 'Credenciales incorrectas';
+                errorMsg.style.display = 'block';
+            }
+        } catch (error) {
+            errorMsg.innerText = 'Error de conexión. ¿Está prendido el servidor?';
+            errorMsg.style.display = 'block';
+        } finally {
+            btn.innerText = 'Ingresar';
+            btn.disabled = false;
+        }
+    });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('adminLogueado') === 'true') {
+        const loginWrapper = document.getElementById('login-wrapper');
+        const panelDashboard = document.getElementById('panel-dashboard');
+        if(loginWrapper) loginWrapper.style.display = 'none';
+        if(panelDashboard) panelDashboard.style.display = 'block';
+    }
+});
+
+function cerrarSesionLocal() {
+    sessionStorage.removeItem('adminLogueado');
+    const loginWrapper = document.getElementById('login-wrapper');
+    const panelDashboard = document.getElementById('panel-dashboard');
+    if(loginWrapper) loginWrapper.style.display = 'flex';
+    if(panelDashboard) panelDashboard.style.display = 'none';
+    
+    const passInput = document.getElementById('login-password');
+    if(passInput) passInput.value = '';
+    
+    if(typeof cerrarSesion === 'function') cerrarSesion();
+}
