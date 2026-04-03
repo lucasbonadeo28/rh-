@@ -4,11 +4,19 @@ const { Pool } = require('pg');
 const nodemailer = require('nodemailer');
 const path = require('path');
 
+// IMPORTAMOS MERCADO PAGO
+const { MercadoPagoConfig, Preference } = require('mercadopago');
+
 const app = express();
 app.use(cors());
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// ==========================================
+// CONFIGURACIÓN DE MERCADO PAGO CON TU ACCESS TOKEN
+// ==========================================
+const client = new MercadoPagoConfig({ accessToken: 'APP_USR-7652296623154597-040310-78d815d425ff8547f42b94ea091eb766-3310775921' });
 
 // ==========================================
 // 0. SERVIR LA PÁGINA WEB (EL FRONTEND)
@@ -398,9 +406,56 @@ app.post('/api/comprar', async (req, res) => {
     }
 });
 
+// ==========================================
+// NUEVA RUTA PARA COBRAR CON MERCADO PAGO
+// ==========================================
 app.post('/api/crear_preferencia', async (req, res) => {
     const { items, cliente, costoEnvio } = req.body;
-    res.json({ init_point: 'https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=ficticia-12345' });
+
+    try {
+        let itemsMP = items.map(producto => {
+            return {
+                title: `${producto.nombre} (Talle: ${producto.talle})`,
+                unit_price: Number(producto.precio_pagado),
+                quantity: Number(producto.cantidad),
+                currency_id: 'ARS'
+            };
+        });
+
+        if (costoEnvio > 0) {
+            itemsMP.push({
+                title: 'Costo de Envío',
+                unit_price: Number(costoEnvio),
+                quantity: 1,
+                currency_id: 'ARS'
+            });
+        }
+
+        const preference = new Preference(client);
+        const result = await preference.create({
+            body: {
+                items: itemsMP,
+                payer: {
+                    name: cliente.nombre,
+                    surname: cliente.apellido,
+                    email: cliente.email
+                },
+                back_urls: {
+                    // IMPORTANTE: Cuando tengas tu dominio web oficial (ej: www.rhjeans.com.ar), ponelo acá
+                    success: "https://google.com", 
+                    failure: "https://google.com",
+                    pending: "https://google.com"
+                },
+                auto_return: "approved"
+            }
+        });
+
+        res.json({ init_point: result.init_point });
+
+    } catch (error) {
+        console.error("Error al crear preferencia en MP:", error);
+        res.status(500).json({ error: "Fallo al crear el link de pago" });
+    }
 });
 
 // Para que cualquier ruta devuelva el index.html
