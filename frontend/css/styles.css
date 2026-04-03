@@ -82,6 +82,7 @@ html[data-vista-activa="favoritos"] .main-catalogo {
     overflow: hidden; 
     white-space: nowrap; 
     display: flex; 
+    width: 100%;
 }
 
 .marquee-content {
@@ -89,18 +90,17 @@ html[data-vista-activa="favoritos"] .main-catalogo {
     flex-shrink: 0;
     gap: 100px; 
     padding-right: 100px; 
-    animation: marqueeLoop 70s linear infinite; 
+    animation: marqueeLoop 40s linear infinite; 
 }
 
-/* Forzamos que las letras sean negras */
 .marquee-content span {
     color: var(--primary) !important;
     font-weight: 700;
 }
 
 @keyframes marqueeLoop {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); } 
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); } 
 }
 
 /* ======================================================= */
@@ -361,7 +361,7 @@ nav {
         
 .btn-ver-todos { 
     background: var(--brand-brown); 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     border: none; 
     padding: 18px 45px; 
     border-radius: var(--radius-lg); 
@@ -384,10 +384,10 @@ nav {
 /* === PRE-FOOTER (INSTAGRAM Y BENEFICIOS) =============== */
 /* ======================================================= */
 .pre-footer-banner { 
-    background-color: var(--white); /* FONDO BLANCO */
-    color: var(--primary); /* TEXTO NEGRO */
+    background-color: var(--white); 
+    color: var(--primary); 
     padding: 60px 20px; 
-    border-top: 1px solid var(--border); /* LÍNEA SUTIL ARRIBA */
+    border-top: 1px solid var(--border); 
     text-align: center; 
 }
 
@@ -398,7 +398,7 @@ nav {
     gap: 15px; 
     margin-bottom: 50px; 
     text-decoration: none; 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     transition: 0.3s; 
 }
 
@@ -408,7 +408,7 @@ nav {
 
 .pf-instagram i { 
     font-size: 2.8rem; 
-    color: var(--brand-brown); /* ÍCONO INSTAGRAM EN COLOR ARENA */
+    color: var(--brand-brown); 
 }
 
 .pf-ig-text { 
@@ -418,7 +418,7 @@ nav {
 .pf-ig-text span { 
     display: block; 
     font-size: 0.7rem; 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     font-weight: 600; 
     text-transform: uppercase; 
     letter-spacing: 1px; 
@@ -429,7 +429,7 @@ nav {
     display: block; 
     font-size: 1.4rem; 
     font-weight: 800; 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     letter-spacing: -0.5px; 
 }
 
@@ -461,13 +461,13 @@ nav {
     top: 10%; 
     height: 80%; 
     width: 1px; 
-    background-color: var(--primary); /* LÍNEA SEPARADORA NEGRA */
+    background-color: var(--primary); 
     opacity: 0.2;
 }
 
 .pf-benefit-icon { 
     font-size: 2.2rem; 
-    color: var(--brand-brown); /* ÍCONOS DE ENVÍO/TARJETAS EN COLOR ARENA */
+    color: var(--brand-brown); 
 }
 
 .pf-benefit-text { 
@@ -478,13 +478,13 @@ nav {
     display: block; 
     font-size: 0.95rem; 
     font-weight: 700; 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     margin-bottom: 3px; 
 }
 
 .pf-benefit-text span { 
     font-size: 0.85rem; 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     opacity: 0.8;
 }
 
@@ -912,7 +912,7 @@ nav {
 
 .btn-card-add { 
     background: var(--brand-brown); 
-    color: var(--primary); /* LETRA NEGRA */
+    color: var(--primary); 
     border: none; 
     width: 92%; 
     padding: 10px; 
@@ -936,8 +936,8 @@ nav {
 /* === FOOTER ============================================ */
 /* ======================================================= */
 .site-footer { 
-    background-color: var(--brand-brown); /* FONDO ARENA */
-    color: var(--primary); /* TEXTO NEGRO */
+    background-color: var(--brand-brown); 
+    color: var(--primary); 
     padding: 80px 40px 30px; 
     border-top: none;
 }
@@ -958,7 +958,7 @@ nav {
     font-weight: 800; 
     text-transform: uppercase; 
     letter-spacing: 1px; 
-    color: var(--primary); /* TÍTULOS NEGROS */
+    color: var(--primary); 
     font-family: 'Montserrat', sans-serif; 
 }
 
@@ -973,7 +973,7 @@ nav {
 }
 
 .footer-col ul li a { 
-    color: var(--primary); /* ENLACES NEGROS */
+    color: var(--primary); 
     text-decoration: none; 
     font-size: 0.9rem; 
     font-weight: 500; 
@@ -999,8 +999,8 @@ nav {
     width: 40px; 
     height: 40px; 
     background: transparent; 
-    border: 1px solid var(--primary); /* BORDES NEGROS */
-    color: var(--primary); /* ÍCONOS NEGROS */
+    border: 1px solid var(--primary); 
+    color: var(--primary); 
     border-radius: 50%; 
     text-decoration: none; 
     transition: 0.3s; 
@@ -1038,7 +1038,7 @@ nav {
 }
 
 .footer-col p { 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     font-size: 0.85rem; 
     margin-bottom: 15px; 
     display: flex; 
@@ -1048,12 +1048,12 @@ nav {
 }
 
 .footer-col p i { 
-    color: var(--primary); /* ÍCONOS NEGROS */
+    color: var(--primary); 
     font-size: 1rem;
 }
 
 .contact-link {
-    color: var(--primary); /* ENLACES NEGROS */
+    color: var(--primary); 
     text-decoration: none;
     transition: opacity 0.2s;
     font-weight: 500;
@@ -1070,7 +1070,7 @@ nav {
     flex-wrap: wrap; 
     justify-content: space-between; 
     align-items: center; 
-    color: var(--primary); /* TEXTO NEGRO */
+    color: var(--primary); 
     font-size: 0.8rem; 
     font-weight: 600; 
 }
@@ -1820,4 +1820,17 @@ nav {
 
 @media (max-width: 992px) {
     .filter-sidebar { display: flex; } 
+}
+
+/* ======================================================= */
+/* === ANIMACIÓN RUEDITA DE CARGA ======================== */
+/* ======================================================= */
+@keyframes girarRuedita {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ruedita-girando {
+    animation: girarRuedita 1.2s linear infinite;
+    display: inline-block;
 }
