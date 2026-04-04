@@ -13,8 +13,88 @@ let reloadAfterAlert = false;
 
 let accionConfirmada = null;
 
+// LÓGICA DEL LOGIN (MOVIDA DESDE EL HTML PARA QUE QUEDE ORDENADO)
+window.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('adminLogueado') === 'true') {
+        const loginWrapper = document.getElementById('login-wrapper');
+        const panelDashboard = document.getElementById('panel-dashboard');
+        if(loginWrapper) loginWrapper.style.display = 'none';
+        if(panelDashboard) panelDashboard.style.display = 'block';
+    }
+});
+
+function togglePassword() {
+    const passInput = document.getElementById('login-password');
+    const eyeIcon = document.getElementById('toggle-eye');
+    
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        passInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
+const formLogin = document.getElementById('form-login');
+if (formLogin) {
+    formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const errorMsg = document.getElementById('login-error');
+        const btn = document.getElementById('btn-submit-login');
+
+        btn.innerText = 'Verificando...';
+        btn.disabled = true;
+        errorMsg.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await res.json();
+
+            if (data.success && res.ok) { 
+                sessionStorage.setItem('adminLogueado', 'true');
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('panel-dashboard').style.display = 'block';
+                cargarTodo(); 
+            } else {
+                errorMsg.innerText = data.message || 'Credenciales incorrectas';
+                errorMsg.style.display = 'block';
+            }
+        } catch (error) {
+            errorMsg.innerText = 'Error de conexión. ¿Está prendido el servidor?';
+            errorMsg.style.display = 'block';
+        } finally {
+            btn.innerText = 'Ingresar';
+            btn.disabled = false;
+        }
+    });
+}
+
+function cerrarSesionLocal() {
+    sessionStorage.removeItem('adminLogueado');
+    const loginWrapper = document.getElementById('login-wrapper');
+    const panelDashboard = document.getElementById('panel-dashboard');
+    if(loginWrapper) loginWrapper.style.display = 'flex';
+    if(panelDashboard) panelDashboard.style.display = 'none';
+    
+    const passInput = document.getElementById('login-password');
+    if(passInput) passInput.value = '';
+}
+
+// INICIO DEL PANEL
 window.onload = () => { 
-    cargarTodo(); 
+    if (sessionStorage.getItem('adminLogueado') === 'true') {
+        cargarTodo(); 
+    }
     
     const tabGuardada = sessionStorage.getItem('adminTabActiva') || 'tab-pedidos';
     document.querySelectorAll('.tab-link').forEach(l => {
@@ -108,6 +188,7 @@ function toggleDetalle(id) {
 async function cargarTodo() {
     cargarBanners(); 
     cargarCupones();
+    cargarCategorias(); 
 
     try {
         const resI = await fetchSeguro(`${API}/productos`); 
@@ -129,6 +210,83 @@ async function cargarTodo() {
     }
 }
 
+// LÓGICA DE CATEGORÍAS
+async function cargarCategorias() {
+    const tbody = document.getElementById('body-categorias');
+    const selectCat = document.getElementById('add-categoria');
+    
+    try {
+        const res = await fetchSeguro(`${API}/categorias`);
+        if(res.ok) {
+            const categorias = await res.json();
+            
+            if (categorias.length === 0) {
+                selectCat.innerHTML = '<option value="" disabled selected>No hay categorías</option>';
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray;">Aún no hay categorías creadas.</td></tr>';
+            } else {
+                selectCat.innerHTML = '<option value="" disabled selected>Seleccioná Categoría...</option>' + 
+                    categorias.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+                
+                tbody.innerHTML = categorias.map(c => `
+                    <tr>
+                        <td>#${c.id}</td>
+                        <td style="font-weight: bold; text-transform: capitalize;">${c.nombre}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function agregarCategoria(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-categoria');
+    const inputNombre = document.getElementById('add-nombre-categoria');
+    const nombre = inputNombre.value.trim();
+
+    if (!nombre) return;
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        const res = await fetchSeguro(`${API}/categorias`, {
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ nombre })
+        });
+        
+        if(res.ok) {
+            inputNombre.value = '';
+            showCustomAlert("¡Categoría creada!", "success", false);
+            cargarCategorias(); 
+        } else {
+            showCustomAlert("Esa categoría ya existe o hubo un error.", "error", false);
+        }
+    } catch (error) {
+        showCustomAlert("Error de conexión.", "error", false);
+    }
+    btn.innerHTML = '<i class="fas fa-plus"></i> Crear Categoría';
+    btn.disabled = false;
+}
+
+function eliminarCategoria(id) {
+    showCustomConfirm('¿Seguro que querés eliminar esta categoría?', async () => {
+        try {
+            await fetchSeguro(`${API}/categorias/${id}`, { method: 'DELETE' });
+            showCustomAlert("Categoría eliminada", "success", false);
+            cargarCategorias();
+        } catch (error) {
+            showCustomAlert("Error al eliminar", "error", false);
+        }
+    });
+}
+
 function renderPedidos() {
     const inicio = (vPagina - 1) * vPorPagina; 
     const items = vTotales.slice(inicio, inicio + vPorPagina);
@@ -147,7 +305,6 @@ function renderPedidos() {
             
             const telLimpio = v.cliente_telefono ? v.cliente_telefono.replace(/[^0-9]/g, '') : '';
 
-            // ACÁ SE AGREGÓ EL BOTÓN DE COMPLETADO
             return `
             <tr>
                 <td>#${v.id}</td>
@@ -163,11 +320,11 @@ function renderPedidos() {
                 <td><span style="background:${v.estado === 'Completado' ? '#e8f8f5' : '#fff3cd'}; color:${v.estado === 'Completado' ? '#27ae60' : '#f39c12'}; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">${v.estado}</span></td>
                 <td style="font-size: 0.85rem; line-height: 1.4;">${detalleTxt}</td>
                 <td><strong style="color:#27ae60;">$${v.total}</strong></td>
-                <td style="text-align: center; display: flex; gap: 5px; justify-content: center;">
+                <td style="text-align: center; display: flex; justify-content: center; gap: 5px;">
                     ${v.estado !== 'Completado' ? `
-                        <button class="btn-secundario" style="padding: 6px 12px; width: auto; font-size: 0.8rem; background: #27ae60; color: white;" onclick="completarPedido(${v.id})" title="Marcar como Realizado"><i class="fas fa-check"></i></button>
+                    <button class="btn-agregar-derecha" style="padding: 6px 12px; width: auto; font-size: 0.8rem; margin: 0; background: #27ae60;" onclick="completarPedido(${v.id})" title="Marcar como Realizado"><i class="fas fa-check"></i></button>
                     ` : ''}
-                    <button class="btn-secundario" style="padding: 6px 12px; width: auto; font-size: 0.8rem;" onclick="eliminarPedido(${v.id})" title="Cancelar/Eliminar Pedido"><i class="fas fa-trash-alt"></i></button>
+                    <button class="btn-secundario" style="padding: 6px 12px; width: auto; font-size: 0.8rem; margin: 0;" onclick="eliminarPedido(${v.id})" title="Cancelar/Eliminar Pedido"><i class="fas fa-trash-alt"></i></button>
                 </td>
             </tr>
             `;
@@ -177,29 +334,6 @@ function renderPedidos() {
     document.getElementById('pagi-info-pedidos').innerText = `Página ${vPagina}`; 
     document.getElementById('pagi-anterior-pedidos').disabled = vPagina === 1; 
     document.getElementById('pagi-siguiente-pedidos').disabled = inicio + vPorPagina >= vTotales.length;
-}
-
-// ESTA ES LA FUNCIÓN NUEVA PARA MARCAR COMO COMPLETADO
-function completarPedido(id) {
-    showCustomConfirm('¿Seguro que querés marcar este pedido como completado?', async () => {
-        try {
-            const res = await fetchSeguro(`${API}/ventas/${id}/completar`, { method: 'PATCH' });
-            if(res.ok) {
-                showCustomAlert("Pedido marcado como completado", "success", false);
-                const resVentas = await fetchSeguro(`${API}/ventas`); 
-                if (resVentas.ok) {
-                    ventasDataGlobal = await resVentas.json();
-                    vTotales = [...ventasDataGlobal];
-                    renderPedidos();
-                    generarEstadisticasMensuales();
-                }
-            } else {
-                showCustomAlert("Error al actualizar el pedido.", "error", false);
-            }
-        } catch (error) {
-            showCustomAlert("Error de conexión al intentar actualizar.", "error", false);
-        }
-    });
 }
 
 function eliminarPedido(id) {
@@ -221,6 +355,28 @@ function eliminarPedido(id) {
             }
         } catch (error) {
             showCustomAlert("Error de conexión al intentar borrar.", "error", false);
+        }
+    });
+}
+
+function completarPedido(id) {
+    showCustomConfirm('¿Seguro que querés marcar este pedido como realizado?', async () => {
+        try {
+            const res = await fetchSeguro(`${API}/ventas/${id}/completar`, { method: 'PATCH' });
+            if(res.ok) {
+                showCustomAlert("Pedido marcado como realizado", "success", false);
+                const resVentas = await fetchSeguro(`${API}/ventas`); 
+                if (resVentas.ok) {
+                    ventasDataGlobal = await resVentas.json();
+                    vTotales = [...ventasDataGlobal];
+                    renderPedidos();
+                    generarEstadisticasMensuales();
+                }
+            } else {
+                showCustomAlert("Error al actualizar el pedido.", "error", false);
+            }
+        } catch (error) {
+            showCustomAlert("Error de conexión.", "error", false);
         }
     });
 }
@@ -739,90 +895,4 @@ function descargarExcel() {
     document.body.appendChild(link); 
     link.click(); 
     document.body.removeChild(link); 
-}
-
-function cerrarSesion() { 
-    localStorage.removeItem('tokenTienda'); 
-    window.location.href = 'login.html'; 
-}
-
-/* ==========================================
-   LÓGICA DEL LOGIN DEL ADMIN Y EL OJITO
-========================================== */
-
-function togglePassword() {
-    const passInput = document.getElementById('login-password');
-    const eyeIcon = document.getElementById('toggle-eye');
-    
-    if (passInput.type === 'password') {
-        passInput.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-    } else {
-        passInput.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
-    }
-}
-
-const formLogin = document.getElementById('form-login');
-if(formLogin) {
-    formLogin.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const errorMsg = document.getElementById('login-error');
-        const btn = document.getElementById('btn-submit-login');
-
-        btn.innerText = 'Verificando...';
-        btn.disabled = true;
-        errorMsg.style.display = 'none';
-
-        try {
-            const res = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            
-            const data = await res.json();
-
-            if (res.ok && data.success) { 
-                sessionStorage.setItem('adminLogueado', 'true');
-                document.getElementById('login-wrapper').style.display = 'none';
-                document.getElementById('panel-dashboard').style.display = 'block';
-            } else {
-                errorMsg.innerText = data.message || 'Credenciales incorrectas';
-                errorMsg.style.display = 'block';
-            }
-        } catch (error) {
-            errorMsg.innerText = 'Error de conexión. ¿Está prendido el servidor?';
-            errorMsg.style.display = 'block';
-        } finally {
-            btn.innerText = 'Ingresar';
-            btn.disabled = false;
-        }
-    });
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('adminLogueado') === 'true') {
-        const loginWrapper = document.getElementById('login-wrapper');
-        const panelDashboard = document.getElementById('panel-dashboard');
-        if(loginWrapper) loginWrapper.style.display = 'none';
-        if(panelDashboard) panelDashboard.style.display = 'block';
-    }
-});
-
-function cerrarSesionLocal() {
-    sessionStorage.removeItem('adminLogueado');
-    const loginWrapper = document.getElementById('login-wrapper');
-    const panelDashboard = document.getElementById('panel-dashboard');
-    if(loginWrapper) loginWrapper.style.display = 'flex';
-    if(panelDashboard) panelDashboard.style.display = 'none';
-    
-    const passInput = document.getElementById('login-password');
-    if(passInput) passInput.value = '';
-    
-    if(typeof cerrarSesion === 'function') cerrarSesion();
 }
