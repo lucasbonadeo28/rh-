@@ -58,6 +58,11 @@ pool.connect((err, client, release) => {
 const inicializarBaseDeDatos = async () => {
     try {
         await pool.query(`
+            CREATE TABLE IF NOT EXISTS categorias (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(100) UNIQUE NOT NULL
+            );
+
             CREATE TABLE IF NOT EXISTS productos (
                 id SERIAL PRIMARY KEY,
                 nombre VARCHAR(255) NOT NULL,
@@ -141,7 +146,6 @@ app.post('/api/admin/login', (req, res) => {
     const { email, password } = req.body;
     
     const ADMIN_EMAIL = 'admin@tienda.com';
-    // AQUÍ ESTÁ LA CORRECCIÓN DE LA CONTRASEÑA
     const ADMIN_PASS = 'admin123'; 
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
@@ -149,6 +153,34 @@ app.post('/api/admin/login', (req, res) => {
     } else {
         res.status(401).json({ success: false, message: 'Usuario o contraseña incorrectos' });
     }
+});
+
+// ==========================================
+// RUTAS DE CATEGORÍAS
+// ==========================================
+app.get('/api/categorias', async (req, res) => {
+    try {
+        const resultado = await pool.query('SELECT * FROM categorias ORDER BY nombre ASC');
+        res.json(resultado.rows);
+    } catch (error) { res.status(500).json({ error: "Error interno" }); }
+});
+
+app.post('/api/categorias', async (req, res) => {
+    const { nombre } = req.body;
+    try {
+        const resultado = await pool.query('INSERT INTO categorias (nombre) VALUES ($1) RETURNING *', [nombre]);
+        res.json(resultado.rows[0]);
+    } catch (error) { 
+        res.status(500).json({ error: "Error interno o categoría duplicada" }); 
+    }
+});
+
+app.delete('/api/categorias/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM categorias WHERE id = $1', [id]);
+        res.json({ message: "Categoría eliminada" });
+    } catch (error) { res.status(500).json({ error: "Error interno" }); }
 });
 
 // ==========================================
@@ -206,7 +238,6 @@ app.get('/api/ventas', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Error interno" }); }
 });
 
-// NUEVA RUTA PARA MARCAR PEDIDO COMO REALIZADO (AGREGADA)
 app.patch('/api/ventas/:id/completar', async (req, res) => {
     try {
         await pool.query("UPDATE ventas SET estado = 'Completado' WHERE id = $1", [req.params.id]);
@@ -395,7 +426,6 @@ app.post('/api/comprar', async (req, res) => {
             </div>
         `;
 
-        // ENVÍO DE MAIL CON REPORTE DE ERRORES EN CONSOLA (AGREGADO LOGS)
         transporter.sendMail({
             from: '"RH+ Jeans Store" <rhpositivostf@gmail.com>', 
             to: cliente.email, 
