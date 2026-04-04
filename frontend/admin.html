@@ -11,7 +11,7 @@
         document.documentElement.setAttribute('data-active-tab', tabActivaInit);
     </script>
 
-    <link rel="stylesheet" href="css/admin.css?v=1">
+    <link rel="stylesheet" href="css/admin.css?v=2">
 
     <style>
         .login-wrapper {
@@ -70,6 +70,7 @@
             <div class="admin-tabs">
                 <a class="tab-link" onclick="verTab('tab-pedidos')">Pedidos</a>
                 <a class="tab-link" onclick="verTab('tab-inventario')">Inventario</a>
+                <a class="tab-link" onclick="verTab('tab-categorias')">Categorías</a>
                 <a class="tab-link" onclick="verTab('tab-banners')">Banners</a>
                 <a class="tab-link" onclick="verTab('tab-cupones')">Cupones</a>
                 <a class="tab-link" onclick="verTab('tab-historial')">Estadísticas Mensuales</a>
@@ -115,13 +116,11 @@
                 <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <div class="form-row-flex" style="display:flex; gap:15px; width:100%;">
                         <input type="text" id="add-nombre" placeholder="Nombre (Ej: Jean Recto...)" style="flex: 2;" oninput="this.classList.remove('input-error'); validarLetras(this)">
+                        
                         <select id="add-categoria" style="flex: 1;" onchange="this.classList.remove('input-error');">
-                            <option value="" disabled selected>Categoría...</option>
-                            <option value="Remeras">Remeras</option>
-                            <option value="Pantalones">Pantalones</option>
-                            <option value="Buzos">Buzos</option>
-                            <option value="Accesorios">Accesorios</option>
+                            <option value="" disabled selected>Cargando categorías...</option>
                         </select>
+
                         <input type="text" id="add-precio-tarj" placeholder="Precio Tarjeta ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
                         <input type="text" id="add-precio-efvo" placeholder="Precio Transf. ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
                     </div>
@@ -179,6 +178,42 @@
                 </div>
             </div>
 
+            <div id="tab-categorias" class="tab-content">
+                <div class="admin-header-row">
+                    <h2>Administrar Categorías</h2>
+                </div>
+                <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
+                    <form class="form-row-flex" onsubmit="agregarCategoria(event)" style="display:flex; gap:15px; width:100%; align-items: flex-end;">
+                        <div style="flex: 3;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Nombre de la nueva categoría</label>
+                            <input type="text" id="add-nombre-categoria" placeholder="Ej: Camperas" style="width:100%;" required>
+                        </div>
+                        <button type="submit" class="btn-agregar-derecha" id="btn-submit-categoria" style="flex: 1; height: 46px; margin: 0;">
+                            <i class="fas fa-plus"></i> Añadir
+                        </button>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 100px;">ID</th>
+                                <th>Nombre de la Categoría</th>
+                                <th style="width: 150px; text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-categorias">
+                            <tr><td colspan="3" style="text-align:center; padding:30px;">Cargando categorías...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="paginacion-container">
+                    <button id="pagi-anterior-cat" class="btn-pagi" onclick="paginaAnteriorCat()">← Anterior</button>
+                    <span id="pagi-info-cat" style="color: #666;">Página 1</span>
+                    <button id="pagi-siguiente-cat" class="btn-pagi" onclick="paginaSiguienteCat()">Siguiente →</button>
+                </div>
+            </div>
+
             <div id="tab-banners" class="tab-content">
                 <div class="admin-header-row">
                     <h2>Imágenes del Carrusel Principal</h2>
@@ -190,7 +225,6 @@
                 
                 <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <form class="form-row-flex" id="form-banner" onsubmit="agregarBanner(event)" style="display:flex; gap:30px; width:100%; align-items: flex-end;">
-                        
                         <div style="flex: 3; display: flex; flex-direction: column;">
                             <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px;">Foto del carrusel:</label>
                             <label for="add-banner-file" class="custom-file-upload" id="label-add-banner-file">
@@ -198,7 +232,6 @@
                             </label>
                             <input type="file" id="add-banner-file" accept="image/*" style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-banner-file', 'Abrir Galería')" required>
                         </div>
-                        
                         <div style="flex: 1; display: flex;">
                             <button type="submit" class="btn-agregar-derecha" id="btn-submit-banner" style="height: 48px; margin: 0; width: 100%;">
                                 <i class="fas fa-plus"></i> Añadir Foto
@@ -243,7 +276,6 @@
                             <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Cant. de Usos</label>
                             <input type="number" id="add-cupon-usos" placeholder="Ej: 50" style="width:100%;" min="1" required>
                         </div>
-                        
                         <button type="submit" class="btn-agregar-derecha" id="btn-submit-cupon" style="flex: 1; height: 46px; margin: 0;">
                             <i class="fas fa-plus"></i> Crear
                         </button>
@@ -286,7 +318,9 @@
                 </div>
             </div>
         </div>
-    </div> <div id="custom-alert-modal" class="custom-alert-overlay" onclick="cerrarCustomAlert()">
+    </div>
+
+    <div id="custom-alert-modal" class="custom-alert-overlay" onclick="cerrarCustomAlert()">
         <div class="custom-alert-box" onclick="event.stopPropagation()">
             <div id="custom-alert-icon" class="custom-alert-icon"></div>
             <div id="custom-alert-text" class="custom-alert-text">Mensaje aquí</div>
@@ -300,87 +334,11 @@
             <div id="custom-confirm-text" class="custom-alert-text">¿Estás seguro?</div>
             <div style="display: flex; gap: 15px; justify-content: center;">
                 <button class="btn-secundario" style="width: auto; padding: 10px 25px; margin: 0;" onclick="cerrarCustomConfirm()">Cancelar</button>
-                <button id="btn-confirmar-accion" class="btn-agregar-derecha" style="width: auto; padding: 10px 25px; margin: 0;">Sí, borrar</button>
+                <button id="btn-confirmar-accion" class="btn-agregar-derecha" style="width: auto; padding: 10px 25px; margin: 0;">Sí</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // Función para mostrar/ocultar la contraseña
-        function togglePassword() {
-            const passInput = document.getElementById('login-password');
-            const eyeIcon = document.getElementById('toggle-eye');
-            
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                eyeIcon.classList.remove('fa-eye');
-                eyeIcon.classList.add('fa-eye-slash');
-            } else {
-                passInput.type = 'password';
-                eyeIcon.classList.remove('fa-eye-slash');
-                eyeIcon.classList.add('fa-eye');
-            }
-        }
-
-        // Lógica de conexión con el servidor
-        document.getElementById('form-login').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorMsg = document.getElementById('login-error');
-            const btn = document.getElementById('btn-submit-login');
-
-            btn.innerText = 'Verificando...';
-            btn.disabled = true;
-            errorMsg.style.display = 'none';
-
-            try {
-                // Llama a la ruta del servidor
-                const res = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                const data = await res.json();
-
-                if (data.success) {
-                    sessionStorage.setItem('adminLogueado', 'true');
-                    // OCULTA EL LOGIN Y MUESTRA TU PANEL
-                    document.getElementById('login-wrapper').style.display = 'none';
-                    document.getElementById('panel-dashboard').style.display = 'block';
-                } else {
-                    errorMsg.innerText = data.message || 'Credenciales incorrectas';
-                    errorMsg.style.display = 'block';
-                }
-            } catch (error) {
-                errorMsg.innerText = 'Error de conexión. ¿Está prendido el servidor?';
-                errorMsg.style.display = 'block';
-            } finally {
-                btn.innerText = 'Ingresar';
-                btn.disabled = false;
-            }
-        });
-
-        // Revisar si ya estaba logueado al recargar la página
-        window.addEventListener('DOMContentLoaded', () => {
-            if (sessionStorage.getItem('adminLogueado') === 'true') {
-                document.getElementById('login-wrapper').style.display = 'none';
-                document.getElementById('panel-dashboard').style.display = 'block';
-            }
-        });
-
-        // Botón salir
-        function cerrarSesionLocal() {
-            sessionStorage.removeItem('adminLogueado');
-            document.getElementById('login-wrapper').style.display = 'flex';
-            document.getElementById('panel-dashboard').style.display = 'none';
-            document.getElementById('login-password').value = '';
-            // Si tenías una función original de cerrar sesión, descomentá la línea de abajo:
-            // if(typeof cerrarSesion === 'function') cerrarSesion();
-        }
-    </script>
-
-    <script src="js/admin.js?v=1"></script>
+    <script src="js/admin.js?v=4"></script>
 </body>
 </html>
