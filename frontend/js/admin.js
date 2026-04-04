@@ -13,7 +13,11 @@ let reloadAfterAlert = false;
 
 let accionConfirmada = null;
 
-// LÓGICA DEL LOGIN (MOVIDA DESDE EL HTML PARA QUE QUEDE ORDENADO)
+// LÓGICA CATEGORÍAS
+let categoriasGlobal = [];
+let cPagina = 1;
+const cPorPagina = 10;
+
 window.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
@@ -39,7 +43,7 @@ function togglePassword() {
 }
 
 const formLogin = document.getElementById('form-login');
-if (formLogin) {
+if(formLogin) {
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
@@ -60,11 +64,11 @@ if (formLogin) {
             
             const data = await res.json();
 
-            if (data.success && res.ok) { 
+            if (res.ok && data.success) { 
                 sessionStorage.setItem('adminLogueado', 'true');
                 document.getElementById('login-wrapper').style.display = 'none';
                 document.getElementById('panel-dashboard').style.display = 'block';
-                cargarTodo(); 
+                cargarTodo();
             } else {
                 errorMsg.innerText = data.message || 'Credenciales incorrectas';
                 errorMsg.style.display = 'block';
@@ -90,7 +94,6 @@ function cerrarSesionLocal() {
     if(passInput) passInput.value = '';
 }
 
-// INICIO DEL PANEL
 window.onload = () => { 
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         cargarTodo(); 
@@ -132,9 +135,10 @@ function cerrarCustomAlert() {
     }, 200);
 }
 
-function showCustomConfirm(msg, callback) {
+function showCustomConfirm(msg, callback, btnText = "Sí") {
     const modal = document.getElementById('custom-confirm-modal');
     document.getElementById('custom-confirm-text').innerText = msg;
+    document.getElementById('btn-confirmar-accion').innerText = btnText;
     accionConfirmada = callback;
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('active'), 10);
@@ -178,6 +182,15 @@ async function fetchSeguro(url, opciones = {}) {
 function verTab(id) { 
     document.documentElement.setAttribute('data-active-tab', id);
     sessionStorage.setItem('adminTabActiva', id);
+    document.querySelectorAll('.tab-link').forEach(l => {
+        if(l.getAttribute('onclick').includes(id)) {
+            l.classList.add('active');
+        } else {
+            l.classList.remove('active');
+        }
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
 }
 
 function toggleDetalle(id) { 
@@ -188,7 +201,7 @@ function toggleDetalle(id) {
 async function cargarTodo() {
     cargarBanners(); 
     cargarCupones();
-    cargarCategorias(); 
+    cargarCategorias();
 
     try {
         const resI = await fetchSeguro(`${API}/productos`); 
@@ -206,48 +219,63 @@ async function cargarTodo() {
         }
     } catch (err) { 
         console.error("Error conectando a BD:", err); 
-        showCustomAlert("Error al cargar datos desde Postgres.", "error", false);
+        showCustomAlert("Error al cargar datos.", "error", false);
     }
 }
 
 // LÓGICA DE CATEGORÍAS
 async function cargarCategorias() {
-    const tbody = document.getElementById('body-categorias');
-    const selectCat = document.getElementById('add-categoria');
-    
     try {
         const res = await fetchSeguro(`${API}/categorias`);
         if(res.ok) {
-            const categorias = await res.json();
-            
-            if (categorias.length === 0) {
-                selectCat.innerHTML = '<option value="" disabled selected>No hay categorías</option>';
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray;">Aún no hay categorías creadas.</td></tr>';
-            } else {
-                selectCat.innerHTML = '<option value="" disabled selected>Seleccioná Categoría...</option>' + 
-                    categorias.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
-                
-                tbody.innerHTML = categorias.map(c => `
-                    <tr>
-                        <td>#${c.id}</td>
-                        <td style="font-weight: bold; text-transform: capitalize;">${c.nombre}</td>
-                        <td style="text-align: center;">
-                            <button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
+            categoriasGlobal = await res.json();
+            renderCategorias();
+            actualizarSelectCategorias();
         }
-    } catch (err) {
-        console.error(err);
+    } catch(e) { console.error(e); }
+}
+
+function actualizarSelectCategorias() {
+    const select = document.getElementById('add-categoria');
+    if(categoriasGlobal.length === 0) {
+        select.innerHTML = '<option value="" disabled selected>No hay categorías</option>';
+    } else {
+        select.innerHTML = '<option value="" disabled selected>Categoría...</option>' + 
+            categoriasGlobal.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
     }
 }
 
+function renderCategorias() {
+    const inicio = (cPagina - 1) * cPorPagina;
+    const items = categoriasGlobal.slice(inicio, inicio + cPorPagina);
+    const tbody = document.getElementById('body-categorias');
+
+    if(categoriasGlobal.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray; padding:20px;">Aún no hay categorías creadas.</td></tr>';
+    } else {
+        tbody.innerHTML = items.map(c => `
+            <tr>
+                <td>#${c.id}</td>
+                <td style="font-weight:bold; text-transform:capitalize;">${c.nombre}</td>
+                <td style="text-align: center;">
+                    <button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    document.getElementById('pagi-info-cat').innerText = `Página ${cPagina}`;
+    document.getElementById('pagi-anterior-cat').disabled = cPagina === 1;
+    document.getElementById('pagi-siguiente-cat').disabled = inicio + cPorPagina >= categoriasGlobal.length;
+}
+
+function paginaAnteriorCat() { if (cPagina > 1) { cPagina--; renderCategorias(); } }
+function paginaSiguienteCat() { if ((cPagina * cPorPagina) < categoriasGlobal.length) { cPagina++; renderCategorias(); } }
+
 async function agregarCategoria(e) {
     e.preventDefault();
-    const btn = document.getElementById('btn-submit-categoria');
     const inputNombre = document.getElementById('add-nombre-categoria');
     const nombre = inputNombre.value.trim();
+    const btn = document.getElementById('btn-submit-categoria');
 
     if (!nombre) return;
 
@@ -256,34 +284,28 @@ async function agregarCategoria(e) {
 
     try {
         const res = await fetchSeguro(`${API}/categorias`, {
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ nombre })
+            method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nombre})
         });
-        
         if(res.ok) {
             inputNombre.value = '';
-            showCustomAlert("¡Categoría creada!", "success", false);
-            cargarCategorias(); 
+            showCustomAlert('Categoría añadida', 'success');
+            cargarCategorias();
         } else {
-            showCustomAlert("Esa categoría ya existe o hubo un error.", "error", false);
+            showCustomAlert('La categoría ya existe', 'error');
         }
-    } catch (error) {
-        showCustomAlert("Error de conexión.", "error", false);
+    } catch(e) {
+        showCustomAlert('Error de conexión', 'error');
     }
-    btn.innerHTML = '<i class="fas fa-plus"></i> Crear Categoría';
+    btn.innerHTML = '<i class="fas fa-plus"></i> Añadir';
     btn.disabled = false;
 }
 
 function eliminarCategoria(id) {
-    showCustomConfirm('¿Seguro que querés eliminar esta categoría?', async () => {
+    showCustomConfirm('¿Borrar categoría?', async () => {
         try {
-            await fetchSeguro(`${API}/categorias/${id}`, { method: 'DELETE' });
-            showCustomAlert("Categoría eliminada", "success", false);
+            await fetchSeguro(`${API}/categorias/${id}`, {method:'DELETE'});
             cargarCategorias();
-        } catch (error) {
-            showCustomAlert("Error al eliminar", "error", false);
-        }
+        } catch(e) {}
     });
 }
 
@@ -320,11 +342,11 @@ function renderPedidos() {
                 <td><span style="background:${v.estado === 'Completado' ? '#e8f8f5' : '#fff3cd'}; color:${v.estado === 'Completado' ? '#27ae60' : '#f39c12'}; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">${v.estado}</span></td>
                 <td style="font-size: 0.85rem; line-height: 1.4;">${detalleTxt}</td>
                 <td><strong style="color:#27ae60;">$${v.total}</strong></td>
-                <td style="text-align: center; display: flex; justify-content: center; gap: 5px;">
-                    ${v.estado !== 'Completado' ? `
-                    <button class="btn-agregar-derecha" style="padding: 6px 12px; width: auto; font-size: 0.8rem; margin: 0; background: #27ae60;" onclick="completarPedido(${v.id})" title="Marcar como Realizado"><i class="fas fa-check"></i></button>
-                    ` : ''}
-                    <button class="btn-secundario" style="padding: 6px 12px; width: auto; font-size: 0.8rem; margin: 0;" onclick="eliminarPedido(${v.id})" title="Cancelar/Eliminar Pedido"><i class="fas fa-trash-alt"></i></button>
+                <td style="text-align: center; vertical-align: middle;">
+                    <div style="display: flex; justify-content: center; gap: 8px;">
+                        ${v.estado !== 'Completado' ? `<button style="background: #27ae60; color: white; border: none; border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onclick="completarPedido(${v.id})" title="Marcar como Realizado"><i class="fas fa-check"></i></button>` : ''}
+                        <button style="background: #ff6b6b; color: white; border: none; border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onclick="eliminarPedido(${v.id})" title="Borrar Pedido"><i class="fas fa-trash-alt"></i></button>
+                    </div>
                 </td>
             </tr>
             `;
@@ -336,35 +358,12 @@ function renderPedidos() {
     document.getElementById('pagi-siguiente-pedidos').disabled = inicio + vPorPagina >= vTotales.length;
 }
 
-function eliminarPedido(id) {
-    showCustomConfirm('¿Seguro que querés cancelar y eliminar este pedido? Esta acción no se puede deshacer.', async () => {
-        try {
-            const res = await fetchSeguro(`${API}/ventas/${id}`, { method: 'DELETE' });
-            if(res.ok) {
-                showCustomAlert("Pedido eliminado correctamente", "success", false);
-                
-                const resVentas = await fetchSeguro(`${API}/ventas`); 
-                if (resVentas.ok) {
-                    ventasDataGlobal = await resVentas.json();
-                    vTotales = [...ventasDataGlobal];
-                    renderPedidos();
-                    generarEstadisticasMensuales();
-                }
-            } else {
-                showCustomAlert("Error al eliminar el pedido.", "error", false);
-            }
-        } catch (error) {
-            showCustomAlert("Error de conexión al intentar borrar.", "error", false);
-        }
-    });
-}
-
 function completarPedido(id) {
     showCustomConfirm('¿Seguro que querés marcar este pedido como realizado?', async () => {
         try {
             const res = await fetchSeguro(`${API}/ventas/${id}/completar`, { method: 'PATCH' });
             if(res.ok) {
-                showCustomAlert("Pedido marcado como realizado", "success", false);
+                showCustomAlert("Pedido completado", "success", false);
                 const resVentas = await fetchSeguro(`${API}/ventas`); 
                 if (resVentas.ok) {
                     ventasDataGlobal = await resVentas.json();
@@ -378,7 +377,29 @@ function completarPedido(id) {
         } catch (error) {
             showCustomAlert("Error de conexión.", "error", false);
         }
-    });
+    }, "Sí");
+}
+
+function eliminarPedido(id) {
+    showCustomConfirm('¿Seguro que querés borrar este pedido de la base de datos?', async () => {
+        try {
+            const res = await fetchSeguro(`${API}/ventas/${id}`, { method: 'DELETE' });
+            if(res.ok) {
+                showCustomAlert("Pedido eliminado", "success", false);
+                const resVentas = await fetchSeguro(`${API}/ventas`); 
+                if (resVentas.ok) {
+                    ventasDataGlobal = await resVentas.json();
+                    vTotales = [...ventasDataGlobal];
+                    renderPedidos();
+                    generarEstadisticasMensuales();
+                }
+            } else {
+                showCustomAlert("Error al eliminar el pedido.", "error", false);
+            }
+        } catch (error) {
+            showCustomAlert("Error de conexión.", "error", false);
+        }
+    }, "Sí, borrar");
 }
 
 function paginaSiguientePedidos() { 
@@ -531,7 +552,7 @@ function eliminarBanner(id) {
         } catch (error) {
             showCustomAlert("Error al eliminar", "error", false);
         }
-    });
+    }, "Sí, borrar");
 }
 
 async function cargarCupones() {
@@ -602,7 +623,7 @@ function eliminarCupon(id) {
         } catch (error) {
             showCustomAlert("Error al eliminar", "error", false);
         }
-    });
+    }, "Sí, borrar");
 }
 
 function renderStock() {
@@ -817,7 +838,7 @@ function borrarP(id) {
         } catch (error) {
             showCustomAlert("Error de conexión al intentar borrar.", "error", false);
         }
-    });
+    }, "Sí, borrar");
 }
 
 function paginaSiguiente() { 
