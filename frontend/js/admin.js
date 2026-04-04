@@ -147,6 +147,7 @@ function renderPedidos() {
             
             const telLimpio = v.cliente_telefono ? v.cliente_telefono.replace(/[^0-9]/g, '') : '';
 
+            // ACÁ SE AGREGÓ EL BOTÓN DE COMPLETADO
             return `
             <tr>
                 <td>#${v.id}</td>
@@ -162,7 +163,10 @@ function renderPedidos() {
                 <td><span style="background:${v.estado === 'Completado' ? '#e8f8f5' : '#fff3cd'}; color:${v.estado === 'Completado' ? '#27ae60' : '#f39c12'}; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">${v.estado}</span></td>
                 <td style="font-size: 0.85rem; line-height: 1.4;">${detalleTxt}</td>
                 <td><strong style="color:#27ae60;">$${v.total}</strong></td>
-                <td style="text-align: center;">
+                <td style="text-align: center; display: flex; gap: 5px; justify-content: center;">
+                    ${v.estado !== 'Completado' ? `
+                        <button class="btn-secundario" style="padding: 6px 12px; width: auto; font-size: 0.8rem; background: #27ae60; color: white;" onclick="completarPedido(${v.id})" title="Marcar como Realizado"><i class="fas fa-check"></i></button>
+                    ` : ''}
                     <button class="btn-secundario" style="padding: 6px 12px; width: auto; font-size: 0.8rem;" onclick="eliminarPedido(${v.id})" title="Cancelar/Eliminar Pedido"><i class="fas fa-trash-alt"></i></button>
                 </td>
             </tr>
@@ -173,6 +177,29 @@ function renderPedidos() {
     document.getElementById('pagi-info-pedidos').innerText = `Página ${vPagina}`; 
     document.getElementById('pagi-anterior-pedidos').disabled = vPagina === 1; 
     document.getElementById('pagi-siguiente-pedidos').disabled = inicio + vPorPagina >= vTotales.length;
+}
+
+// ESTA ES LA FUNCIÓN NUEVA PARA MARCAR COMO COMPLETADO
+function completarPedido(id) {
+    showCustomConfirm('¿Seguro que querés marcar este pedido como completado?', async () => {
+        try {
+            const res = await fetchSeguro(`${API}/ventas/${id}/completar`, { method: 'PATCH' });
+            if(res.ok) {
+                showCustomAlert("Pedido marcado como completado", "success", false);
+                const resVentas = await fetchSeguro(`${API}/ventas`); 
+                if (resVentas.ok) {
+                    ventasDataGlobal = await resVentas.json();
+                    vTotales = [...ventasDataGlobal];
+                    renderPedidos();
+                    generarEstadisticasMensuales();
+                }
+            } else {
+                showCustomAlert("Error al actualizar el pedido.", "error", false);
+            }
+        } catch (error) {
+            showCustomAlert("Error de conexión al intentar actualizar.", "error", false);
+        }
+    });
 }
 
 function eliminarPedido(id) {
@@ -760,7 +787,7 @@ if(formLogin) {
             
             const data = await res.json();
 
-            if (res.ok && data.success) { // <-- ACÁ ESTÁ LA CORRECCIÓN QUE EVITA EL CARTEL DE ERROR INVISIBLE
+            if (res.ok && data.success) { 
                 sessionStorage.setItem('adminLogueado', 'true');
                 document.getElementById('login-wrapper').style.display = 'none';
                 document.getElementById('panel-dashboard').style.display = 'block';
