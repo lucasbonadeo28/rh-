@@ -126,7 +126,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// ESTO NOS AVISA SI EL MAIL ESTÁ BIEN CONECTADO CUANDO PRENDE EL SERVIDOR
 transporter.verify(function(error, success) {
   if (error) {
     console.log("❌ Error en la configuración de mail de Google:", error);
@@ -205,6 +204,17 @@ app.get('/api/ventas', async (req, res) => {
         }
         res.json(ventas);
     } catch (error) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// NUEVA RUTA PARA MARCAR PEDIDO COMO REALIZADO (AGREGADA)
+app.patch('/api/ventas/:id/completar', async (req, res) => {
+    try {
+        await pool.query("UPDATE ventas SET estado = 'Completado' WHERE id = $1", [req.params.id]);
+        res.json({ success: true, message: "Pedido marcado como realizado" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false });
+    }
 });
 
 app.delete('/api/ventas/:id', async (req, res) => {
@@ -385,7 +395,7 @@ app.post('/api/comprar', async (req, res) => {
             </div>
         `;
 
-        // ENVÍO DE MAIL CON REPORTE DE ERRORES EN CONSOLA
+        // ENVÍO DE MAIL CON REPORTE DE ERRORES EN CONSOLA (AGREGADO LOGS)
         transporter.sendMail({
             from: '"RH+ Jeans Store" <rhpositivostf@gmail.com>', 
             to: cliente.email, 
