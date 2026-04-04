@@ -50,11 +50,7 @@
 
         <div class="nav-center" id="nav-menu-celular">
             <a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Remeras')">REMERAS</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Pantalones')">PANTALONES</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Buzos')">BUZOS</a>
-            <a class="filter-link" onclick="cambiarVista('catalogo', 'Accesorios')">ACCESORIOS</a>
-        </div>
+            </div>
 
         <div class="nav-right">
             <div class="search-container"><i class="fas fa-search"></i><input type="search" id="input-buscador-nav" placeholder="Buscar..." onkeyup="ejecutarBusquedaNav(event)"></div>
@@ -127,13 +123,9 @@
                 <aside class="sidebar-filtros" id="sidebar-desktop">
                     <div class="filter-group">
                         <h4>Categorías</h4>
-                        <ul class="filter-list">
+                        <ul class="filter-list" id="sidebar-categorias">
                             <li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Remeras')" class="cat-link">Remeras</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Pantalones')" class="cat-link">Pantalones</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Buzos')" class="cat-link">Buzos</a></li>
-                            <li><a onclick="cambiarCategoriaMobile('Accesorios')" class="cat-link">Accesorios</a></li>
-                        </ul>
+                            </ul>
                     </div>
                     
                     <div class="filter-group filtros-extra">
@@ -164,13 +156,9 @@
         <div class="filter-sidebar-body">
             <div class="mobile-filter-group">
                 <h4>Categorías</h4>
-                <div class="pills-container">
+                <div class="pills-container" id="mobile-categorias">
                     <button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Remeras')">REMERAS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Pantalones')">PANTALONES</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Buzos')">BUZOS</button>
-                    <button class="filter-pill" onclick="cambiarCategoriaMobile('Accesorios')">ACCESORIOS</button>
-                </div>
+                    </div>
             </div>
 
             <div class="mobile-filter-group">
@@ -216,12 +204,8 @@
             </div>
             <div class="footer-col">
                 <h4>CATEGORÍAS</h4>
-                <ul>
-                    <li><a onclick="cambiarVista('catalogo', 'Remeras')">Remeras</a></li>
-                    <li><a onclick="cambiarVista('catalogo', 'Pantalones')">Pantalones</a></li>
-                    <li><a onclick="cambiarVista('catalogo', 'Buzos')">Buzos</a></li>
-                    <li><a onclick="cambiarVista('catalogo', 'Accesorios')">Accesorios</a></li>
-                </ul>
+                <ul id="footer-categorias">
+                    </ul>
             </div>
             <div class="footer-col" style="min-width: 250px;">
                 <h4>MEDIOS DE PAGO</h4>
@@ -366,5 +350,41 @@
     </div>
 
     <script src="./js/main.js?v=54"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const res = await fetch('/api/categorias');
+                if (res.ok) {
+                    const categorias = await res.json();
+                    
+                    const navMenu = document.getElementById('nav-menu-celular');
+                    if (navMenu) {
+                        navMenu.innerHTML = `<a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>` + 
+                            categorias.map(c => `<a class="filter-link" onclick="cambiarVista('catalogo', '${c.nombre}')">${c.nombre.toUpperCase()}</a>`).join('');
+                    }
+
+                    const sidebarCat = document.getElementById('sidebar-categorias');
+                    if (sidebarCat) {
+                        sidebarCat.innerHTML = `<li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>` +
+                            categorias.map(c => `<li><a onclick="cambiarCategoriaMobile('${c.nombre}')" class="cat-link">${c.nombre}</a></li>`).join('');
+                    }
+
+                    const mobileCat = document.getElementById('mobile-categorias');
+                    if (mobileCat) {
+                        mobileCat.innerHTML = `<button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>` +
+                            categorias.map(c => `<button class="filter-pill" onclick="cambiarCategoriaMobile('${c.nombre}')">${c.nombre.toUpperCase()}</button>`).join('');
+                    }
+
+                    const footerCat = document.getElementById('footer-categorias');
+                    if (footerCat) {
+                        footerCat.innerHTML = categorias.map(c => `<li><a onclick="cambiarVista('catalogo', '${c.nombre}')">${c.nombre}</a></li>`).join('');
+                    }
+                }
+            } catch (error) {
+                console.error("Error cargando las categorías:", error);
+            }
+        });
+    </script>
 </body>
 </html>
