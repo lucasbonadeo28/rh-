@@ -41,7 +41,8 @@ window.onload = async () => {
     await fetchBanners();
     await fetchProductos(); 
     
-    renderizarCategoriasDinamicas();
+    // Ahora esta función llama directo a la Base de Datos
+    await renderizarCategoriasDinamicas();
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
@@ -65,15 +66,18 @@ window.onload = async () => {
     }
 };
 
-function renderizarCategoriasDinamicas() {
+async function renderizarCategoriasDinamicas() {
     let categoriasUnicas = [];
     
-    if (productosCargados && productosCargados.length > 0) {
-        categoriasUnicas = [...new Set(productosCargados.map(p => p.categoria))].filter(Boolean).sort();
-    }
-    
-    if (categoriasUnicas.length === 0) {
-        categoriasUnicas = ['Accesorios', 'Buzos', 'Pantalones', 'Remeras']; 
+    // Le pedimos las categorías a tu base de datos
+    try {
+        const res = await fetch(`${API}/categorias`);
+        if (res.ok) {
+            const data = await res.json();
+            categoriasUnicas = data.map(c => c.nombre);
+        }
+    } catch (error) {
+        console.error("Error al cargar las categorías:", error);
     }
 
     const navCenter = document.getElementById('nav-menu-celular');
