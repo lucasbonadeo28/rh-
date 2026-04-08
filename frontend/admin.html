@@ -129,18 +129,19 @@
                         
                         <div style="flex: 2; display:flex; flex-direction:column; gap:8px; background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed #ccc;">
                             <label style="font-size:0.9rem; font-weight:600; color:#555; cursor: pointer;">
-                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()"> Es Talle Único o Accesorio
+                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()"> Es Talle Único
                             </label>
                             <input type="text" id="add-talles" placeholder="Talles (Ej: S:10, M:5 o Jeans: 38:5...)" style="width:100%;" oninput="this.classList.remove('input-error');">
                             <input type="text" id="add-stock-unico" placeholder="Stock Total Disponible" style="width:100%; display:none;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
                         </div>
                         
                         <div style="flex: 1.5;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Foto del producto:</label>
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Fotos (Podés elegir varias):</label>
                             <label for="add-img" class="custom-file-upload" id="label-add-img">
                                 <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                             </label>
-                            <input type="file" id="add-img" accept="image/*" style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
+                            
+                            <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
                         </div>
                         
                         <button class="btn-agregar-derecha" id="btn-crear-producto" style="flex: 1; height: 50px;" onclick="crearProducto()">
@@ -150,10 +151,10 @@
                 </div>
                 
                 <div class="admin-header-row" style="margin-top: 50px;">
-                    <h2>Inventario</h2>
+                    <h2>Inventario (Edición Rápida)</h2>
                 </div>
                 
-                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid #ccc;" onkeyup="filtrarInventario()" oninput="validarLetras(this)">
+                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid #ccc;" onkeyup="filtrarInventario()">
                 
                 <div class="table-responsive">
                     <table>
@@ -164,7 +165,7 @@
                                 <th>Efectivo ($)</th>
                                 <th>Tarjeta ($)</th>
                                 <th>Talles y Stock Real</th>
-                                <th>Borrar</th>
+                                <th style="text-align: center;">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="body-inventario"></tbody>
@@ -339,6 +340,6 @@
         </div>
     </div>
 
-    <script src="js/admin.js?v=5"></script>
+    <script src="js/admin.js?v=6"></script>
 </body>
 </html>

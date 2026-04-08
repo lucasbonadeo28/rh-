@@ -257,6 +257,9 @@
         <div class="detail-box">
             <div class="detail-img">
                 <img id="det-img-url" src="" alt="Producto">
+                
+                <div id="det-mini-gallery" style="display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;"></div>
+                
                 <button id="btn-fav-modal" class="btn-fav-modal" onclick="toggleFavoritoModal(event)"><i class="fas fa-heart"></i></button>
             </div>
             <div class="detail-info">
@@ -347,41 +350,5 @@
     </div>
 
     <script src="./js/main.js?v=54"></script>
-    
-    <script>
-        document.addEventListener("DOMContentLoaded", async () => {
-            try {
-                const res = await fetch('/api/categorias');
-                if (res.ok) {
-                    const categorias = await res.json();
-                    
-                    const navMenu = document.getElementById('nav-menu-celular');
-                    if (navMenu) {
-                        navMenu.innerHTML = `<a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>` + 
-                            categorias.map(c => `<a class="filter-link" onclick="cambiarVista('catalogo', '${c.nombre}')">${c.nombre.toUpperCase()}</a>`).join('');
-                    }
-
-                    const sidebarCat = document.getElementById('sidebar-categorias');
-                    if (sidebarCat) {
-                        sidebarCat.innerHTML = `<li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>` +
-                            categorias.map(c => `<li><a onclick="cambiarCategoriaMobile('${c.nombre}')" class="cat-link">${c.nombre}</a></li>`).join('');
-                    }
-
-                    const mobileCat = document.getElementById('mobile-categorias');
-                    if (mobileCat) {
-                        mobileCat.innerHTML = `<button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>` +
-                            categorias.map(c => `<button class="filter-pill" onclick="cambiarCategoriaMobile('${c.nombre}')">${c.nombre.toUpperCase()}</button>`).join('');
-                    }
-
-                    const footerCat = document.getElementById('footer-categorias');
-                    if (footerCat) {
-                        footerCat.innerHTML = categorias.map(c => `<li><a onclick="cambiarVista('catalogo', '${c.nombre}')">${c.nombre}</a></li>`).join('');
-                    }
-                }
-            } catch (error) {
-                console.error("Error cargando las categorías:", error);
-            }
-        });
-    </script>
 </body>
 </html>
