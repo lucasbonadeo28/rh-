@@ -216,6 +216,22 @@ app.post('/api/productos', async (req, res) => {
     }
 });
 
+// RUTA PARA GUARDAR LA EDICIÓN EN LÍNEA DE PRECIOS Y STOCK (TICK VERDE)
+app.patch('/api/productos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { precio_efectivo, precio_tarjeta, inventario_talles } = req.body;
+    try {
+        await pool.query(
+            'UPDATE productos SET precio_efectivo = $1, precio_tarjeta = $2, inventario_talles = $3 WHERE id = $4',
+            [precio_efectivo, precio_tarjeta, inventario_talles, id]
+        );
+        res.json({ success: true, message: "Producto actualizado correctamente" });
+    } catch (error) {
+        console.error("Error al actualizar producto:", error);
+        res.status(500).json({ success: false, message: "Error al actualizar en la base de datos" });
+    }
+});
+
 app.delete('/api/productos/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -259,7 +275,7 @@ app.delete('/api/ventas/:id', async (req, res) => {
 });
 
 // ==========================================
-// 4. RUTAS PARA BANNERS
+// 4. RUTAS PARA BANNERS Y CUPONES
 // ==========================================
 app.get('/api/banners/home', async (req, res) => {
     try {
@@ -297,9 +313,6 @@ app.delete('/api/banners/:id', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Error interno" }); }
 });
 
-// ==========================================
-// 5. RUTAS DE CUPONES
-// ==========================================
 app.post('/api/validar-cupon', async (req, res) => {
     const { codigo } = req.body;
     if(!codigo) return res.status(400).json({ success: false, message: "Código vacío" });
