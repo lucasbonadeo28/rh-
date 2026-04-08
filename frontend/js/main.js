@@ -41,7 +41,6 @@ window.onload = async () => {
     await fetchBanners();
     await fetchProductos(); 
     
-    // Ahora esta función llama directo a la Base de Datos
     await renderizarCategoriasDinamicas();
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
@@ -66,10 +65,21 @@ window.onload = async () => {
     }
 };
 
+// NUEVA FUNCIÓN: Procesa el texto de la BD y devuelve un array de fotos
+function obtenerArrayImagenes(imgData) {
+    if (!imgData) return ['https://via.placeholder.com/400x500?text=Sin+Imagen'];
+    try {
+        const arr = JSON.parse(imgData);
+        if (Array.isArray(arr) && arr.length > 0) return arr;
+        return [imgData];
+    } catch(e) {
+        return [imgData];
+    }
+}
+
 async function renderizarCategoriasDinamicas() {
     let categoriasUnicas = [];
     
-    // Le pedimos las categorías a tu base de datos
     try {
         const res = await fetch(`${API}/categorias`);
         if (res.ok) {
@@ -453,10 +463,13 @@ function generarGridHTML(lista) {
         const productoAgotado = stockTotalPrenda <= 0; 
 
         const esFav = favoritos.includes(p.id) ? 'active' : ''; 
-        const imgUrl = p.imagen_url || 'https://via.placeholder.com/400x500?text=Sin+Imagen';
         const nombre = p.nombre || 'Producto sin nombre';
         const pTarj = p.precio_tarjeta || p.tarjeta || 0;
         const pEfvo = p.precio_efectivo || p.efectivo || 0;
+
+        // ACÁ AGARRAMOS LA FOTO 0 PARA EL GRID PRINCIPAL
+        const arrayFotos = obtenerArrayImagenes(p.imagen_url);
+        const imgUrl = arrayFotos[0];
 
         return `
         <div class="card">
@@ -594,7 +607,21 @@ function abrirDetalle(id) {
 
     talleTemporal = null; 
 
-    document.getElementById('det-img-url').src = prodSeleccionado.imagen_url || 'https://via.placeholder.com/400x500?text=Sin+Imagen'; 
+    // MINI GALERÍA
+    const arrayFotos = obtenerArrayImagenes(prodSeleccionado.imagen_url);
+    document.getElementById('det-img-url').src = arrayFotos[0]; 
+
+    const galeria = document.getElementById('det-mini-gallery');
+    if (galeria) {
+        if (arrayFotos.length > 1) {
+            galeria.innerHTML = arrayFotos.map(src => `<img src="${src}" onclick="document.getElementById('det-img-url').src = this.src" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #ccc;">`).join('');
+            galeria.style.display = 'flex';
+        } else {
+            galeria.style.display = 'none';
+            galeria.innerHTML = '';
+        }
+    }
+
     document.getElementById('det-titulo').innerText = prodSeleccionado.nombre || 'Producto'; 
     document.getElementById('det-precio-tarj').innerText = `$${prodSeleccionado.precio_tarjeta || prodSeleccionado.tarjeta || 0} Tarjeta`; 
     document.getElementById('det-precio-efvo').innerText = `$${prodSeleccionado.precio_efectivo || prodSeleccionado.efectivo || 0} Transf.`; 
@@ -669,6 +696,8 @@ function agregarDesdeDetalle() {
     const idUnico = `${prodSeleccionado.id}-${talleElegido}`; 
     const item = carrito.find(i => i.idUnico === idUnico); 
     
+    const fotoCarrito = obtenerArrayImagenes(prodSeleccionado.imagen_url)[0];
+
     if(item) { 
         item.cantidad++; 
     } else { 
@@ -680,7 +709,7 @@ function agregarDesdeDetalle() {
             precio_efectivo: prodSeleccionado.precio_efectivo || prodSeleccionado.efectivo, 
             precio_tarjeta: prodSeleccionado.precio_tarjeta || prodSeleccionado.tarjeta, 
             cantidad: 1, 
-            imagen_url: prodSeleccionado.imagen_url 
+            imagen_url: fotoCarrito 
         }); 
     } 
     

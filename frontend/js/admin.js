@@ -153,7 +153,7 @@ function cerrarCustomConfirm() {
     }, 200);
 }
 
-document.getElementById('btn-confirmar-accion').addEventListener('click', () => {
+document.getElementById('btn-confirmar-accion')?.addEventListener('click', () => {
     if (accionConfirmada) accionConfirmada();
     cerrarCustomConfirm();
 });
@@ -162,14 +162,15 @@ function mostrarNombreArchivo(input, labelId, textoDefault) {
     const label = document.getElementById(labelId);
     const span = label.querySelector('span');
     const icon = label.querySelector('i');
+    
     if (input.files && input.files.length > 0) {
-        span.innerText = input.files[0].name; 
+        span.innerText = input.files.length === 1 ? input.files[0].name : `${input.files.length} fotos elegidas`; 
         label.classList.add('selected'); 
         icon.className = 'fas fa-check-circle'; 
     } else {
         span.innerText = textoDefault; 
         label.classList.remove('selected'); 
-        icon.className = labelId === 'label-add-img' || labelId === 'label-add-banner-file' ? 'fas fa-camera' : 'fas fa-image';
+        icon.className = 'fas fa-camera';
     }
     label.classList.remove('input-error');
 }
@@ -223,7 +224,7 @@ async function cargarTodo() {
     }
 }
 
-// LÓGICA DE CATEGORÍAS
+// LÓGICA CATEGORÍAS
 async function cargarCategorias() {
     try {
         const res = await fetchSeguro(`${API}/categorias`);
@@ -309,6 +310,314 @@ function eliminarCategoria(id) {
     });
 }
 
+// LÓGICA INVENTARIO - TICK VERDE
+function renderStock() {
+    const inicio = (pagina - 1) * pPorPagina; 
+    const items = pFiltrados.slice(inicio, inicio + pPorPagina);
+    
+    document.getElementById('body-inventario').innerHTML = items.map(p => {
+        let tallesTxt = "";
+        let stockTotalSumado = 0;
+
+        if (p.inventario_talles && typeof p.inventario_talles === 'object') {
+            tallesTxt = Object.entries(p.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
+            Object.values(p.inventario_talles).forEach(cantidad => {
+                stockTotalSumado += parseInt(cantidad) || 0;
+            });
+        }
+
+        // Obtener la foto principal (si es un array de fotos)
+        let mainImg = 'https://via.placeholder.com/60';
+        try { 
+            const arr = JSON.parse(p.imagen_url); 
+            if(Array.isArray(arr) && arr.length > 0) mainImg = arr[0]; 
+            else mainImg = p.imagen_url; 
+        } catch(e) { 
+            mainImg = p.imagen_url; 
+        }
+
+        return `
+        <tr>
+            <td><img src="${mainImg}" style="width:60px;height:60px;object-fit:cover; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></td>
+            <td><strong>${p.nombre}</strong><br><small style="color:gray">${p.categoria}</small></td>
+            <td><input type="number" id="efvo-${p.id}" value="${p.precio_efectivo}" style="width:90px; padding:5px;"></td>
+            <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
+            <td>
+                <input type="text" id="talles-${p.id}" value="${tallesTxt}" style="width:150px; margin-bottom:5px; padding:5px;" placeholder="S:10, M:5">
+                <br><small style="color:#27ae60; font-weight:bold;">Stock Total: ${stockTotalSumado}</small>
+            </td>
+            <td style="text-align: center; vertical-align: middle;">
+                <div style="display: flex; justify-content: center; gap: 8px;">
+                    <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Cambios">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="borrarP(${p.id})" title="Eliminar Producto">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+    
+    document.getElementById('pagi-info').innerText = `Página ${pagina}`; 
+    document.getElementById('pagi-anterior').disabled = pagina === 1; 
+    document.getElementById('pagi-siguiente').disabled = inicio + pPorPagina >= pFiltrados.length;
+}
+
+// FUNCIÓN PARA EL TICK VERDE
+async function guardarEdicionFila(id, event) {
+    const efvo = document.getElementById(`efvo-${id}`).value;
+    const tarj = document.getElementById(`tarj-${id}`).value;
+    const tallesTxt = document.getElementById(`talles-${id}`).value.trim();
+
+    let inventarioFinal = {};
+    if (tallesTxt) {
+        tallesTxt.split(',').forEach(item => {
+            const parts = item.split(':');
+            if (parts.length === 2) {
+                inventarioFinal[parts[0].trim().toUpperCase()] = parseInt(parts[1].trim());
+            }
+        });
+    } else {
+        return showCustomAlert("Debes ingresar al menos un talle o ÚNICO:1", "error", false);
+    }
+
+    const btn = event.currentTarget;
+    const ogHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        const res = await fetchSeguro(`${API}/productos/${id}`, {
+            method: 'PATCH', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                precio_efectivo: efvo, 
+                precio_tarjeta: tarj, 
+                inventario_talles: inventarioFinal 
+            })
+        });
+
+        if (res.ok) {
+            showCustomAlert("¡Cambios guardados correctamente!", "success", false);
+            const resI = await fetchSeguro(`${API}/productos`); 
+            pTotales = await resI.json(); 
+            pFiltrados = [...pTotales]; 
+            renderStock();
+        } else {
+            showCustomAlert("Error al actualizar el producto.", "error", false);
+            btn.innerHTML = ogHtml;
+            btn.disabled = false;
+        }
+    } catch(e) { 
+        showCustomAlert("Error de conexión.", "error", false);
+        btn.innerHTML = ogHtml;
+        btn.disabled = false;
+    }
+}
+
+function borrarP(id) { 
+    showCustomConfirm('¿Seguro que querés borrar este producto de la base de datos?', async () => {
+        try {
+            const res = await fetchSeguro(`${API}/productos/${id}`, { method: 'DELETE' });
+            if(res.ok) {
+                showCustomAlert("Producto eliminado correctamente", "success", false); 
+                const resI = await fetchSeguro(`${API}/productos`); 
+                pTotales = await resI.json(); 
+                pFiltrados = [...pTotales]; 
+                renderStock();
+            } else {
+                showCustomAlert("Error al eliminar el producto.", "error", false);
+            }
+        } catch (error) {
+            showCustomAlert("Error de conexión.", "error", false);
+        }
+    }, "Sí, borrar");
+}
+
+function paginaSiguiente() { 
+    const inicio = (pagina - 1) * pPorPagina;
+    if (inicio + pPorPagina < pFiltrados.length) {
+        pagina++; 
+        renderStock(); 
+    }
+}
+
+function paginaAnterior() { 
+    if (pagina > 1) {
+        pagina--; 
+        renderStock(); 
+    }
+}
+
+function filtrarInventario() { 
+    const txt = document.getElementById('buscador-admin').value.toLowerCase(); 
+    pFiltrados = txt === "" ? [...pTotales] : pTotales.filter(p => p.nombre.toLowerCase().includes(txt)); 
+    pagina = 1; 
+    renderStock(); 
+}
+
+function toggleTalleUnico() { 
+    const esUnico = document.getElementById('chk-unico').checked; 
+    document.getElementById('add-talles').style.display = esUnico ? 'none' : 'block'; 
+    document.getElementById('add-stock-unico').style.display = esUnico ? 'block' : 'none';
+    document.getElementById('add-talles').classList.remove('input-error');
+    document.getElementById('add-stock-unico').classList.remove('input-error');
+}
+
+function validarLetras(input) { 
+    input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''); 
+}
+
+function validarNumeros(input) { 
+    input.value = input.value.replace(/[^0-9]/g, ''); 
+}
+
+// PROCESADOR DE IMÁGENES MULTIPLES
+const procesarImg = (file) => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image(); 
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; 
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        };
+        reader.readAsDataURL(file);
+    });
+};
+
+async function crearProducto() { 
+    const btn = document.getElementById('btn-crear-producto');
+    const nombre = document.getElementById('add-nombre').value.trim();
+    const categoria = document.getElementById('add-categoria').value;
+    const pTarj = document.getElementById('add-precio-tarj').value;
+    const pEfvo = document.getElementById('add-precio-efvo').value;
+    const desc = document.getElementById('add-descripcion').value.trim();
+    const esUnico = document.getElementById('chk-unico').checked;
+    const imgInput = document.getElementById('add-img');
+
+    let error = false;
+
+    if (!nombre) { document.getElementById('add-nombre').classList.add('input-error'); error = true; }
+    if (!categoria) { document.getElementById('add-categoria').classList.add('input-error'); error = true; }
+    if (!pTarj) { document.getElementById('add-precio-tarj').classList.add('input-error'); error = true; }
+    if (!pEfvo) { document.getElementById('add-precio-efvo').classList.add('input-error'); error = true; }
+    if (!desc) { document.getElementById('add-descripcion').classList.add('input-error'); error = true; }
+    
+    if (!imgInput.files || imgInput.files.length === 0) {
+        document.getElementById('label-add-img').classList.add('input-error');
+        error = true;
+    }
+
+    let inventarioFinal = {};
+    let stockIngresado = 0;
+
+    if (esUnico) {
+        const stock = document.getElementById('add-stock-unico').value;
+        if (!stock) { document.getElementById('add-stock-unico').classList.add('input-error'); error = true; }
+        else { 
+            inventarioFinal["ÚNICO"] = parseInt(stock); 
+            stockIngresado = parseInt(stock);
+        }
+    } else {
+        const tallesTxt = document.getElementById('add-talles').value.trim();
+        if (!tallesTxt) { document.getElementById('add-talles').classList.add('input-error'); error = true; }
+        else {
+            tallesTxt.split(',').forEach(item => {
+                const parts = item.split(':');
+                if(parts.length === 2) {
+                    let cant = parseInt(parts[1].trim());
+                    inventarioFinal[parts[0].trim().toUpperCase()] = cant;
+                    stockIngresado += cant;
+                }
+            });
+        }
+    }
+
+    if(error) return showCustomAlert("Por favor, completá todos los recuadros y seleccioná al menos una foto.", "error", false);
+    if(stockIngresado <= 0) return showCustomAlert("El stock no puede ser 0.", "error", false);
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+    btn.disabled = true;
+
+    try {
+        const base64Images = [];
+        const filesToProcess = Array.from(imgInput.files).slice(0, 5); // Limitar a 5 fotos máximo
+        
+        for (let file of filesToProcess) { 
+            base64Images.push(await procesarImg(file)); 
+        }
+        
+        const imgDataToSave = JSON.stringify(base64Images);
+
+        const res = await fetchSeguro(`${API}/productos`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                nombre: nombre,
+                categoria: categoria,
+                precio_efectivo: pEfvo,
+                precio_tarjeta: pTarj,
+                descripcion: desc,
+                inventario_talles: inventarioFinal,
+                imagen_url: imgDataToSave
+            })
+        });
+
+        if(res.ok) {
+            showCustomAlert("¡Producto guardado exitosamente!", "success", false);
+            
+            document.getElementById('add-nombre').value = '';
+            document.getElementById('add-categoria').value = '';
+            document.getElementById('add-precio-tarj').value = '';
+            document.getElementById('add-precio-efvo').value = '';
+            document.getElementById('add-descripcion').value = '';
+            document.getElementById('add-talles').value = '';
+            document.getElementById('add-stock-unico').value = '';
+            imgInput.value = '';
+            mostrarNombreArchivo(imgInput, 'label-add-img', 'Abrir Galería');
+
+            const resI = await fetchSeguro(`${API}/productos`); 
+            pTotales = await resI.json(); 
+            pFiltrados = [...pTotales]; 
+            renderStock();
+        } else {
+            showCustomAlert("Error al guardar el producto.", "error", false);
+        }
+    } catch(e) {
+        showCustomAlert("Error de conexión con el servidor.", "error", false);
+    }
+    
+    btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
+    btn.disabled = false;
+}
+
+// PEDIDOS
 function renderPedidos() {
     const inicio = (vPagina - 1) * vPorPagina; 
     const items = vTotales.slice(inicio, inicio + vPorPagina);
@@ -344,8 +653,8 @@ function renderPedidos() {
                 <td><strong style="color:#27ae60;">$${v.total}</strong></td>
                 <td style="text-align: center; vertical-align: middle;">
                     <div style="display: flex; justify-content: center; gap: 8px;">
-                        ${v.estado !== 'Completado' ? `<button style="background: #27ae60; color: white; border: none; border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onclick="completarPedido(${v.id})" title="Marcar como Realizado"><i class="fas fa-check"></i></button>` : ''}
-                        <button style="background: #ff6b6b; color: white; border: none; border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onclick="eliminarPedido(${v.id})" title="Borrar Pedido"><i class="fas fa-trash-alt"></i></button>
+                        ${v.estado !== 'Completado' ? `<button style="background: #27ae60; color: white; border: none; border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;" onclick="completarPedido(${v.id})" title="Marcar como Realizado"><i class="fas fa-check"></i></button>` : ''}
+                        <button style="background: #ff6b6b; color: white; border: none; border-radius: 6px; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;" onclick="eliminarPedido(${v.id})" title="Borrar Pedido"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </td>
             </tr>
@@ -364,13 +673,10 @@ function completarPedido(id) {
             const res = await fetchSeguro(`${API}/ventas/${id}/completar`, { method: 'PATCH' });
             if(res.ok) {
                 showCustomAlert("Pedido completado", "success", false);
-                const resVentas = await fetchSeguro(`${API}/ventas`); 
-                if (resVentas.ok) {
-                    ventasDataGlobal = await resVentas.json();
-                    vTotales = [...ventasDataGlobal];
-                    renderPedidos();
-                    generarEstadisticasMensuales();
-                }
+                ventasDataGlobal = await (await fetchSeguro(`${API}/ventas`)).json();
+                vTotales = [...ventasDataGlobal];
+                renderPedidos();
+                generarEstadisticasMensuales();
             } else {
                 showCustomAlert("Error al actualizar el pedido.", "error", false);
             }
@@ -386,13 +692,10 @@ function eliminarPedido(id) {
             const res = await fetchSeguro(`${API}/ventas/${id}`, { method: 'DELETE' });
             if(res.ok) {
                 showCustomAlert("Pedido eliminado", "success", false);
-                const resVentas = await fetchSeguro(`${API}/ventas`); 
-                if (resVentas.ok) {
-                    ventasDataGlobal = await resVentas.json();
-                    vTotales = [...ventasDataGlobal];
-                    renderPedidos();
-                    generarEstadisticasMensuales();
-                }
+                ventasDataGlobal = await (await fetchSeguro(`${API}/ventas`)).json();
+                vTotales = [...ventasDataGlobal];
+                renderPedidos();
+                generarEstadisticasMensuales();
             } else {
                 showCustomAlert("Error al eliminar el pedido.", "error", false);
             }
@@ -610,7 +913,7 @@ async function agregarCupon(e) {
     } catch (error) {
         showCustomAlert("Error de conexión.", "error", false);
     }
-    btn.innerHTML = '<i class="fas fa-plus"></i> Crear';
+    btn.innerHTML = 'Crear';
     btn.disabled = false;
 }
 
@@ -624,243 +927,6 @@ function eliminarCupon(id) {
             showCustomAlert("Error al eliminar", "error", false);
         }
     }, "Sí, borrar");
-}
-
-function renderStock() {
-    const inicio = (pagina - 1) * pPorPagina; 
-    const items = pFiltrados.slice(inicio, inicio + pPorPagina);
-    
-    document.getElementById('body-inventario').innerHTML = items.map(p => {
-        let tallesTxt = "";
-        let stockTotalSumado = 0;
-
-        if (p.inventario_talles && typeof p.inventario_talles === 'object') {
-            tallesTxt = Object.entries(p.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
-            Object.values(p.inventario_talles).forEach(cantidad => {
-                stockTotalSumado += parseInt(cantidad) || 0;
-            });
-        }
-
-        return `
-        <tr>
-            <td><img src="${p.imagen_url}" style="width:60px;height:60px;object-fit:cover; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></td>
-            <td><strong>${p.nombre}</strong><br><small style="color:gray">${p.categoria}</small></td>
-            <td><input type="number" value="${p.precio_efectivo}" style="width:90px;" onchange="actPrecio(${p.id}, 'efectivo', this.value)"></td>
-            <td><input type="number" value="${p.precio_tarjeta}" style="width:90px;" onchange="actPrecio(${p.id}, 'tarjeta', this.value)"></td>
-            <td>
-                <input type="text" value="${tallesTxt}" style="width:150px; margin-bottom:5px;" onchange="actTalles(${p.id}, this.value)" placeholder="S:10, M:5">
-                <br><small style="color:#27ae60; font-weight:bold;">Stock Total Sumado: ${stockTotalSumado}</small>
-            </td>
-            <td><button class="btn-secundario" onclick="borrarP(${p.id})"><i class="fas fa-trash"></i></button></td>
-        </tr>`;
-    }).join('');
-    
-    document.getElementById('pagi-info').innerText = `Página ${pagina}`; 
-    document.getElementById('pagi-anterior').disabled = pagina === 1; 
-    document.getElementById('pagi-siguiente').disabled = inicio + pPorPagina >= pFiltrados.length;
-}
-
-function toggleTalleUnico() { 
-    const esUnico = document.getElementById('chk-unico').checked; 
-    document.getElementById('add-talles').style.display = esUnico ? 'none' : 'block'; 
-    document.getElementById('add-stock-unico').style.display = esUnico ? 'block' : 'none';
-    document.getElementById('add-talles').classList.remove('input-error');
-    document.getElementById('add-stock-unico').classList.remove('input-error');
-}
-
-function validarLetras(input) { 
-    input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''); 
-}
-
-function validarNumeros(input) { 
-    input.value = input.value.replace(/[^0-9]/g, ''); 
-}
-
-async function crearProducto() { 
-    const btn = document.getElementById('btn-crear-producto');
-    const nombre = document.getElementById('add-nombre').value.trim();
-    const categoria = document.getElementById('add-categoria').value;
-    const pTarj = document.getElementById('add-precio-tarj').value;
-    const pEfvo = document.getElementById('add-precio-efvo').value;
-    const desc = document.getElementById('add-descripcion').value.trim();
-    const esUnico = document.getElementById('chk-unico').checked;
-    const imgInput = document.getElementById('add-img');
-
-    let error = false;
-
-    if (!nombre) { document.getElementById('add-nombre').classList.add('input-error'); error = true; }
-    if (!categoria) { document.getElementById('add-categoria').classList.add('input-error'); error = true; }
-    if (!pTarj) { document.getElementById('add-precio-tarj').classList.add('input-error'); error = true; }
-    if (!pEfvo) { document.getElementById('add-precio-efvo').classList.add('input-error'); error = true; }
-    if (!desc) { document.getElementById('add-descripcion').classList.add('input-error'); error = true; }
-    
-    if (!imgInput.files || imgInput.files.length === 0) {
-        document.getElementById('label-add-img').classList.add('input-error');
-        error = true;
-    }
-
-    let inventarioFinal = {};
-    let stockIngresado = 0;
-
-    if (esUnico) {
-        const stock = document.getElementById('add-stock-unico').value;
-        if (!stock) { document.getElementById('add-stock-unico').classList.add('input-error'); error = true; }
-        else { 
-            inventarioFinal["ÚNICO"] = parseInt(stock); 
-            stockIngresado = parseInt(stock);
-        }
-    } else {
-        const tallesTxt = document.getElementById('add-talles').value.trim();
-        if (!tallesTxt) { document.getElementById('add-talles').classList.add('input-error'); error = true; }
-        else {
-            tallesTxt.split(',').forEach(item => {
-                const parts = item.split(':');
-                if(parts.length === 2) {
-                    let cant = parseInt(parts[1].trim());
-                    inventarioFinal[parts[0].trim().toUpperCase()] = cant;
-                    stockIngresado += cant;
-                }
-            });
-        }
-    }
-
-    if(error) return showCustomAlert("Por favor, completá todos los recuadros en rojo y seleccioná una foto.", "error", false);
-
-    if(stockIngresado <= 0) {
-        return showCustomAlert("El stock no puede ser 0. Ingresá al menos 1 unidad válida.", "error", false);
-    }
-
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
-    btn.disabled = true;
-
-    const file = imgInput.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-        const img = new Image();
-        img.src = e.target.result;
-        
-        img.onload = async () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 800; 
-            const MAX_HEIGHT = 800;
-            let width = img.width;
-            let height = img.height;
-
-            if (width > height) {
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-            } else {
-                if (height > MAX_HEIGHT) {
-                    width *= MAX_HEIGHT / height;
-                    height = MAX_HEIGHT;
-                }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-
-            const imgBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-            try {
-                const res = await fetchSeguro(`${API}/productos`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        nombre: nombre,
-                        categoria: categoria,
-                        precio_efectivo: pEfvo,
-                        precio_tarjeta: pTarj,
-                        descripcion: desc,
-                        inventario_talles: inventarioFinal,
-                        imagen_url: imgBase64
-                    })
-                });
-
-                if(res.ok) {
-                    showCustomAlert("¡Producto guardado exitosamente!", "success", false);
-                    
-                    document.getElementById('add-nombre').value = '';
-                    document.getElementById('add-categoria').value = '';
-                    document.getElementById('add-precio-tarj').value = '';
-                    document.getElementById('add-precio-efvo').value = '';
-                    document.getElementById('add-descripcion').value = '';
-                    document.getElementById('add-talles').value = '';
-                    document.getElementById('add-stock-unico').value = '';
-                    imgInput.value = '';
-                    mostrarNombreArchivo(imgInput, 'label-add-img', 'Abrir Galería');
-
-                    const resI = await fetchSeguro(`${API}/productos`); 
-                    const dataI = await resI.json(); 
-                    pTotales = dataI; 
-                    pFiltrados = [...pTotales]; 
-                    renderStock();
-                } else {
-                    showCustomAlert("Error al guardar el producto en la base de datos.", "error", false);
-                }
-            } catch(e) {
-                showCustomAlert("Error de conexión con el servidor.", "error", false);
-            }
-            
-            btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
-            btn.disabled = false;
-        };
-    };
-    reader.readAsDataURL(file);
-}
-
-async function actPrecio(id, tipo, valor) { 
-    console.log(`Actualizar precio ${tipo} del prod ${id} a ${valor}`); 
-}
-
-async function actTalles(id, txt) { 
-    console.log(`Actualizar json talles del prod ${id} a: ${txt}`); 
-}
-
-function borrarP(id) { 
-    showCustomConfirm('¿Seguro que querés borrar este producto de la base de datos? Es irreversible.', async () => {
-        try {
-            const res = await fetchSeguro(`${API}/productos/${id}`, { method: 'DELETE' });
-            if(res.ok) {
-                showCustomAlert("Producto eliminado correctamente", "success", false); 
-                const resI = await fetchSeguro(`${API}/productos`); 
-                const dataI = await resI.json(); 
-                pTotales = dataI; 
-                pFiltrados = [...pTotales]; 
-                renderStock();
-            } else {
-                showCustomAlert("Error al eliminar el producto.", "error", false);
-            }
-        } catch (error) {
-            showCustomAlert("Error de conexión al intentar borrar.", "error", false);
-        }
-    }, "Sí, borrar");
-}
-
-function paginaSiguiente() { 
-    const inicio = (pagina - 1) * pPorPagina;
-    if (inicio + pPorPagina < pFiltrados.length) {
-        pagina++; 
-        renderStock(); 
-    }
-}
-
-function paginaAnterior() { 
-    if (pagina > 1) {
-        pagina--; 
-        renderStock(); 
-    }
-}
-
-function filtrarInventario() { 
-    const txt = document.getElementById('buscador-admin').value.toLowerCase(); 
-    pFiltrados = txt === "" ? [...pTotales] : pTotales.filter(p => p.nombre.toLowerCase().includes(txt)); 
-    pagina = 1; 
-    renderStock(); 
 }
 
 function descargarExcel() { 
