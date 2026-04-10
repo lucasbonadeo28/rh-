@@ -1834,3 +1834,78 @@ nav {
     animation: girarRuedita 1.2s linear infinite;
     display: inline-block;
 }
+
+/* ==========================================================
+   ESTILOS PARA LA GALERÍA DEL MODAL DE DETALLE (ARREGLO DE FOTOS)
+   ========================================================== */
+
+/* 1. Transición suave para la imagen principal al cambiar */
+.product-detail-modal .detail-img img#det-img-url {
+    transition: opacity 0.2s ease;
+    opacity: 1;
+}
+
+/* 2. Contenedor de la mini galería (miniaturas) */
+.product-detail-modal .detail-img #det-mini-gallery {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    justify-content: center;
+    width: 100%;
+}
+
+/* 3. Estilos básicos de las imágenes de la mini galería */
+.product-detail-modal .detail-img #det-mini-gallery img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+/* 4. Efecto hover suave al pasar el mouse por encima */
+.product-detail-modal .detail-img #det-mini-gallery img:hover {
+    border-color: #ddd;
+}
+
+/* 5. Clase para la miniatura SELECCIONADA (tick verde) */
+.product-detail-modal .detail-img #det-mini-gallery img.selected {
+    border-color: var(--success);
+    opacity: 1;
+}
+
+/* 6. Clase para las miniaturas NO seleccionadas (inactivas) */
+.product-detail-modal .detail-img #det-mini-gallery img.img-gall-inactive {
+    opacity: 0.6;
+    border-color: transparent;
+}
+
+/* ==========================================================
+   ARREGLO DE LA GALERÍA PARA COMPUTADORA (DESKTOP)
+   ========================================================== */
+
+/* Convertimos el contenedor izquierdo en una columna flex */
+.product-detail-modal .detail-img {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start;
+}
+
+/* Le ponemos un límite de alto a la foto principal */
+.product-detail-modal .detail-img img#det-img-url {
+    position: relative !important;
+    height: auto !important;
+    max-height: calc(100% - 90px) !important; 
+    object-fit: cover;
+}
+
+/* Aseguramos que la botonera de miniaturas se mantenga visible */
+.product-detail-modal .detail-img #det-mini-gallery {
+    position: relative !important;
+    z-index: 10 !important;
+    min-height: 70px;
+}
