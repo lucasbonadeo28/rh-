@@ -41,7 +41,7 @@ window.onload = async () => {
     await fetchBanners();
     await fetchProductos(); 
     
-    await renderizarCategoriasDinamicas();
+    renderizarCategoriasDinamicas();
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
@@ -71,9 +71,9 @@ function obtenerArrayImagenes(imgData) {
     try {
         const arr = JSON.parse(imgData);
         if (Array.isArray(arr) && arr.length > 0) return arr;
-        return [imgData];
+        return [imgData]; // Si falló o no es array, devuelve la foto vieja suelta
     } catch(e) {
-        return [imgData];
+        return [imgData]; // Fallback a la img vieja
     }
 }
 
@@ -593,6 +593,39 @@ function mostrarFavoritos() {
     }
 }
 
+// NUEVA FUNCIÓN: Cambia la imagen principal con un efecto suave al tocar la miniatura
+function cambiarImagenDetalle(imgElement) {
+    const imagenPrincipal = document.getElementById('det-img-url');
+    
+    // Primero, hacemos desaparecer la imagen principal (suavemente)
+    imagenPrincipal.style.opacity = '0.3'; 
+    
+    // Esperamos a que baje la opacidad y hacemos el cambio
+    setTimeout(() => {
+        // Cambiamos el src por el de la miniatura seleccionada
+        imagenPrincipal.src = imgElement.src; 
+        
+        // Volvemos a mostrarla (suavemente)
+        imagenPrincipal.style.opacity = '1';
+    }, 150); 
+
+    // Manejo de las clases 'selected' en la minigaleria para resaltado
+    const galeria = document.getElementById('det-mini-gallery');
+    if (galeria) {
+        // Sacamos 'selected' de todas las miniaturas
+        galeria.querySelectorAll('img').forEach(img => img.classList.remove('selected'));
+        
+        // Agregamos 'selected' (borde tick verde var(--success)) a la que tocamos
+        imgElement.classList.remove('img-gall-inactive'); 
+        imgElement.classList.add('selected'); 
+        
+        // Ponemos opacidad baja al resto de miniaturas (inactivas)
+        galeria.querySelectorAll('img:not(.selected)').forEach(img => {
+            img.classList.add('img-gall-inactive');
+        });
+    }
+}
+
 function seleccionarTalleDOM(elemento, talle) {
     const hermanos = elemento.parentElement.querySelectorAll('.talle-label');
     hermanos.forEach(el => el.classList.remove('selected'));
@@ -607,16 +640,47 @@ function abrirDetalle(id) {
 
     talleTemporal = null; 
 
-    // MINI GALERÍA
+    // MINI GALERÍA - LECTURA DE MÚLTIPLES FOTOS
     const arrayFotos = obtenerArrayImagenes(prodSeleccionado.imagen_url);
-    document.getElementById('det-img-url').src = arrayFotos[0]; 
+    const imagenPrincipal = document.getElementById('det-img-url');
+    
+    // Imagen principal inicial (la primera del array)
+    imagenPrincipal.src = arrayFotos[0]; 
+    imagenPrincipal.style.opacity = '1'; // Reseteamos opacidad por si acaso
 
+    // DIBUJAR MINI GALERÍA SI HAY MÁS DE 1 FOTO
     const galeria = document.getElementById('det-mini-gallery');
     if (galeria) {
         if (arrayFotos.length > 1) {
-            galeria.innerHTML = arrayFotos.map(src => `<img src="${src}" onclick="document.getElementById('det-img-url').src = this.src" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 1px solid #ccc;">`).join('');
+            // Limpiamos el contenedor
+            galeria.innerHTML = ''; 
+            
+            // Generamos las miniaturas dinámicamente con comportamiento y clases
+            arrayFotos.forEach((src, index) => {
+                const imgGall = document.createElement('img');
+                imgGall.src = src;
+                imgGall.alt = `Miniatura ${index + 1}`;
+                
+                // Clases y comportamiento al inicio
+                if (index === 0) {
+                    imgGall.classList.add('selected'); // La primera está seleccionada
+                } else {
+                    imgGall.classList.add('img-gall-inactive'); // El resto tienen opacidad suave
+                }
+                
+                // Comportamiento al tocar: Llama a la nueva función de cambio suave
+                imgGall.onclick = function() {
+                    cambiarImagenDetalle(this);
+                };
+                
+                // Agregamos al contenedor
+                galeria.appendChild(imgGall);
+            });
+            
+            // Aseguramos que se muestre con flex para que las miniaturas queden en fila
             galeria.style.display = 'flex';
         } else {
+            // Si hay 1 sola foto, ocultamos galería y limpiamos
             galeria.style.display = 'none';
             galeria.innerHTML = '';
         }
@@ -696,6 +760,7 @@ function agregarDesdeDetalle() {
     const idUnico = `${prodSeleccionado.id}-${talleElegido}`; 
     const item = carrito.find(i => i.idUnico === idUnico); 
     
+    // GUARDAR SIEMPRE LA FOTO 0 EN EL CARRITO
     const fotoCarrito = obtenerArrayImagenes(prodSeleccionado.imagen_url)[0];
 
     if(item) { 
