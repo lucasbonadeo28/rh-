@@ -18,6 +18,8 @@ let vistaActual = 'home';
 let categoriaActual = 'Todos';
 let ordenActual = 'default';
 let talleTemporal = null; 
+let imagenSeleccionadaUrl = '';     
+let indexImagenSeleccionada = 1;    
 
 window.onload = async () => { 
     window.scrollTo(0, 0);
@@ -41,7 +43,7 @@ window.onload = async () => {
     await fetchBanners();
     await fetchProductos(); 
     
-    renderizarCategoriasDinamicas();
+    await renderizarCategoriasDinamicas();
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
@@ -65,15 +67,14 @@ window.onload = async () => {
     }
 };
 
-// NUEVA FUNCIÓN: Procesa el texto de la BD y devuelve un array de fotos
 function obtenerArrayImagenes(imgData) {
     if (!imgData) return ['https://via.placeholder.com/400x500?text=Sin+Imagen'];
     try {
         const arr = JSON.parse(imgData);
         if (Array.isArray(arr) && arr.length > 0) return arr;
-        return [imgData]; // Si falló o no es array, devuelve la foto vieja suelta
+        return [imgData];
     } catch(e) {
-        return [imgData]; // Fallback a la img vieja
+        return [imgData];
     }
 }
 
@@ -467,7 +468,6 @@ function generarGridHTML(lista) {
         const pTarj = p.precio_tarjeta || p.tarjeta || 0;
         const pEfvo = p.precio_efectivo || p.efectivo || 0;
 
-        // ACÁ AGARRAMOS LA FOTO 0 PARA EL GRID PRINCIPAL
         const arrayFotos = obtenerArrayImagenes(p.imagen_url);
         const imgUrl = arrayFotos[0];
 
@@ -593,33 +593,23 @@ function mostrarFavoritos() {
     }
 }
 
-// NUEVA FUNCIÓN: Cambia la imagen principal con un efecto suave al tocar la miniatura
 function cambiarImagenDetalle(imgElement) {
     const imagenPrincipal = document.getElementById('det-img-url');
     
-    // Primero, hacemos desaparecer la imagen principal (suavemente)
     imagenPrincipal.style.opacity = '0.3'; 
     
-    // Esperamos a que baje la opacidad y hacemos el cambio
     setTimeout(() => {
-        // Cambiamos el src por el de la miniatura seleccionada
         imagenPrincipal.src = imgElement.src; 
-        
-        // Volvemos a mostrarla (suavemente)
         imagenPrincipal.style.opacity = '1';
     }, 150); 
 
-    // Manejo de las clases 'selected' en la minigaleria para resaltado
     const galeria = document.getElementById('det-mini-gallery');
     if (galeria) {
-        // Sacamos 'selected' de todas las miniaturas
         galeria.querySelectorAll('img').forEach(img => img.classList.remove('selected'));
         
-        // Agregamos 'selected' (borde tick verde var(--success)) a la que tocamos
         imgElement.classList.remove('img-gall-inactive'); 
         imgElement.classList.add('selected'); 
         
-        // Ponemos opacidad baja al resto de miniaturas (inactivas)
         galeria.querySelectorAll('img:not(.selected)').forEach(img => {
             img.classList.add('img-gall-inactive');
         });
@@ -640,47 +630,41 @@ function abrirDetalle(id) {
 
     talleTemporal = null; 
 
-    // MINI GALERÍA - LECTURA DE MÚLTIPLES FOTOS
     const arrayFotos = obtenerArrayImagenes(prodSeleccionado.imagen_url);
     const imagenPrincipal = document.getElementById('det-img-url');
     
-    // Imagen principal inicial (la primera del array)
     imagenPrincipal.src = arrayFotos[0]; 
-    imagenPrincipal.style.opacity = '1'; // Reseteamos opacidad por si acaso
+    imagenPrincipal.style.opacity = '1'; 
+    imagenSeleccionadaUrl = arrayFotos[0];
+    indexImagenSeleccionada = 1;
 
-    // DIBUJAR MINI GALERÍA SI HAY MÁS DE 1 FOTO
     const galeria = document.getElementById('det-mini-gallery');
     if (galeria) {
         if (arrayFotos.length > 1) {
-            // Limpiamos el contenedor
             galeria.innerHTML = ''; 
             
-            // Generamos las miniaturas dinámicamente con comportamiento y clases
             arrayFotos.forEach((src, index) => {
                 const imgGall = document.createElement('img');
                 imgGall.src = src;
                 imgGall.alt = `Miniatura ${index + 1}`;
                 
-                // Clases y comportamiento al inicio
                 if (index === 0) {
-                    imgGall.classList.add('selected'); // La primera está seleccionada
+                    imgGall.classList.add('selected'); 
                 } else {
-                    imgGall.classList.add('img-gall-inactive'); // El resto tienen opacidad suave
+                    imgGall.classList.add('img-gall-inactive'); 
                 }
                 
-                // Comportamiento al tocar: Llama a la nueva función de cambio suave
                 imgGall.onclick = function() {
                     cambiarImagenDetalle(this);
+                    imagenSeleccionadaUrl = this.src;
+                    indexImagenSeleccionada = index + 1; 
                 };
                 
-                // Agregamos al contenedor
                 galeria.appendChild(imgGall);
             });
             
-            // Aseguramos que se muestre con flex para que las miniaturas queden en fila
             galeria.style.display = 'flex';
         } else {
-            // Si hay 1 sola foto, ocultamos galería y limpiamos
             galeria.style.display = 'none';
             galeria.innerHTML = '';
         }
@@ -757,11 +741,10 @@ function agregarDesdeDetalle() {
         talleElegido = 'ÚNICO';
     }
     
-    const idUnico = `${prodSeleccionado.id}-${talleElegido}`; 
-    const item = carrito.find(i => i.idUnico === idUnico); 
+    const talleFinal = `${talleElegido} (Foto ${indexImagenSeleccionada})`;
     
-    // GUARDAR SIEMPRE LA FOTO 0 EN EL CARRITO
-    const fotoCarrito = obtenerArrayImagenes(prodSeleccionado.imagen_url)[0];
+    const idUnico = `${prodSeleccionado.id}-${talleFinal}`; 
+    const item = carrito.find(i => i.idUnico === idUnico); 
 
     if(item) { 
         item.cantidad++; 
@@ -769,12 +752,12 @@ function agregarDesdeDetalle() {
         carrito.push({ 
             idUnico: idUnico, 
             id: prodSeleccionado.id, 
-            nombre: `${prodSeleccionado.nombre} (${talleElegido})`, 
-            talle: talleElegido, 
+            nombre: prodSeleccionado.nombre, 
+            talle: talleFinal, 
             precio_efectivo: prodSeleccionado.precio_efectivo || prodSeleccionado.efectivo, 
             precio_tarjeta: prodSeleccionado.precio_tarjeta || prodSeleccionado.tarjeta, 
             cantidad: 1, 
-            imagen_url: fotoCarrito 
+            imagen_url: imagenSeleccionadaUrl 
         }); 
     } 
     
