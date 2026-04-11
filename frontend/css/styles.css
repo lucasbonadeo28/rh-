@@ -72,10 +72,10 @@ html[data-vista-activa="favoritos"] .main-catalogo {
 /* === CINTA SUPERIOR CON LOOP INFINITO Y LENTO ========== */
 /* ======================================================= */
 .top-marquee {
-    background-color: var(--brand-brown); /* FONDO ARENA */
-    color: var(--primary); /* LETRAS NEGRAS */
-    padding: 8px 0;
-    font-size: 0.65rem;
+    background-color: var(--brand-brown); 
+    color: var(--primary); 
+    padding: 6px 0; /* Más afinado */
+    font-size: 0.55rem; /* Letra más chica */
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
@@ -90,7 +90,7 @@ html[data-vista-activa="favoritos"] .main-catalogo {
     flex-shrink: 0;
     gap: 100px; 
     padding-right: 100px; 
-    animation: marqueeLoop 40s linear infinite; 
+    animation: marqueeLoop 100s linear infinite; /* Va súper lento ahora */
 }
 
 .marquee-content span {
