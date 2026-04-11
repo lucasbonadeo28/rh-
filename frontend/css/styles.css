@@ -69,38 +69,40 @@ html[data-vista-activa="favoritos"] .main-catalogo {
 }
 
 /* ======================================================= */
-/* === CINTA SUPERIOR CON LOOP INFINITO Y LENTO ========== */
+/* === CARRUSEL SUPERIOR (2 ANUNCIOS ANIMADOS) =========== */
 /* ======================================================= */
 .top-marquee {
     background-color: var(--brand-brown); 
     color: var(--primary); 
-    padding: 6px 0; /* Más afinado */
-    font-size: 0.55rem; /* Letra más chica */
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    overflow: hidden; 
-    white-space: nowrap; 
-    display: flex; 
+    height: 28px; 
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
 }
 
-.marquee-content {
-    display: flex;
-    flex-shrink: 0;
-    gap: 100px; 
-    padding-right: 100px; 
-    animation: marqueeLoop 100s linear infinite; /* Va súper lento ahora */
-}
-
-.marquee-content span {
-    color: var(--primary) !important;
+.marquee-item {
+    position: absolute;
+    font-size: 0.65rem;
     font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-align: center;
+    width: 100%;
+    padding: 0 15px;
+    opacity: 0; 
+    animation: slideCarouselDos 10s infinite; 
 }
 
-@keyframes marqueeLoop {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(0); } 
+.marquee-item:nth-child(1) { animation-delay: 0s; }
+.marquee-item:nth-child(2) { animation-delay: 5s; }
+
+@keyframes slideCarouselDos {
+    0% { opacity: 0; transform: translateY(10px); }
+    5%, 45% { opacity: 1; transform: translateY(0); }
+    50%, 100% { opacity: 0; transform: translateY(-10px); }
 }
 
 /* ======================================================= */
@@ -248,6 +250,65 @@ nav {
 .search-container:hover input, .search-container:focus-within input { 
     opacity: 1; 
     cursor: text; 
+}
+
+/* ======================================================= */
+/* === DROPDOWN "MÁS CATEGORÍAS" (NAV PRINCIPAL) ========= */
+/* ======================================================= */
+.nav-dropdown-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.btn-mas-cat {
+    cursor: pointer;
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-dropdown-menu {
+    position: absolute;
+    top: 100%; 
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--white);
+    border: 1px solid var(--brand-brown);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 2000;
+    padding: 5px 0;
+}
+
+.nav-dropdown-wrapper:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.drop-link {
+    padding: 12px 20px;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+}
+
+.drop-link:hover, .drop-link.active {
+    color: var(--brand-brown);
+    background-color: #fdfdfd;
 }
 
 /* ======================================================= */
@@ -440,10 +501,11 @@ nav {
     overflow: hidden; 
 }
 
-.pf-benefits { 
+.pf-benefits-slider { 
     display: flex; 
     justify-content: center; 
     align-items: center; 
+    width: 100%;
 }
 
 .pf-benefit-item { 
@@ -451,7 +513,8 @@ nav {
     align-items: center; 
     gap: 15px; 
     padding: 0 50px; 
-    position: relative; 
+    position: relative;
+    flex: 0 0 auto; 
 }
 
 .pf-benefit-item:not(:last-child)::after { 
@@ -486,10 +549,6 @@ nav {
     font-size: 0.85rem; 
     color: var(--primary); 
     opacity: 0.8;
-}
-
-.pf-dots { 
-    display: none; 
 }
 
 /* ======================================================= */
@@ -759,7 +818,8 @@ nav {
     gap: 15px; 
     margin-bottom: 50px;
 } 
-        
+
+/* ALINEACIÓN PERFECTA DE TARJETAS */    
 .card { 
     background: #fff; 
     padding: 0; 
@@ -770,6 +830,7 @@ nav {
     border-radius: var(--radius-md); 
     overflow: hidden; 
     transition: 0.3s;
+    height: 100%; 
 }
 
 .card:hover { 
@@ -796,7 +857,6 @@ nav {
     border-radius: var(--radius-md); 
 }
 
-/* --- ESTILOS PARA PRODUCTOS AGOTADOS --- */
 .badge-agotado {
     position: absolute;
     top: 50%;
@@ -867,6 +927,7 @@ nav {
     flex-direction: column; 
     align-items: center; 
     text-align: center; 
+    flex-grow: 1;
 }
         
 .card-info h4 { 
@@ -878,6 +939,10 @@ nav {
     text-transform: uppercase; 
     cursor: pointer; 
     line-height: 1.3;
+    min-height: 2.6em; /* Fuerzo 2 renglones */
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
 }
 
 .precios-container { 
@@ -887,6 +952,7 @@ nav {
     gap: 2px; 
     cursor: pointer; 
     margin-bottom: 12px;
+    margin-top: auto !important; /* Empuja todo al fondo */
 }
 
 .p-tarj { 
@@ -922,7 +988,6 @@ nav {
     letter-spacing: 0.5px; 
     cursor: pointer; 
     transition: 0.3s; 
-    margin-top: auto; 
     border-radius: var(--radius-lg); 
     margin-bottom: 12px; 
 }
@@ -1076,7 +1141,7 @@ nav {
 }
 
 /* ======================================================= */
-/* === MODALES GENÉRICOS (CHECKOUT Y ALERTS) ============= */
+/* === MODALES =========================================== */
 /* ======================================================= */
 .checkout-modal { 
     position: fixed; 
@@ -1483,13 +1548,8 @@ nav {
     backdrop-filter: blur(5px);
 }
 
-.toast.success { 
-    background: rgba(39, 174, 96, 0.95); 
-}
-
-.toast.error { 
-    background: rgba(231, 76, 60, 0.95); 
-} 
+.toast.success { background: rgba(39, 174, 96, 0.95); }
+.toast.error { background: rgba(231, 76, 60, 0.95); } 
 
 @keyframes slideUpToast { 
     from { opacity: 0; transform: translateY(30px) scale(0.9); } 
@@ -1544,7 +1604,7 @@ nav {
     .btn-menu-mobile { display: flex; align-items: center; margin: 0;}
     
     .nav-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; margin: 0; padding: 0; }
-    .nav-logo h2 { font-size: 1.4rem; font-weight: 900; margin: 0; line-height: 1; text-align: center; position: static; transform: none; }
+    .nav-logo h2 { font-size: 1.2rem; font-weight: 900; margin: 0; line-height: 1; text-align: center; position: static; transform: none; }
     
     .nav-center { display: none; position: absolute; top: 60px; left: 0; width: 100%; height: auto !important; background: var(--white); flex-direction: column; align-items: stretch; padding: 0; box-shadow: 0 15px 30px rgba(0,0,0,0.15); border-top: 1px solid #eee; max-height: calc(100vh - 60px); overflow-y: auto; z-index: 2000; transform: none;}
     .nav-center.active { display: flex; }
@@ -1561,6 +1621,9 @@ nav {
     .search-container:focus-within input { opacity: 1; padding-left: 45px; font-size: 1rem; cursor: text;}
 
     .txt-carrito { display: none; }
+
+    .top-marquee { font-size: 0.55rem; padding: 6px 0; height: 24px; }
+    .titulo-seccion-home, .titulo-catalogo { font-size: 1.3rem; margin-bottom: 15px; }
 
     .container-home { padding: 0 15px; margin: 25px auto 0; }
     .carousel-item img { aspect-ratio: 4/3; }
@@ -1584,8 +1647,6 @@ nav {
 
     .sidebar-filtros { display: none; }
 
-    .titulo-catalogo { font-size: 1.5rem; margin-bottom: 15px; text-align: left; display: block;}
-
     .productos-grid { grid-template-columns: repeat(2, 1fr); gap: 15px 10px; padding: 0; margin-bottom: 30px;}
     
     .card { border-radius: var(--radius-md); }
@@ -1593,14 +1654,12 @@ nav {
     .card img { border-radius: var(--radius-md); }
 
     .card-info { padding: 10px 5px; }
-    .card-info h4 { font-size: 0.65rem; margin-bottom: 8px; }
-    
+    .card-info h4 { font-size: 0.6rem; margin-bottom: 8px; }
     .precios-container { gap: 0; margin-bottom: 12px;}
-    .p-tarj { font-size: 0.95rem; }
-    .p-efvo { font-size: 0.7rem; } 
-    .p-efvo strong { font-size: 0.75rem; }
-    
-    .btn-card-add { padding: 12px; font-size: 0.65rem; width: 95%; margin-bottom: 10px;}
+    .p-tarj { font-size: 0.85rem; }
+    .p-efvo { font-size: 0.65rem; } 
+    .p-efvo strong { font-size: 0.7rem; }
+    .btn-card-add { padding: 10px; font-size: 0.6rem; width: 95%; margin-bottom: 10px;}
 
     .btn-fav { top: 10px; right: 10px; width: 30px; height: 30px; font-size: 1rem; }
 
@@ -1612,20 +1671,40 @@ nav {
     .mobile-filter-group { margin-bottom: 30px; }
     .mobile-filter-group h4 { font-size: 1.1rem; color: var(--primary); margin-bottom: 15px; font-weight: 800; }
     
+    .pills-container { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-pill { background: #f5f5f5; border: 1px solid #ddd; padding: 8px 16px; border-radius: 50px; font-size: 0.8rem; font-family: 'Montserrat', sans-serif; color: var(--secondary); cursor: pointer; transition: 0.3s; font-weight: 600; text-transform: uppercase; }
+    .filter-pill.active { background: var(--brand-brown); color: var(--primary); border-color: var(--brand-brown); }
+
     .mobile-checkbox-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 15px;}
     .mobile-checkbox-label { display: flex; align-items: center; gap: 15px; font-size: 0.9rem; color: #555;}
     .mobile-checkbox-label input { appearance: none; width: 22px; height: 22px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; margin: 0;}
     .mobile-checkbox-label input:checked { background: var(--brand-brown); border-color: var(--brand-brown); }
     .mobile-checkbox-label input:checked::after { content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; color: var(--primary); font-size: 0.7rem; }
 
-    .pf-benefits { justify-content: flex-start; flex-direction: row; gap: 0; align-items: flex-start; width: 100%; margin: 0; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 10px; scroll-behavior: smooth;}
-    .pf-benefits::-webkit-scrollbar { display: none; }
-    .pf-benefit-item { padding: 0; min-width: 100%; flex: 0 0 100%; scroll-snap-align: center; flex-direction: column; text-align: center; gap: 10px;}
-    .pf-benefit-item:not(:last-child)::after { display: none; }
+    /* PRE-FOOTER EN CELU: SE CONVIERTE EN CARRUSEL ANIMADO */
+    .pf-benefits-slider {
+        justify-content: flex-start;
+        width: 200%; 
+        animation: moverCarruselBeneficiosMobile 10s infinite;
+    }
+
+    .pf-benefit-item {
+        width: 50%; 
+        flex: 0 0 50%;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        padding: 0 20px;
+    }
+
+    .pf-benefit-item:not(:last-child)::after { display: none; } 
     .pf-benefit-text { text-align: center; }
-    .pf-dots { display: flex; justify-content: center; gap: 8px; margin-top: 15px; }
-    .dot { width: 8px; height: 8px; background-color: #ccc; border-radius: 50%; transition: 0.3s; cursor: pointer; }
-    .dot.active { background: var(--primary); width: 12px; border-radius: 10px; }
+
+    @keyframes moverCarruselBeneficiosMobile {
+        0%, 45% { transform: translateX(0); } 
+        50%, 95% { transform: translateX(-50%); } 
+        100% { transform: translateX(0); } 
+    }
 
     .site-footer { padding: 60px 20px 30px; }
     .footer-container { grid-template-columns: 1fr; gap: 40px; text-align: left; }
@@ -1662,7 +1741,6 @@ nav {
    MODAL DE DETALLE DE PRODUCTO Y GALERÍA (COMPLETO)
    ========================================================== */
 
-/* Fondo negro oscuro detrás del modal */
 .product-detail-modal {
     display: none;
     position: fixed;
@@ -1675,7 +1753,6 @@ nav {
     padding: 20px;
 }
 
-/* La caja blanca principal del modal */
 .detail-box {
     background: white;
     border-radius: var(--radius-md);
@@ -1689,32 +1766,26 @@ nav {
     animation: modalIn var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); 
 }
 
-/* =======================================
-   SECCIÓN IZQUIERDA: IMAGEN Y GALERÍA 
-   ======================================= */
-
-/* Contenedor de la foto y la galería */
 .product-detail-modal .detail-img {
     flex: 1;
     display: flex !important;
     flex-direction: column !important;
     position: relative !important;
-    background: #f9f9f9; /* Fondito suave para que resalten las fotos */
+    background: #f9f9f9; 
+    height: auto !important; 
 }
 
-/* Imagen Principal */
 .product-detail-modal .detail-img img#det-img-url {
     width: 100% !important;
-    height: auto !important; /* Para que NO se aplaste ni se deforme */
-    max-height: 55vh !important; /* Máximo un poco más de media pantalla en celu */
+    height: auto !important; 
+    max-height: 55vh !important; 
     object-fit: cover !important;
-    object-position: center top !important; /* Enfoca la parte de arriba de la prenda */
+    object-position: center top !important; 
     transition: opacity 0.2s ease;
     display: block; 
     border-radius: var(--radius-md) 0 0 0; 
 }
 
-/* Caja de las miniaturas (La tira de fotitos abajo) */
 .product-detail-modal .detail-img #det-mini-gallery {
     display: flex !important;
     gap: 12px;
@@ -1726,12 +1797,11 @@ nav {
     align-items: center;
     width: 100%;
     box-sizing: border-box;
-    border-bottom: 1px solid #eee; /* Separador sutil abajo */
+    border-bottom: 1px solid #eee; 
     z-index: 10;
-    min-height: 95px; /* Alto fijo para que no salte el contenido */
+    min-height: 95px; 
 }
 
-/* Estilo de cada fotito en miniatura */
 .product-detail-modal .detail-img #det-mini-gallery img {
     width: 65px !important;
     height: 65px !important;
@@ -1745,24 +1815,18 @@ nav {
     padding: 0 !important;
 }
 
-/* Miniatura SELECCIONADA (Color Arena + Destacado) */
 .product-detail-modal .detail-img #det-mini-gallery img.selected {
-    border-color: #d4b58e !important; /* Color Arena */
-    transform: scale(1.1); /* Se agranda apenitas para destacar */
+    border-color: var(--brand-brown, #d4b58e) !important; 
+    transform: scale(1.1); 
     opacity: 1 !important;
-    box-shadow: 0 4px 10px rgba(212, 181, 142, 0.4); /* Sombrita color arena */
+    box-shadow: 0 4px 10px rgba(212, 181, 142, 0.4); 
 }
 
-/* Miniaturas NO seleccionadas (Más apagadas) */
 .product-detail-modal .detail-img #det-mini-gallery img.img-gall-inactive {
-    opacity: 0.5 !important; /* Se ponen grises para que resalte la elegida */
+    opacity: 0.5 !important; 
     border-color: transparent !important;
     transform: scale(1);
 }
-
-/* =======================================
-   SECCIÓN DERECHA: TEXTO, PRECIOS Y BOTÓN
-   ======================================= */
 
 .detail-info {
     flex: 1;
@@ -1800,7 +1864,6 @@ nav {
     background: #fff;
 }
 
-/* Botón de favoritos arriba a la izquierda de la foto */
 .btn-fav-modal {
     position: absolute;
     top: 15px; left: 15px;
@@ -1827,11 +1890,6 @@ nav {
     color: var(--danger);
 }
 
-/* =======================================
-   RESPONSIVE MODAL: CELULARES Y COMPUTADORAS
-   ======================================= */
-
-/* Para Celulares (Apila la foto arriba y el texto abajo) */
 @media (max-width: 991px) {
     .detail-box {
         flex-direction: column;
@@ -1842,7 +1900,7 @@ nav {
     }
     
     .product-detail-modal .detail-img {
-        height: auto !important; /* Ajuste crítico para el móvil */
+        height: auto !important; 
     }
     
     .product-detail-modal .detail-img img#det-img-url {
@@ -1866,159 +1924,19 @@ nav {
     }
 }
 
-/* Para Computadoras (Foto a la izquierda, texto a la derecha) */
 @media (min-width: 992px) {
     .product-detail-modal .detail-img {
-        height: 100% !important; /* Ocupa todo el alto de la izquierda */
+        height: 100% !important; 
     }
     
     .product-detail-modal .detail-img img#det-img-url {
-        height: calc(100% - 95px) !important; /* Ocupa todo menos el espacio de la galería */
-        max-height: none !important; /* Sacamos el límite del celular */
-        border-radius: var(--radius-md) 0 0 0 !important; 
+        height: calc(100% - 95px) !important; 
+        max-height: none !important; 
+        border-radius: 12px 0 0 0 !important; 
     }
     
     .product-detail-modal .detail-img #det-mini-gallery {
-        border-radius: 0 0 0 var(--radius-md) !important; 
+        border-radius: 0 0 0 12px !important; 
         border-bottom: none;
     }
-}
-
-/* ======================================================= */
-/* === DROPDOWN "MÁS CATEGORÍAS" (NAV PRINCIPAL) ========= */
-/* ======================================================= */
-.nav-dropdown-wrapper {
-    position: relative;
-    display: inline-block;
-    height: 100%;
-    display: flex;
-    align-items: center;
-}
-
-.btn-mas-cat {
-    display: flex !important;
-    align-items: center;
-    gap: 5px;
-}
-
-.nav-dropdown-menu {
-    position: absolute;
-    top: 55px; /* Altura donde cae el cuadrito */
-    left: 50%;
-    transform: translateX(-50%) translateY(15px);
-    background: var(--white);
-    border-radius: var(--radius-sm);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    border: 1px solid var(--border);
-    min-width: 180px;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 1050;
-    padding: 10px 0;
-}
-
-/* El piquito (flechita blanca) arriba del menú */
-.nav-dropdown-menu::before {
-    content: '';
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    width: 12px;
-    height: 12px;
-    background: var(--white);
-    border-left: 1px solid var(--border);
-    border-top: 1px solid var(--border);
-    z-index: 1;
-}
-
-/* Animación al pasar el mouse */
-.nav-dropdown-wrapper:hover .nav-dropdown-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-}
-
-.nav-dropdown-wrapper:hover .btn-mas-cat {
-    color: var(--brand-brown);
-    border-bottom-color: var(--brand-brown);
-}
-
-.drop-link {
-    padding: 12px 25px;
-    color: var(--secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: 0.2s;
-    text-decoration: none;
-    text-align: center;
-    position: relative;
-    z-index: 2; /* Para que el texto quede arriba del piquito */
-}
-
-/* Efecto hover dentro del cuadrito */
-.drop-link:hover, .drop-link.active {
-    color: var(--brand-brown);
-    background-color: #fdfdfd;
-}
-
-/* ======================================================= */
-/* === ARREGLOS DE ESTÉTICA (CELULAR Y ALINEACIÓN) ======= */
-/* ======================================================= */
-
-/* 1. Arreglo de los botones de categorías (Píldoras) en el celu */
-.pills-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.filter-pill {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    padding: 8px 16px;
-    border-radius: 50px; /* Forma de pastilla redondeada elegante */
-    font-size: 0.8rem;
-    font-family: 'Montserrat', sans-serif;
-    color: var(--secondary);
-    cursor: pointer;
-    transition: 0.3s;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-/* El botón seleccionado se pinta de tu color arena */
-.filter-pill.active {
-    background: var(--brand-brown);
-    color: var(--primary);
-    border-color: var(--brand-brown);
-}
-
-/* 2. Arreglo de la alineación de productos (Tarjetas siempre parejas) */
-.card {
-    height: 100%; /* Obliga a todas las tarjetas de la fila a medir lo mismo */
-}
-
-.card-info {
-    flex-grow: 1; /* Hace que la caja de texto se estire para llenar el espacio */
-    display: flex;
-    flex-direction: column;
-}
-
-.card-info h4 {
-    /* Fuerza al título a medir siempre 2 renglones (aunque tenga 1), así no empuja nada */
-    min-height: 2.6em; 
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-}
-
-.precios-container {
-    /* Este es el truco mágico: empuja los precios y el botón al fondo de la tarjeta */
-    margin-top: auto !important; 
 }
