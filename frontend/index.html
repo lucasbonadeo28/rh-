@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RH+ Jeans Store</title>
     
-    <link rel="icon" type="image/png" href="./rh3.png?v=54">
+    <link rel="icon" type="image/png" href="./rh3.png?v=55">
 
     <script>
         if ('scrollRestoration' in history) {
@@ -20,32 +20,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="./css/styles.css?v=54">
+    <link rel="stylesheet" href="./css/styles.css?v=55">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
     <div id="toast-container" class="toast-container"></div>
 
     <div class="top-marquee">
-        <div class="marquee-content">
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-        </div>
-        <div class="marquee-content" aria-hidden="true">
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-            <span>ENVÍOS A TODO EL PAÍS   |   10% OFF CON TRANSFERENCIA   |   RH (+) JEANS STORE</span>
-        </div>
+        <div class="marquee-item">ENVÍO GRATIS A PARTIR DE $80.000</div>
+        <div class="marquee-item">10% OFF CON TRANSFERENCIA</div>
     </div>
 
     <nav>
         <button class="btn-menu-mobile" onclick="toggleMenuMobile()"><i class="fas fa-bars"></i></button>
         
         <div class="nav-logo" onclick="cambiarVista('home')" style="display: flex; align-items: center; cursor: pointer;">
-            <img src="./rh.jpg?v=54" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+            <img src="./rh.jpg?v=55" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
         </div>
 
         <div class="nav-center" id="nav-menu-celular">
@@ -83,9 +73,21 @@
                 </a>
                 
                 <div class="pf-benefits-wrapper">
-                    <div class="pf-benefits" id="pf-benefits-slider">
-                        <div class="pf-benefit-item"><i class="fas fa-truck pf-benefit-icon"></i><div class="pf-benefit-text"><strong>ENVÍOS A TODO EL PAÍS</strong><span>Gratis a partir de $80.000</span></div></div>
-                        <div class="pf-benefit-item"><i class="fas fa-dollar-sign pf-benefit-icon"></i><div class="pf-benefit-text"><strong>10% DE DESCUENTO</strong><span>Con transferencia</span></div></div>
+                    <div class="pf-benefits-slider" id="pf-benefits-slider">
+                        <div class="pf-benefit-item">
+                            <i class="fas fa-truck pf-benefit-icon"></i>
+                            <div class="pf-benefit-text">
+                                <strong>ENVÍO GRATIS</strong>
+                                <span>A partir de $80.000</span>
+                            </div>
+                        </div>
+                        <div class="pf-benefit-item">
+                            <i class="fas fa-dollar-sign pf-benefit-icon"></i>
+                            <div class="pf-benefit-text">
+                                <strong>10% DE DESCUENTO</strong>
+                                <span>Con transferencia</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -257,9 +259,7 @@
         <div class="detail-box">
             <div class="detail-img">
                 <img id="det-img-url" src="" alt="Producto">
-                
                 <div id="det-mini-gallery" style="display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;"></div>
-                
                 <button id="btn-fav-modal" class="btn-fav-modal" onclick="toggleFavoritoModal(event)"><i class="fas fa-heart"></i></button>
             </div>
             <div class="detail-info">
@@ -349,6 +349,6 @@
         </div>
     </div>
 
-    <script src="./js/main.js?v=54"></script>
+    <script src="./js/main.js?v=55"></script>
 </body>
 </html>
