@@ -1966,3 +1966,59 @@ nav {
     color: var(--brand-brown);
     background-color: #fdfdfd;
 }
+
+/* ======================================================= */
+/* === ARREGLOS DE ESTÉTICA (CELULAR Y ALINEACIÓN) ======= */
+/* ======================================================= */
+
+/* 1. Arreglo de los botones de categorías (Píldoras) en el celu */
+.pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-pill {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 50px; /* Forma de pastilla redondeada elegante */
+    font-size: 0.8rem;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--secondary);
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* El botón seleccionado se pinta de tu color arena */
+.filter-pill.active {
+    background: var(--brand-brown);
+    color: var(--primary);
+    border-color: var(--brand-brown);
+}
+
+/* 2. Arreglo de la alineación de productos (Tarjetas siempre parejas) */
+.card {
+    height: 100%; /* Obliga a todas las tarjetas de la fila a medir lo mismo */
+}
+
+.card-info {
+    flex-grow: 1; /* Hace que la caja de texto se estire para llenar el espacio */
+    display: flex;
+    flex-direction: column;
+}
+
+.card-info h4 {
+    /* Fuerza al título a medir siempre 2 renglones (aunque tenga 1), así no empuja nada */
+    min-height: 2.6em; 
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.precios-container {
+    /* Este es el truco mágico: empuja los precios y el botón al fondo de la tarjeta */
+    margin-top: auto !important; 
+}
