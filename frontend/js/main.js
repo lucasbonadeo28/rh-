@@ -93,8 +93,25 @@ async function renderizarCategoriasDinamicas() {
 
     const navCenter = document.getElementById('nav-menu-celular');
     if (navCenter) {
-        navCenter.innerHTML = `<a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>` + 
-            categoriasUnicas.map(cat => `<a class="filter-link" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</a>`).join('');
+        let htmlNav = `<a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>`;
+        
+        const limiteSueltas = 4; 
+        const sueltas = categoriasUnicas.slice(0, limiteSueltas);
+        const ocultas = categoriasUnicas.slice(limiteSueltas);
+
+        htmlNav += sueltas.map(cat => `<a class="filter-link" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</a>`).join('');
+
+        if (ocultas.length > 0) {
+            let dropHtml = ocultas.map(cat => `<a class="drop-link" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</a>`).join('');
+            htmlNav += `
+            <div class="nav-dropdown-wrapper">
+                <a class="filter-link btn-mas-cat">MÁS <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></a>
+                <div class="nav-dropdown-menu">
+                    ${dropHtml}
+                </div>
+            </div>`;
+        }
+        navCenter.innerHTML = htmlNav;
     }
 
     const sidebarDesktop = document.querySelector('#sidebar-desktop .filter-list');
@@ -113,10 +130,9 @@ async function renderizarCategoriasDinamicas() {
     if (footerCols.length > 1) {
         const footerUl = footerCols[1].querySelector('ul');
         if (footerUl) {
-            // ACÁ CORTAMOS EL FOOTER: Solo muestra 5 categorías y agrega el "Ver todos"
             const categoriasFooter = categoriasUnicas.slice(0, 5); 
             footerUl.innerHTML = categoriasFooter.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')">${cat}</a></li>`).join('');
-            footerUl.innerHTML += `<li><a onclick="cambiarVista('catalogo', 'Todos')" style="font-weight: 800; text-decoration: underline; margin-top: 8px; display: inline-block;">Ver todos los productos</a></li>`;
+            footerUl.innerHTML += `<li><a onclick="cambiarVista('catalogo', 'Todos')" style="font-weight: 800; text-decoration: underline; margin-top: 8px; display: inline-block; cursor: pointer;">Ver todos los productos</a></li>`;
         }
     }
 }
@@ -302,7 +318,6 @@ function cerrarFiltrosMobile() {
     document.getElementById('filter-overlay').classList.remove('active');
 }
 
-// ARREGLO PRINCIPAL: Se encarga de pintar TODO al mismo tiempo
 function cambiarVista(vista, categoria = 'Todos') {
     document.getElementById('input-buscador-nav').value = '';
     window.scrollTo(0, 0); 
@@ -319,7 +334,7 @@ function cambiarVista(vista, categoria = 'Todos') {
     
     if (vista === 'home') {
         document.getElementById('grid-home').innerHTML = generarGridHTML(productosNuevos);
-        document.querySelectorAll('.nav-center .filter-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.nav-center .filter-link, .nav-center .drop-link').forEach(l => l.classList.remove('active'));
     } 
     else if (vista === 'catalogo') {
         if(window.innerWidth <= 992) { 
@@ -328,8 +343,9 @@ function cambiarVista(vista, categoria = 'Todos') {
         
         const catLower = categoria.toLowerCase();
 
-        // 1. Sincronizar Menú de Arriba
-        document.querySelectorAll('.nav-center .filter-link').forEach(l => {
+        document.querySelectorAll('.nav-center .filter-link, .nav-center .drop-link').forEach(l => {
+            if (l.classList.contains('btn-mas-cat')) return; 
+            
             const text = l.innerText.trim().toLowerCase();
             if(text === catLower || (catLower === 'todos' && text === 'todo')) {
                 l.classList.add('active');
@@ -338,7 +354,6 @@ function cambiarVista(vista, categoria = 'Todos') {
             }
         });
 
-        // 2. Sincronizar Menú Lateral (Sidebar PC)
         document.querySelectorAll('.cat-link').forEach(a => {
             if(a.innerText.trim().toLowerCase() === catLower) {
                 a.classList.add('active'); 
@@ -347,7 +362,6 @@ function cambiarVista(vista, categoria = 'Todos') {
             }
         });
 
-        // 3. Sincronizar Menú Celular (Píldoras)
         document.querySelectorAll('.filter-pill').forEach(btn => {
             if(btn.innerText.trim().toLowerCase() === catLower) {
                 btn.classList.add('active'); 
@@ -363,7 +377,6 @@ function cambiarVista(vista, categoria = 'Todos') {
         toggleMenuMobile();
     }
     
-    // Por si venían del menú de filtros del celu
     cerrarFiltrosMobile(); 
 }
 
@@ -480,29 +493,7 @@ function generarGridHTML(lista) {
 }
 
 function initBeneficiosSlider() {
-    const slider = document.getElementById('pf-benefits-slider');
-    const dotsContainer = document.getElementById('pf-dots-container');
-    
-    if(!slider || !dotsContainer) return;
-    
-    const dots = dotsContainer.querySelectorAll('.dot');
-    
-    slider.addEventListener('scroll', () => {
-        let index = Math.round(slider.scrollLeft / slider.clientWidth);
-        dots.forEach((dot, i) => { 
-            if (i === index) {
-                dot.classList.add('active'); 
-            } else {
-                dot.classList.remove('active'); 
-            }
-        });
-    });
-    
-    dots.forEach((dot, i) => { 
-        dot.addEventListener('click', () => { 
-            slider.scrollTo({ left: i * slider.clientWidth, behavior: 'smooth' }); 
-        }); 
-    });
+    // Ya no se usa, la animación la hace CSS
 }
 
 function mostrarToast(mensaje, tipo = 'success') { 
