@@ -99,21 +99,24 @@ async function renderizarCategoriasDinamicas() {
 
     const sidebarDesktop = document.querySelector('#sidebar-desktop .filter-list');
     if (sidebarDesktop) {
-        sidebarDesktop.innerHTML = `<li><a onclick="cambiarCategoriaMobile('Todos')" class="cat-link active">Todos</a></li>` +
-            categoriasUnicas.map(cat => `<li><a onclick="cambiarCategoriaMobile('${cat}')" class="cat-link">${cat}</a></li>`).join('');
+        sidebarDesktop.innerHTML = `<li><a onclick="cambiarVista('catalogo', 'Todos')" class="cat-link active">Todos</a></li>` +
+            categoriasUnicas.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')" class="cat-link">${cat}</a></li>`).join('');
     }
 
     const mobilePills = document.querySelector('#filter-sidebar .pills-container');
     if (mobilePills) {
-        mobilePills.innerHTML = `<button class="filter-pill active" onclick="cambiarCategoriaMobile('Todos')">TODOS</button>` +
-            categoriasUnicas.map(cat => `<button class="filter-pill" onclick="cambiarCategoriaMobile('${cat}')">${cat.toUpperCase()}</button>`).join('');
+        mobilePills.innerHTML = `<button class="filter-pill active" onclick="cambiarVista('catalogo', 'Todos')">TODOS</button>` +
+            categoriasUnicas.map(cat => `<button class="filter-pill" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</button>`).join('');
     }
 
     const footerCols = document.querySelectorAll('.footer-col');
     if (footerCols.length > 1) {
         const footerUl = footerCols[1].querySelector('ul');
         if (footerUl) {
-            footerUl.innerHTML = categoriasUnicas.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')">${cat}</a></li>`).join('');
+            // ACÁ CORTAMOS EL FOOTER: Solo muestra 5 categorías y agrega el "Ver todos"
+            const categoriasFooter = categoriasUnicas.slice(0, 5); 
+            footerUl.innerHTML = categoriasFooter.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')">${cat}</a></li>`).join('');
+            footerUl.innerHTML += `<li><a onclick="cambiarVista('catalogo', 'Todos')" style="font-weight: 800; text-decoration: underline; margin-top: 8px; display: inline-block;">Ver todos los productos</a></li>`;
         }
     }
 }
@@ -299,46 +302,7 @@ function cerrarFiltrosMobile() {
     document.getElementById('filter-overlay').classList.remove('active');
 }
 
-function cambiarCategoriaMobile(cat) {
-    categoriaActual = cat;
-    
-    document.querySelectorAll('.filter-pill').forEach(btn => {
-        if(btn.innerText.trim().toLowerCase() === cat.toLowerCase()) {
-            btn.classList.add('active'); 
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    document.querySelectorAll('.cat-link').forEach(a => {
-        if(a.innerText.trim().toLowerCase() === cat.toLowerCase()) {
-            a.classList.add('active'); 
-        } else {
-            a.classList.remove('active');
-        }
-    });
-    
-    document.querySelectorAll('.nav-center .filter-link').forEach(l => {
-        const text = l.innerText.trim().toLowerCase();
-        const catLower = cat.toLowerCase();
-        if(text === catLower || (catLower === 'todos' && text === 'todo')) {
-            l.classList.add('active'); 
-        } else {
-            l.classList.remove('active');
-        }
-    });
-
-    if (vistaActual === 'home') {
-        cambiarVista('catalogo', cat);
-    } else {
-        aplicarFiltrosCatalogo();
-        if(window.innerWidth <= 992) {
-            document.getElementById('bread-cat-nombre').innerText = cat === 'Todos' ? 'Productos' : cat;
-        }
-    }
-    cerrarFiltrosMobile(); 
-}
-
+// ARREGLO PRINCIPAL: Se encarga de pintar TODO al mismo tiempo
 function cambiarVista(vista, categoria = 'Todos') {
     document.getElementById('input-buscador-nav').value = '';
     window.scrollTo(0, 0); 
@@ -362,13 +326,33 @@ function cambiarVista(vista, categoria = 'Todos') {
             document.getElementById('bread-cat-nombre').innerText = categoria === 'Todos' ? 'Productos' : categoria; 
         }
         
+        const catLower = categoria.toLowerCase();
+
+        // 1. Sincronizar Menú de Arriba
         document.querySelectorAll('.nav-center .filter-link').forEach(l => {
             const text = l.innerText.trim().toLowerCase();
-            const catLower = categoria.toLowerCase();
             if(text === catLower || (catLower === 'todos' && text === 'todo')) {
                 l.classList.add('active');
             } else {
                 l.classList.remove('active');
+            }
+        });
+
+        // 2. Sincronizar Menú Lateral (Sidebar PC)
+        document.querySelectorAll('.cat-link').forEach(a => {
+            if(a.innerText.trim().toLowerCase() === catLower) {
+                a.classList.add('active'); 
+            } else {
+                a.classList.remove('active');
+            }
+        });
+
+        // 3. Sincronizar Menú Celular (Píldoras)
+        document.querySelectorAll('.filter-pill').forEach(btn => {
+            if(btn.innerText.trim().toLowerCase() === catLower) {
+                btn.classList.add('active'); 
+            } else {
+                btn.classList.remove('active');
             }
         });
         
@@ -378,6 +362,9 @@ function cambiarVista(vista, categoria = 'Todos') {
     if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) {
         toggleMenuMobile();
     }
+    
+    // Por si venían del menú de filtros del celu
+    cerrarFiltrosMobile(); 
 }
 
 function ejecutarBusquedaNav(event) {
