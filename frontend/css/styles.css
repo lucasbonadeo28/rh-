@@ -1883,3 +1883,86 @@ nav {
         border-bottom: none;
     }
 }
+
+/* ======================================================= */
+/* === DROPDOWN "MÁS CATEGORÍAS" (NAV PRINCIPAL) ========= */
+/* ======================================================= */
+.nav-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.btn-mas-cat {
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-dropdown-menu {
+    position: absolute;
+    top: 55px; /* Altura donde cae el cuadrito */
+    left: 50%;
+    transform: translateX(-50%) translateY(15px);
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1050;
+    padding: 10px 0;
+}
+
+/* El piquito (flechita blanca) arriba del menú */
+.nav-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: var(--white);
+    border-left: 1px solid var(--border);
+    border-top: 1px solid var(--border);
+    z-index: 1;
+}
+
+/* Animación al pasar el mouse */
+.nav-dropdown-wrapper:hover .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.nav-dropdown-wrapper:hover .btn-mas-cat {
+    color: var(--brand-brown);
+    border-bottom-color: var(--brand-brown);
+}
+
+.drop-link {
+    padding: 12px 25px;
+    color: var(--secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+    text-align: center;
+    position: relative;
+    z-index: 2; /* Para que el texto quede arriba del piquito */
+}
+
+/* Efecto hover dentro del cuadrito */
+.drop-link:hover, .drop-link.active {
+    color: var(--brand-brown);
+    background-color: #fdfdfd;
+}
