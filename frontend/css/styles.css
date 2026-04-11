@@ -69,40 +69,38 @@ html[data-vista-activa="favoritos"] .main-catalogo {
 }
 
 /* ======================================================= */
-/* === CARRUSEL SUPERIOR (2 ANUNCIOS ANIMADOS) =========== */
+/* === CINTA SUPERIOR (CARRUSEL HORIZONTAL CONTINUO) ===== */
 /* ======================================================= */
 .top-marquee {
     background-color: var(--brand-brown); 
     color: var(--primary); 
-    height: 28px; 
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
-
-.marquee-item {
-    position: absolute;
+    padding: 8px 0;
     font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    text-align: center;
+    overflow: hidden; 
+    white-space: nowrap; 
+    display: flex; 
     width: 100%;
-    padding: 0 15px;
-    opacity: 0; 
-    animation: slideCarouselDos 10s infinite; 
 }
 
-.marquee-item:nth-child(1) { animation-delay: 0s; }
-.marquee-item:nth-child(2) { animation-delay: 5s; }
+.marquee-content {
+    display: flex;
+    flex-shrink: 0;
+    gap: 100px;
+    padding-right: 100px; 
+    animation: marqueeLoop 80s linear infinite; 
+}
 
-@keyframes slideCarouselDos {
-    0% { opacity: 0; transform: translateY(10px); }
-    5%, 45% { opacity: 1; transform: translateY(0); }
-    50%, 100% { opacity: 0; transform: translateY(-10px); }
+.marquee-content span {
+    color: var(--primary) !important;
+    font-weight: 700;
+}
+
+@keyframes marqueeLoop {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); } 
 }
 
 /* ======================================================= */
@@ -506,6 +504,7 @@ nav {
     justify-content: center; 
     align-items: center; 
     width: 100%;
+    animation: moverCarruselBeneficios 10s infinite;
 }
 
 .pf-benefit-item { 
@@ -549,6 +548,11 @@ nav {
     font-size: 0.85rem; 
     color: var(--primary); 
     opacity: 0.8;
+}
+
+@keyframes moverCarruselBeneficios {
+    0%, 45% { transform: translateX(0); }
+    50%, 95% { transform: translateX(0); }
 }
 
 /* ======================================================= */
@@ -1622,7 +1626,7 @@ nav {
 
     .txt-carrito { display: none; }
 
-    .top-marquee { font-size: 0.55rem; padding: 6px 0; height: 24px; }
+    .top-marquee { font-size: 0.55rem; padding: 6px 0; height: auto; }
     .titulo-seccion-home, .titulo-catalogo { font-size: 1.3rem; margin-bottom: 15px; }
 
     .container-home { padding: 0 15px; margin: 25px auto 0; }
