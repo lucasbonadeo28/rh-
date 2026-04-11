@@ -1076,9 +1076,9 @@ nav {
 }
 
 /* ======================================================= */
-/* === MODALES =========================================== */
+/* === MODALES GENÉRICOS (CHECKOUT Y ALERTS) ============= */
 /* ======================================================= */
-.product-detail-modal, .checkout-modal { 
+.checkout-modal { 
     position: fixed; 
     top: 0; 
     left: 0; 
@@ -1093,7 +1093,7 @@ nav {
     padding: 20px;
 }
         
-.detail-box, .checkout-box { 
+.checkout-box { 
     background: var(--white); 
     border-radius: var(--radius-md); 
     width: 950px; 
@@ -1102,187 +1102,17 @@ nav {
     position: relative; 
     animation: modalIn var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); 
     overflow: hidden;
-}
-        
-@keyframes modalIn { 
-    from { opacity: 0; transform: scale(0.95) translateY(20px); } 
-    to { opacity: 1; transform: scale(1) translateY(0); } 
-}
-
-.detail-box { 
-    display: flex; 
-    padding: 0; 
-    max-height: 90vh; 
-    overflow: hidden; 
-}
-
-.detail-img { 
-    flex: 1; 
-    position: relative; 
-    background: #fafafa; 
-}
-
-.detail-img img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-    display: block; 
-    aspect-ratio: 4/5; 
-    border-radius: var(--radius-md) 0 0 var(--radius-md); 
-}
-
-.btn-fav-modal { 
-    position: absolute; 
-    top: 15px; 
-    left: 15px; 
-    background: rgba(255,255,255,0.95); 
-    border: none; 
-    color: #999; 
-    width: 45px; 
-    height: 45px; 
-    border-radius: 50%; 
-    cursor: pointer; 
-    z-index: 10; 
-    font-size: 1.3rem; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
-    transition: 0.2s;
-}
-
-.btn-fav-modal:hover { 
-    transform: scale(1.1); 
-}
-
-.btn-fav-modal.active { 
-    color: var(--danger); 
-}
-
-.detail-info { 
-    flex: 1; 
-    padding: 40px 50px; 
-    display: flex; 
-    flex-direction: column; 
-    overflow-y: auto; 
-    text-align: left; 
-    background: #fff; 
-    border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-
-.btn-close-modal { 
-    position: absolute; 
-    top: 15px; 
-    right: 15px; 
-    background: rgba(255,255,255,0.8); 
-    border: none; 
-    font-size: 1.5rem; 
-    width: 35px; 
-    height: 35px; 
-    border-radius: 50%; 
-    cursor: pointer; 
-    color: var(--secondary); 
-    transition: 0.2s; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    z-index: 10; 
-    backdrop-filter: blur(2px);
-}
-
-.btn-close-modal:hover { 
-    color: var(--danger); 
-    transform: rotate(90deg); 
-    background: #fff;
-}
-
-.detail-title { 
-    font-size: 1.8rem; 
-    margin: 0 0 15px 0; 
-    color: var(--primary); 
-    font-weight: 800; 
-    letter-spacing: -0.5px; 
-    text-transform: uppercase; 
-    line-height: 1.1; 
-    padding-right: 30px;
-}
-
-.price-box-detail { 
-    margin-bottom: 25px; 
-    border-bottom: 1px solid var(--border); 
-    padding-bottom: 20px;
-}
-
-.price-box-detail .p-tarj { 
-    font-size: 1.4rem; 
-    color: var(--brand-brown); 
-    font-weight: 800; 
-    margin: 0 0 5px 0; 
-}
-
-.price-box-detail .p-efvo { 
-    font-size: 1rem; 
-    color: var(--success); 
-    font-weight: 600; 
-    margin: 0;
-}
-
-.detail-desc { 
-    color: var(--secondary); 
-    font-size: 0.95rem; 
-    line-height: 1.6; 
-    margin-bottom: 30px; 
-    flex-grow: 1; 
-    font-weight: 400;
-}
-
-.talles-selector { 
-    display: flex; 
-    gap: 10px; 
-    flex-wrap: wrap; 
-    margin-top: 10px;
-}
-
-.talle-label { 
-    border: 1px solid #ddd; 
-    padding: 12px 18px; 
-    border-radius: var(--radius-sm); 
-    cursor: pointer; 
-    font-weight: 600; 
-    transition: 0.2s; 
-    background: var(--white); 
-    color: var(--primary); 
-    font-size: 0.85rem; 
-    min-width: 50px; 
-    text-align: center;
-}
-
-.talle-label.selected { 
-    border-color: var(--brand-brown); 
-    background-color: var(--brand-brown); 
-    color: var(--primary); 
-}
-
-.talle-label.sin-stock { 
-    opacity: 0.3; 
-    cursor: not-allowed; 
-    text-decoration: line-through; 
-}
-
-.checkout-box { 
     padding: 40px; 
     display: flex; 
     gap: 50px; 
     max-height: 90vh; 
     overflow-y: auto; 
-    background: var(--white); 
-    border-radius: var(--radius-md); 
-    width: 950px; 
-    max-width: 100%; 
-    box-shadow: 0 25px 50px rgba(0,0,0,0.25); 
-    position: relative; 
-    animation: modalIn var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); 
     flex-direction: row;
+}
+        
+@keyframes modalIn { 
+    from { opacity: 0; transform: scale(0.95) translateY(20px); } 
+    to { opacity: 1; transform: scale(1) translateY(0); } 
 }
 
 .checkout-col { 
@@ -1801,13 +1631,6 @@ nav {
     .footer-container { grid-template-columns: 1fr; gap: 40px; text-align: left; }
     .medios-pago-grid { grid-template-columns: repeat(5, 1fr); }
     
-    .detail-box { flex-direction: column; border-radius: var(--radius-md); width: 95%; max-height: 92vh; }
-    .detail-img { flex: none; height: 40vh; width: 100%; }
-    .detail-img img { border-radius: var(--radius-md) var(--radius-md) 0 0; aspect-ratio: auto;}
-    .detail-info { padding: 30px 20px; border-radius: 0 0 var(--radius-md) var(--radius-md);}
-    .detail-title { font-size: 1.5rem; }
-    .btn-close-modal { top: 10px; right: 10px; background: rgba(255,255,255,0.7); width: 30px; height: 30px; font-size: 1.2rem;}
-
     .checkout-box { flex-direction: column; padding: 25px 20px; gap: 30px; border-radius: var(--radius-md); width: 95%; max-height: 92vh;}
     .cp-block { padding: 15px; border-radius: var(--radius-sm);}
     
@@ -1836,151 +1659,227 @@ nav {
 }
 
 /* ==========================================================
-   ESTILOS PARA LA GALERÍA DEL MODAL DE DETALLE (ARREGLO DE FOTOS)
+   MODAL DE DETALLE DE PRODUCTO Y GALERÍA (COMPLETO)
    ========================================================== */
 
-/* 1. Transición suave para la imagen principal al cambiar */
-.product-detail-modal .detail-img img#det-img-url {
-    transition: opacity 0.2s ease;
-    opacity: 1;
-}
-
-/* 2. Contenedor de la mini galería (miniaturas) */
-.product-detail-modal .detail-img #det-mini-gallery {
-    display: flex;
-    gap: 8px;
-    margin-top: 15px;
-    overflow-x: auto;
-    padding-bottom: 5px;
+/* Fondo negro oscuro detrás del modal */
+.product-detail-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px); 
+    z-index: 2500;
     justify-content: center;
-    width: 100%;
+    align-items: center;
+    padding: 20px;
 }
 
-/* 3. Estilos básicos de las imágenes de la mini galería */
-.product-detail-modal .detail-img #det-mini-gallery img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
+/* La caja blanca principal del modal */
+.detail-box {
+    background: white;
+    border-radius: var(--radius-md);
+    width: 950px;
+    max-width: 100%;
+    max-height: 90vh;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    animation: modalIn var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); 
 }
 
-/* 4. Efecto hover suave al pasar el mouse por encima */
-.product-detail-modal .detail-img #det-mini-gallery img:hover {
-    border-color: #ddd;
-}
+/* =======================================
+   SECCIÓN IZQUIERDA: IMAGEN Y GALERÍA 
+   ======================================= */
 
-/* 5. Clase para la miniatura SELECCIONADA (tick verde) */
-.product-detail-modal .detail-img #det-mini-gallery img.selected {
-    border-color: var(--success);
-    opacity: 1;
-}
-
-/* 6. Clase para las miniaturas NO seleccionadas (inactivas) */
-.product-detail-modal .detail-img #det-mini-gallery img.img-gall-inactive {
-    opacity: 0.6;
-    border-color: transparent;
-}
-
-/* ==========================================================
-   ARREGLO DE LA GALERÍA PARA COMPUTADORA (DESKTOP)
-   ========================================================== */
-
-/* Convertimos el contenedor izquierdo en una columna flex */
+/* Contenedor de la foto y la galería */
 .product-detail-modal .detail-img {
+    flex: 1;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start;
-}
-
-/* Le ponemos un límite de alto a la foto principal */
-.product-detail-modal .detail-img img#det-img-url {
     position: relative !important;
-    height: auto !important;
-    max-height: calc(100% - 90px) !important; 
-    object-fit: cover;
+    background: #f9f9f9; /* Fondito suave para que resalten las fotos */
 }
 
-/* Aseguramos que la botonera de miniaturas se mantenga visible */
-.product-detail-modal .detail-img #det-mini-gallery {
-    position: relative !important;
-    z-index: 10 !important;
-    min-height: 70px;
-}
-
-/* ==========================================================
-   ESTILOS PARA LA GALERÍA DEL MODAL DE DETALLE (ARREGLO DE FOTOS)
-   ========================================================== */
-
-/* 1. Transición suave para la imagen principal al cambiar */
+/* Imagen Principal */
 .product-detail-modal .detail-img img#det-img-url {
+    width: 100% !important;
+    height: auto !important; /* Para que NO se aplaste ni se deforme */
+    max-height: 55vh !important; /* Máximo un poco más de media pantalla en celu */
+    object-fit: cover !important;
+    object-position: center top !important; /* Enfoca la parte de arriba de la prenda */
     transition: opacity 0.2s ease;
-    opacity: 1;
+    display: block; 
+    border-radius: var(--radius-md) 0 0 0; 
 }
 
-/* 2. Contenedor de la mini galería (miniaturas) */
+/* Caja de las miniaturas (La tira de fotitos abajo) */
 .product-detail-modal .detail-img #det-mini-gallery {
-    display: flex;
-    gap: 8px;
-    margin-top: 15px;
-    overflow-x: auto;
-    padding-bottom: 5px;
-    justify-content: center;
-    width: 100%;
-}
-
-/* 3. Estilos básicos de las imágenes de la mini galería */
-.product-detail-modal .detail-img #det-mini-gallery img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-}
-
-/* 4. Efecto hover suave al pasar el mouse por encima */
-.product-detail-modal .detail-img #det-mini-gallery img:hover {
-    border-color: #ddd;
-}
-
-/* 5. Clase para la miniatura SELECCIONADA (borde color arena) */
-.product-detail-modal .detail-img #det-mini-gallery img.selected {
-    border-color: #d4b58e; /* Borde color arena del botón */
-    opacity: 1;
-}
-
-/* 6. Clase para las miniaturas NO seleccionadas (inactivas) */
-.product-detail-modal .detail-img #det-mini-gallery img.img-gall-inactive {
-    opacity: 0.6;
-    border-color: transparent;
-}
-
-/* ==========================================================
-   ARREGLO DE LA GALERÍA PARA COMPUTADORA (DESKTOP)
-   ========================================================== */
-
-/* Convertimos el contenedor izquierdo en una columna flex */
-.product-detail-modal .detail-img {
     display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start;
+    gap: 12px;
+    padding: 15px 10px !important;
+    margin: 0 !important;
+    background: white;
+    overflow-x: auto;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 1px solid #eee; /* Separador sutil abajo */
+    z-index: 10;
+    min-height: 95px; /* Alto fijo para que no salte el contenido */
 }
 
-/* Le ponemos un límite de alto a la foto principal */
-.product-detail-modal .detail-img img#det-img-url {
-    position: relative !important;
-    height: auto !important;
-    max-height: calc(100% - 90px) !important; 
-    object-fit: cover;
+/* Estilo de cada fotito en miniatura */
+.product-detail-modal .detail-img #det-mini-gallery img {
+    width: 65px !important;
+    height: 65px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
+    cursor: pointer;
+    border: 2px solid transparent !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* Aseguramos que la botonera de miniaturas se mantenga visible */
-.product-detail-modal .detail-img #det-mini-gallery {
-    position: relative !important;
-    z-index: 10 !important;
-    min-height: 70px;
+/* Miniatura SELECCIONADA (Color Arena + Destacado) */
+.product-detail-modal .detail-img #det-mini-gallery img.selected {
+    border-color: #d4b58e !important; /* Color Arena */
+    transform: scale(1.1); /* Se agranda apenitas para destacar */
+    opacity: 1 !important;
+    box-shadow: 0 4px 10px rgba(212, 181, 142, 0.4); /* Sombrita color arena */
+}
+
+/* Miniaturas NO seleccionadas (Más apagadas) */
+.product-detail-modal .detail-img #det-mini-gallery img.img-gall-inactive {
+    opacity: 0.5 !important; /* Se ponen grises para que resalte la elegida */
+    border-color: transparent !important;
+    transform: scale(1);
+}
+
+/* =======================================
+   SECCIÓN DERECHA: TEXTO, PRECIOS Y BOTÓN
+   ======================================= */
+
+.detail-info {
+    flex: 1;
+    padding: 40px 50px; 
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    text-align: left; 
+    background: #fff; 
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.btn-close-modal {
+    position: absolute;
+    top: 15px; right: 15px;
+    background: rgba(255,255,255,0.8);
+    border: none;
+    border-radius: 50%;
+    width: 35px; height: 35px;
+    font-size: 1.5rem; 
+    cursor: pointer; 
+    color: var(--secondary);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.2s; 
+    backdrop-filter: blur(2px);
+}
+
+.btn-close-modal:hover { 
+    color: var(--danger); 
+    transform: rotate(90deg); 
+    background: #fff;
+}
+
+/* Botón de favoritos arriba a la izquierda de la foto */
+.btn-fav-modal {
+    position: absolute;
+    top: 15px; left: 15px;
+    background: rgba(255,255,255,0.95);
+    border: none;
+    border-radius: 50%;
+    width: 45px; height: 45px;
+    font-size: 1.3rem;
+    color: #999;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    z-index: 20;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    transition: 0.2s;
+}
+
+.btn-fav-modal:hover { 
+    transform: scale(1.1); 
+}
+
+.btn-fav-modal.active {
+    color: var(--danger);
+}
+
+/* =======================================
+   RESPONSIVE MODAL: CELULARES Y COMPUTADORAS
+   ======================================= */
+
+/* Para Celulares (Apila la foto arriba y el texto abajo) */
+@media (max-width: 991px) {
+    .detail-box {
+        flex-direction: column;
+        overflow-y: auto;
+        border-radius: var(--radius-md); 
+        width: 95%; 
+        max-height: 92vh;
+    }
+    
+    .product-detail-modal .detail-img {
+        height: auto !important; /* Ajuste crítico para el móvil */
+    }
+    
+    .product-detail-modal .detail-img img#det-img-url {
+        border-radius: var(--radius-md) var(--radius-md) 0 0 !important; 
+    }
+    
+    .detail-info { 
+        padding: 30px 20px; 
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+    
+    .detail-title { 
+        font-size: 1.5rem; 
+    }
+    
+    .btn-close-modal { 
+        top: 10px; right: 10px; 
+        background: rgba(255,255,255,0.7); 
+        width: 30px; height: 30px; 
+        font-size: 1.2rem;
+    }
+}
+
+/* Para Computadoras (Foto a la izquierda, texto a la derecha) */
+@media (min-width: 992px) {
+    .product-detail-modal .detail-img {
+        height: 100% !important; /* Ocupa todo el alto de la izquierda */
+    }
+    
+    .product-detail-modal .detail-img img#det-img-url {
+        height: calc(100% - 95px) !important; /* Ocupa todo menos el espacio de la galería */
+        max-height: none !important; /* Sacamos el límite del celular */
+        border-radius: var(--radius-md) 0 0 0 !important; 
+    }
+    
+    .product-detail-modal .detail-img #det-mini-gallery {
+        border-radius: 0 0 0 var(--radius-md) !important; 
+        border-bottom: none;
+    }
 }
