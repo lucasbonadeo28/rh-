@@ -113,40 +113,59 @@
                 <div class="admin-header-row">
                     <h2>Cargar Nueva Prenda</h2>
                 </div>
-                <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
-                    <div class="form-row-flex" style="display:flex; gap:15px; width:100%;">
-                        <input type="text" id="add-nombre" placeholder="Nombre (Ej: Jean Recto...)" style="flex: 2;" oninput="this.classList.remove('input-error'); validarLetras(this)">
+                
+                <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; align-items: flex-end;">
                         
-                        <select id="add-categoria" style="flex: 1;" onchange="this.classList.remove('input-error');">
-                            <option value="" disabled selected>Cargando categorías...</option>
-                        </select>
-
-                        <input type="text" id="add-precio-tarj" placeholder="Precio Tarjeta ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
-                        <input type="text" id="add-precio-efvo" placeholder="Precio Transf. ($)" style="flex: 1;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
-                    </div>
-                    <div class="form-row-flex" style="display:flex; gap:15px; width:100%; align-items: flex-start;">
-                        <input type="text" id="add-descripcion" placeholder="Breve descripción (solo letras)..." style="flex: 2;" oninput="this.classList.remove('input-error'); validarLetras(this)">
-                        
-                        <div style="flex: 2; display:flex; flex-direction:column; gap:8px; background: #fff; padding: 10px; border-radius: 6px; border: 1px dashed #ccc;">
-                            <label style="font-size:0.9rem; font-weight:600; color:#555; cursor: pointer;">
-                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()"> Es Talle Único
-                            </label>
-                            <input type="text" id="add-talles" placeholder="Talles (Ej: S:10, M:5 o Jeans: 38:5...)" style="width:100%;" oninput="this.classList.remove('input-error');">
-                            <input type="text" id="add-stock-unico" placeholder="Stock Total Disponible" style="width:100%; display:none;" oninput="this.classList.remove('input-error'); validarNumeros(this)">
+                        <div style="grid-column: span 2;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Nombre del producto</label>
+                            <input type="text" id="add-nombre" placeholder="Ej: Jean Recto Clásico..." style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none; transition: 0.2s;" oninput="validarLetras(this)">
                         </div>
                         
-                        <div style="flex: 1.5;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Fotos (Podés elegir varias):</label>
-                            <label for="add-img" class="custom-file-upload" id="label-add-img">
+                        <div style="grid-column: span 1;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Categoría</label>
+                            <select id="add-categoria" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; background: white; outline: none;">
+                                <option value="" disabled selected>Categorías...</option>
+                            </select>
+                        </div>
+
+                        <div style="grid-column: span 1;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Precio Tarj. ($)</label>
+                            <input type="text" id="add-precio-tarj" placeholder="Ej: 35000" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarNumeros(this)">
+                        </div>
+
+                        <div style="grid-column: span 1;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Precio Transf. ($)</label>
+                            <input type="text" id="add-precio-efvo" placeholder="Ej: 30000" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarNumeros(this)">
+                        </div>
+
+                        <div style="grid-column: span 2;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Breve descripción</label>
+                            <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarLetras(this)">
+                        </div>
+
+                        <div style="grid-column: span 1; background: #fff; padding: 10px 12px; border-radius: 6px; border: 1px dashed #bbb; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; height: 43px;">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0;"> Es Talle Único
+                            </label>
+                            <input type="text" id="add-talles" placeholder="S:10, M:5" style="width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; outline: none;">
+                            <input type="text" id="add-stock-unico" placeholder="Stock Total" style="width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; outline: none; display: none;" oninput="validarNumeros(this)">
+                        </div>
+
+                        <div style="grid-column: span 1;">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Fotos de la prenda</label>
+                            <label for="add-img" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px; border: 1px dashed #999; border-radius: 6px; cursor: pointer; background: #fafafa; font-size: 0.85rem; font-weight: 600; color: #555; margin: 0; box-sizing: border-box; transition: 0.2s;" id="label-add-img">
                                 <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                             </label>
-                            
                             <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
                         </div>
+
+                        <div style="grid-column: span 1;">
+                            <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 43px; margin: 0; padding: 0; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: white; border-radius: 6px;" onclick="crearProducto()">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                        </div>
                         
-                        <button class="btn-agregar-derecha" id="btn-crear-producto" style="flex: 1; height: 50px;" onclick="crearProducto()">
-                            <i class="fas fa-save"></i> Guardar
-                        </button>
                     </div>
                 </div>
                 
