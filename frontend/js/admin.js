@@ -18,6 +18,11 @@ let categoriasGlobal = [];
 let cPagina = 1;
 const cPorPagina = 10;
 
+// ==========================================
+// VARIABLE MÁGICA PARA MODO EDICIÓN
+// ==========================================
+let idProductoEditando = null;
+
 window.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
@@ -168,9 +173,10 @@ function mostrarNombreArchivo(input, labelId, textoDefault) {
         label.classList.add('selected'); 
         icon.className = 'fas fa-check-circle'; 
     } else {
-        span.innerText = textoDefault; 
+        // En modo edición, mostramos el mensaje correcto si no hay archivo
+        span.innerText = idProductoEditando ? 'Reemplazar Fotos (Opcional)' : textoDefault; 
         label.classList.remove('selected'); 
-        icon.className = 'fas fa-camera';
+        icon.className = idProductoEditando ? 'fas fa-images' : 'fas fa-camera';
     }
     label.classList.remove('input-error');
 }
@@ -310,7 +316,7 @@ function eliminarCategoria(id) {
     });
 }
 
-// LÓGICA INVENTARIO - TICK VERDE
+// LÓGICA INVENTARIO - CON BOTÓN DE EDITAR AÑADIDO
 function renderStock() {
     const inicio = (pagina - 1) * pPorPagina; 
     const items = pFiltrados.slice(inicio, inicio + pPorPagina);
@@ -326,7 +332,6 @@ function renderStock() {
             });
         }
 
-        // Obtener la foto principal (si es un array de fotos)
         let mainImg = 'https://via.placeholder.com/60';
         try { 
             const arr = JSON.parse(p.imagen_url); 
@@ -348,8 +353,11 @@ function renderStock() {
             </td>
             <td style="text-align: center; vertical-align: middle;">
                 <div style="display: flex; justify-content: center; gap: 8px;">
-                    <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Cambios">
+                    <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Edición Rápida">
                         <i class="fas fa-check"></i>
+                    </button>
+                    <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="editarProducto(${p.id})" title="Editar Prenda">
+                        <i class="fas fa-pencil-alt"></i>
                     </button>
                     <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="borrarP(${p.id})" title="Eliminar Producto">
                         <i class="fas fa-trash-alt"></i>
@@ -364,7 +372,81 @@ function renderStock() {
     document.getElementById('pagi-siguiente').disabled = inicio + pPorPagina >= pFiltrados.length;
 }
 
-// FUNCIÓN PARA EL TICK VERDE
+// FUNCIÓN PARA EDITAR LA PRENDA EN EL FORMULARIO
+function editarProducto(id) {
+    const producto = pTotales.find(p => p.id === id);
+    if (!producto) return;
+
+    idProductoEditando = id;
+    
+    const titulo = document.getElementById('titulo-form-admin');
+    if(titulo) titulo.innerText = `Editando: ${producto.nombre}`;
+    
+    document.getElementById('add-nombre').value = producto.nombre || '';
+    document.getElementById('add-categoria').value = producto.categoria || '';
+    document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || producto.tarjeta || '';
+    document.getElementById('add-precio-efvo').value = producto.precio_efectivo || producto.efectivo || '';
+    document.getElementById('add-descripcion').value = producto.descripcion || '';
+
+    const chkUnico = document.getElementById('chk-unico');
+    const inputTalles = document.getElementById('add-talles');
+    const inputStockUnico = document.getElementById('add-stock-unico');
+
+    if (producto.inventario_talles && producto.inventario_talles['ÚNICO'] !== undefined) {
+        chkUnico.checked = true;
+        inputTalles.style.display = 'none';
+        inputStockUnico.style.display = 'block';
+        inputStockUnico.value = producto.inventario_talles['ÚNICO'];
+        inputTalles.value = '';
+    } else {
+        chkUnico.checked = false;
+        inputTalles.style.display = 'block';
+        inputStockUnico.style.display = 'none';
+        if (producto.inventario_talles) {
+            inputTalles.value = Object.entries(producto.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
+        } else {
+            inputTalles.value = '';
+        }
+        inputStockUnico.value = '';
+    }
+
+    const btnGuardar = document.getElementById('btn-crear-producto');
+    btnGuardar.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar';
+    btnGuardar.style.background = '#f39c12';
+    
+    const labelImg = document.getElementById('label-add-img');
+    labelImg.innerHTML = '<i class="fas fa-images"></i> <span>Reemplazar Fotos (Opcional)</span>';
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function limpiarFormularioAdmin() {
+    const titulo = document.getElementById('titulo-form-admin');
+    if(titulo) titulo.innerText = 'Cargar Nueva Prenda';
+    
+    document.getElementById('add-nombre').value = '';
+    document.getElementById('add-categoria').value = '';
+    document.getElementById('add-precio-tarj').value = '';
+    document.getElementById('add-precio-efvo').value = '';
+    document.getElementById('add-descripcion').value = '';
+    document.getElementById('add-talles').value = '';
+    document.getElementById('add-stock-unico').value = '';
+    document.getElementById('chk-unico').checked = false;
+    toggleTalleUnico();
+    
+    const imgInput = document.getElementById('add-img');
+    imgInput.value = '';
+    mostrarNombreArchivo(imgInput, 'label-add-img', 'Abrir Galería');
+
+    idProductoEditando = null;
+    
+    const btnGuardar = document.getElementById('btn-crear-producto');
+    btnGuardar.innerHTML = '<i class="fas fa-save"></i> Guardar';
+    btnGuardar.style.background = '#111';
+    btnGuardar.disabled = false;
+}
+
+// FUNCIÓN PARA EL TICK VERDE (QUEDA IGUAL)
 async function guardarEdicionFila(id, event) {
     const efvo = document.getElementById(`efvo-${id}`).value;
     const tarj = document.getElementById(`tarj-${id}`).value;
@@ -466,7 +548,7 @@ function toggleTalleUnico() {
 }
 
 function validarLetras(input) { 
-    input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''); 
+    input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9]/g, ''); 
 }
 
 function validarNumeros(input) { 
@@ -511,7 +593,10 @@ const procesarImg = (file) => {
     });
 };
 
-async function crearProducto() { 
+// ==========================================
+// FUNCIÓN CENTRAL PARA GUARDAR Y ACTUALIZAR
+// ==========================================
+async function guardarOActualizarProducto() { 
     const btn = document.getElementById('btn-crear-producto');
     const nombre = document.getElementById('add-nombre').value.trim();
     const categoria = document.getElementById('add-categoria').value;
@@ -529,7 +614,8 @@ async function crearProducto() {
     if (!pEfvo) { document.getElementById('add-precio-efvo').classList.add('input-error'); error = true; }
     if (!desc) { document.getElementById('add-descripcion').classList.add('input-error'); error = true; }
     
-    if (!imgInput.files || imgInput.files.length === 0) {
+    // Solo da error la foto si estamos creando uno NUEVO
+    if (idProductoEditando === null && (!imgInput.files || imgInput.files.length === 0)) {
         document.getElementById('label-add-img').classList.add('input-error');
         error = true;
     }
@@ -559,48 +645,57 @@ async function crearProducto() {
         }
     }
 
-    if(error) return showCustomAlert("Por favor, completá todos los recuadros y seleccioná al menos una foto.", "error", false);
+    if(error) return showCustomAlert("Por favor, completá todos los recuadros rojos.", "error", false);
     if(stockIngresado <= 0) return showCustomAlert("El stock no puede ser 0.", "error", false);
 
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
     btn.disabled = true;
 
     try {
-        const base64Images = [];
-        const filesToProcess = Array.from(imgInput.files).slice(0, 5); // Limitar a 5 fotos máximo
+        let imgDataToSave = null;
         
-        for (let file of filesToProcess) { 
-            base64Images.push(await procesarImg(file)); 
+        // Si subió fotos nuevas, las procesamos (ya sea nuevo o editando)
+        if (imgInput.files && imgInput.files.length > 0) {
+            const base64Images = [];
+            const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
+            for (let file of filesToProcess) { 
+                base64Images.push(await procesarImg(file)); 
+            }
+            imgDataToSave = JSON.stringify(base64Images);
         }
-        
-        const imgDataToSave = JSON.stringify(base64Images);
 
-        const res = await fetchSeguro(`${API}/productos`, {
-            method: 'POST',
+        const bodyPayload = {
+            nombre: nombre,
+            categoria: categoria,
+            precio_efectivo: pEfvo,
+            precio_tarjeta: pTarj,
+            descripcion: desc,
+            inventario_talles: inventarioFinal
+        };
+
+        // Solo sobreescribimos la imagen si hay una nueva cargada
+        if (imgDataToSave) {
+            bodyPayload.imagen_url = imgDataToSave;
+        }
+
+        let url = `${API}/productos`;
+        let metodo = 'POST'; // Crear nuevo por defecto
+
+        if (idProductoEditando !== null) {
+            url = `${API}/productos/${idProductoEditando}`;
+            metodo = 'PUT'; // Actualizar
+        }
+
+        const res = await fetchSeguro(url, {
+            method: metodo,
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                nombre: nombre,
-                categoria: categoria,
-                precio_efectivo: pEfvo,
-                precio_tarjeta: pTarj,
-                descripcion: desc,
-                inventario_talles: inventarioFinal,
-                imagen_url: imgDataToSave
-            })
+            body: JSON.stringify(bodyPayload)
         });
 
         if(res.ok) {
-            showCustomAlert("¡Producto guardado exitosamente!", "success", false);
+            showCustomAlert(idProductoEditando ? "¡Producto actualizado exitosamente!" : "¡Producto creado exitosamente!", "success", false);
             
-            document.getElementById('add-nombre').value = '';
-            document.getElementById('add-categoria').value = '';
-            document.getElementById('add-precio-tarj').value = '';
-            document.getElementById('add-precio-efvo').value = '';
-            document.getElementById('add-descripcion').value = '';
-            document.getElementById('add-talles').value = '';
-            document.getElementById('add-stock-unico').value = '';
-            imgInput.value = '';
-            mostrarNombreArchivo(imgInput, 'label-add-img', 'Abrir Galería');
+            limpiarFormularioAdmin();
 
             const resI = await fetchSeguro(`${API}/productos`); 
             pTotales = await resI.json(); 
@@ -608,13 +703,14 @@ async function crearProducto() {
             renderStock();
         } else {
             showCustomAlert("Error al guardar el producto.", "error", false);
+            btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar' : '<i class="fas fa-save"></i> Guardar';
+            btn.disabled = false;
         }
     } catch(e) {
         showCustomAlert("Error de conexión con el servidor.", "error", false);
+        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar' : '<i class="fas fa-save"></i> Guardar';
+        btn.disabled = false;
     }
-    
-    btn.innerHTML = '<i class="fas fa-save"></i> Guardar';
-    btn.disabled = false;
 }
 
 // PEDIDOS
