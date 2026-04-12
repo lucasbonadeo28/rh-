@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Panel Admin LUCAS</title>
+    
+    <link rel="icon" type="image/png" href="./rh3.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script>
@@ -11,38 +14,8 @@
         document.documentElement.setAttribute('data-active-tab', tabActivaInit);
     </script>
 
-    <link rel="stylesheet" href="css/admin.css?v=2">
-
-    <style>
-        .login-wrapper {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            background: #f4f7f6; display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-        }
-        .login-box {
-            background: white; padding: 40px; border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center;
-        }
-        .login-box h2 { color: #111; margin-bottom: 20px; font-weight: 800; font-size: 1.8rem; font-family: 'Montserrat', sans-serif;}
-        .login-error { color: #e74c3c; font-size: 0.9rem; margin-bottom: 20px; display: none; font-weight: 600; font-family: 'Montserrat', sans-serif;}
-        .login-input-group { margin-bottom: 20px; text-align: left; position: relative; }
-        .login-input-group input {
-            width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px;
-            font-size: 1rem; font-family: 'Montserrat', sans-serif; outline: none; box-sizing: border-box;
-        }
-        .login-input-group input:focus { border-color: #111; }
-        .toggle-pass {
-            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-            cursor: pointer; color: #888; font-size: 1.2rem; transition: 0.2s;
-        }
-        .toggle-pass:hover { color: #111; }
-        .btn-login {
-            background: #111; color: white; border: none; padding: 15px; width: 100%;
-            border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.3s;
-            font-family: 'Montserrat', sans-serif;
-        }
-        .btn-login:hover { background: #333; }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/admin.css?v=4">
 </head>
 <body>
 
@@ -81,6 +54,7 @@
         </nav>
 
         <div class="container">
+            
             <div id="tab-pedidos" class="tab-content">
                 <div class="admin-header-row">
                     <h2>Últimos Pedidos Realizados</h2>
@@ -111,40 +85,40 @@
 
             <div id="tab-inventario" class="tab-content">
                 <div class="admin-header-row">
-                    <h2>Cargar Nueva Prenda</h2>
+                    <h2 id="titulo-form-admin">Cargar Nueva Prenda</h2>
                 </div>
                 
                 <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; align-items: flex-end;">
+                    <div class="admin-form-grid">
                         
-                        <div style="grid-column: span 2;">
+                        <div class="form-col-2">
                             <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Nombre del producto</label>
                             <input type="text" id="add-nombre" placeholder="Ej: Jean Recto Clásico..." style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none; transition: 0.2s;" oninput="validarLetras(this)">
                         </div>
                         
-                        <div style="grid-column: span 1;">
+                        <div class="form-col-1">
                             <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Categoría</label>
                             <select id="add-categoria" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; background: white; outline: none;">
                                 <option value="" disabled selected>Categorías...</option>
                             </select>
                         </div>
 
-                        <div style="grid-column: span 1;">
+                        <div class="form-col-1">
                             <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Precio Tarj. ($)</label>
                             <input type="text" id="add-precio-tarj" placeholder="Ej: 35000" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarNumeros(this)">
                         </div>
 
-                        <div style="grid-column: span 1;">
+                        <div class="form-col-1">
                             <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Precio Transf. ($)</label>
                             <input type="text" id="add-precio-efvo" placeholder="Ej: 30000" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarNumeros(this)">
                         </div>
 
-                        <div style="grid-column: span 2;">
+                        <div class="form-col-2">
                             <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Breve descripción</label>
                             <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarLetras(this)">
                         </div>
 
-                        <div style="grid-column: span 1; background: #fff; padding: 10px 12px; border-radius: 6px; border: 1px dashed #bbb; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; height: 43px;">
+                        <div class="form-col-1 form-caja-talles">
                             <label style="font-size: 0.8rem; font-weight: 600; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
                                 <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0;"> Es Talle Único
                             </label>
@@ -152,16 +126,16 @@
                             <input type="text" id="add-stock-unico" placeholder="Stock Total" style="width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; outline: none; display: none;" oninput="validarNumeros(this)">
                         </div>
 
-                        <div style="grid-column: span 1;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Fotos de la prenda</label>
+                        <div class="form-col-1">
+                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Fotos</label>
                             <label for="add-img" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px; border: 1px dashed #999; border-radius: 6px; cursor: pointer; background: #fafafa; font-size: 0.85rem; font-weight: 600; color: #555; margin: 0; box-sizing: border-box; transition: 0.2s;" id="label-add-img">
                                 <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                             </label>
                             <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
                         </div>
 
-                        <div style="grid-column: span 1;">
-                            <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 43px; margin: 0; padding: 0; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: white; border-radius: 6px;" onclick="crearProducto()">
+                        <div class="form-col-1">
+                            <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 43px; margin: 0; padding: 0; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: white; border-radius: 6px; border: none; cursor: pointer;" onclick="guardarOActualizarProducto()">
                                 <i class="fas fa-save"></i> Guardar
                             </button>
                         </div>
@@ -337,6 +311,7 @@
                     </table>
                 </div>
             </div>
+            
         </div>
     </div>
 
@@ -359,6 +334,8 @@
         </div>
     </div>
 
-    <script src="js/admin.js?v=6"></script>
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="js/admin.js?v=7"></script>
 </body>
 </html>
