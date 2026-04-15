@@ -174,7 +174,7 @@ function mostrarNombreArchivo(input, labelId, textoDefault) {
         icon.className = 'fas fa-check-circle'; 
     } else {
         // En modo edición, mostramos el mensaje correcto si no hay archivo
-        span.innerText = idProductoEditando ? 'Reemplazar Fotos (Opcional)' : textoDefault; 
+        span.innerText = idProductoEditando ? 'Agregar más fotos (Opcional)' : textoDefault; 
         label.classList.remove('selected'); 
         icon.className = idProductoEditando ? 'fas fa-images' : 'fas fa-camera';
     }
@@ -415,7 +415,8 @@ function editarProducto(id) {
     btnGuardar.style.background = '#f39c12';
     
     const labelImg = document.getElementById('label-add-img');
-    labelImg.innerHTML = '<i class="fas fa-images"></i> <span>Reemplazar Fotos (Opcional)</span>';
+    // ACÁ CAMBIA EL TEXTO A "Agregar más fotos"
+    labelImg.innerHTML = '<i class="fas fa-images"></i> <span>Agregar más fotos (Opcional)</span>';
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -594,7 +595,7 @@ const procesarImg = (file) => {
 };
 
 // ==========================================
-// FUNCIÓN CENTRAL PARA GUARDAR Y ACTUALIZAR
+// FUNCIÓN CENTRAL PARA GUARDAR Y ACTUALIZAR (CON LÓGICA DE FOTOS INTELIGENTE)
 // ==========================================
 async function guardarOActualizarProducto() { 
     const btn = document.getElementById('btn-crear-producto');
@@ -654,14 +655,35 @@ async function guardarOActualizarProducto() {
     try {
         let imgDataToSave = null;
         
-        // Si subió fotos nuevas, las procesamos (ya sea nuevo o editando)
+        // Si subió fotos nuevas...
         if (imgInput.files && imgInput.files.length > 0) {
-            const base64Images = [];
+            const base64Nuevas = [];
             const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
             for (let file of filesToProcess) { 
-                base64Images.push(await procesarImg(file)); 
+                base64Nuevas.push(await procesarImg(file)); 
             }
-            imgDataToSave = JSON.stringify(base64Images);
+            
+            // Si estamos EDITANDO, buscamos las fotos viejas y le SUMAMOS las nuevas
+            if (idProductoEditando !== null) {
+                const productoOriginal = pTotales.find(p => p.id === idProductoEditando);
+                let fotosViejas = [];
+                if (productoOriginal && productoOriginal.imagen_url) {
+                    try {
+                        const arr = JSON.parse(productoOriginal.imagen_url);
+                        if (Array.isArray(arr)) fotosViejas = arr;
+                        else fotosViejas = [productoOriginal.imagen_url];
+                    } catch(e) {
+                        fotosViejas = [productoOriginal.imagen_url];
+                    }
+                }
+                
+                // Unimos las viejas con las nuevas (Máximo 10 fotos por prenda para no romper todo)
+                const todasLasFotos = [...fotosViejas, ...base64Nuevas].slice(0, 10);
+                imgDataToSave = JSON.stringify(todasLasFotos);
+            } else {
+                // Si es un producto NUEVO, solo guardamos las fotos nuevas
+                imgDataToSave = JSON.stringify(base64Nuevas);
+            }
         }
 
         const bodyPayload = {
@@ -673,8 +695,8 @@ async function guardarOActualizarProducto() {
             inventario_talles: inventarioFinal
         };
 
-        // Solo sobreescribimos la imagen si hay una nueva cargada
-        if (imgDataToSave) {
+        // Solo sobreescribimos la imagen en la base de datos si imgDataToSave tiene algo
+        if (imgDataToSave !== null) {
             bodyPayload.imagen_url = imgDataToSave;
         }
 
