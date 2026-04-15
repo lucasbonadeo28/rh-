@@ -15,7 +15,7 @@
     </script>
 
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin.css?v=5">
+    <link rel="stylesheet" href="css/admin.css?v=10">
 </head>
 <body>
 
@@ -43,10 +43,10 @@
                 <a class="tab-link" onclick="verTab('tab-categorias')">Categorías</a>
                 <a class="tab-link" onclick="verTab('tab-banners')">Banners</a>
                 <a class="tab-link" onclick="verTab('tab-cupones')">Cupones</a>
-                <a class="tab-link" onclick="verTab('tab-historial')">Estadísticas Mensuales</a>
+                <a class="tab-link" onclick="verTab('tab-historial')">Estadísticas</a>
             </div>
-            <div>
-                <a onclick="cerrarSesionLocal()" style="color: white; cursor: pointer; text-decoration: none; font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Salir</a>
+            <div style="margin-top: 10px;">
+                <a onclick="cerrarSesionLocal()" style="color: #e74c3c; cursor: pointer; text-decoration: none; font-weight: bold; font-size: 0.9rem;"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </nav>
 
@@ -76,27 +76,27 @@
                     <div class="admin-form-grid">
                         
                         <div class="col-span-2">
-                            <label class="form-label">Nombre del producto</label>
+                            <label>Nombre del producto</label>
                             <input type="text" id="add-nombre" placeholder="Ej: Jean Recto Clásico..." oninput="validarLetras(this)">
                         </div>
                         
                         <div class="col-span-1">
-                            <label class="form-label">Categoría</label>
+                            <label>Categoría</label>
                             <select id="add-categoria"><option value="" disabled selected>Categorías...</option></select>
                         </div>
 
                         <div class="col-span-1">
-                            <label class="form-label">Precio Tarj. ($)</label>
+                            <label>Precio Tarj. ($)</label>
                             <input type="text" id="add-precio-tarj" placeholder="Ej: 35000" oninput="validarNumeros(this)">
                         </div>
 
                         <div class="col-span-1">
-                            <label class="form-label">Precio Transf. ($)</label>
+                            <label>Precio Transf. ($)</label>
                             <input type="text" id="add-precio-efvo" placeholder="Ej: 30000" oninput="validarNumeros(this)">
                         </div>
 
                         <div class="col-span-2">
-                            <label class="form-label">Breve descripción</label>
+                            <label>Breve descripción</label>
                             <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." oninput="validarLetras(this)">
                         </div>
 
@@ -109,7 +109,7 @@
                         </div>
 
                         <div class="col-span-1">
-                            <label class="form-label">Fotos</label>
+                            <label>Fotos</label>
                             <label for="add-img" class="custom-file-upload" id="label-add-img">
                                 <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                             </label>
@@ -268,6 +268,6 @@
 
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="js/admin.js?v=8"></script>
+    <script src="js/admin.js?v=10"></script>
 </body>
 </html>
