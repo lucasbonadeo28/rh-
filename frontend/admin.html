@@ -15,7 +15,7 @@
     </script>
 
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin.css?v=10">
+    <link rel="stylesheet" href="css/admin.css?v=11">
 </head>
 <body>
 
@@ -76,8 +76,8 @@
                     <div class="admin-form-grid">
                         
                         <div class="col-span-2">
-                            <label>Nombre del producto</label>
-                            <input type="text" id="add-nombre" placeholder="Ej: Jean Recto Clásico..." oninput="validarLetras(this)">
+                            <label>Nombre del producto (y Color)</label>
+                            <input type="text" id="add-nombre" placeholder="Ej: Chaleco Gamuzado Beige" oninput="validarLetras(this)">
                         </div>
                         
                         <div class="col-span-1">
@@ -86,13 +86,26 @@
                         </div>
 
                         <div class="col-span-1">
+                            <label title="Usá el mismo código para agrupar colores de un mismo modelo">Cód. Modelo <i class="fas fa-info-circle" style="color:#aaa;"></i></label>
+                            <input type="text" id="add-codigo-modelo" placeholder="Ej: CHAL-01" style="text-transform: uppercase;">
+                        </div>
+
+                        <div class="col-span-1">
+                            <label>Tono Variante</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="color" id="add-color-hex" value="#d4ba92" style="width: 40px; height: 43px; padding: 0; cursor: pointer; border-radius: 4px; border: 1px solid #ddd;">
+                                <input type="text" id="add-color-nombre" placeholder="Ej: Beige" oninput="validarLetras(this)" style="flex: 1;">
+                            </div>
+                        </div>
+
+                        <div class="col-span-1">
                             <label>Precio Tarj. ($)</label>
-                            <input type="text" id="add-precio-tarj" placeholder="Ej: 35000" oninput="validarNumeros(this)">
+                            <input type="number" id="add-precio-tarj" placeholder="Ej: 35000" oninput="validarNumeros(this)">
                         </div>
 
                         <div class="col-span-1">
                             <label>Precio Transf. ($)</label>
-                            <input type="text" id="add-precio-efvo" placeholder="Ej: 30000" oninput="validarNumeros(this)">
+                            <input type="number" id="add-precio-efvo" placeholder="Ej: 30000" oninput="validarNumeros(this)">
                         </div>
 
                         <div class="col-span-2">
@@ -108,17 +121,17 @@
                             <input type="text" id="add-stock-unico" placeholder="Stock Total" style="padding: 8px; font-size: 0.85rem; display: none;" oninput="validarNumeros(this)">
                         </div>
 
-                        <div class="col-span-1">
-                            <label>Fotos</label>
+                        <div class="col-span-3">
+                            <label>Fotos (De esta variante)</label>
                             <label for="add-img" class="custom-file-upload" id="label-add-img">
                                 <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                             </label>
                             <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
                         </div>
 
-                        <div class="col-span-1">
+                        <div class="col-span-2" style="display: flex; align-items: flex-end;">
                             <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 48px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="guardarOActualizarProducto()">
-                                <i class="fas fa-save"></i> Guardar
+                                <i class="fas fa-save"></i> Guardar Prenda
                             </button>
                         </div>
                         
@@ -268,6 +281,6 @@
 
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="js/admin.js?v=10"></script>
+    <script src="js/admin.js?v=11"></script>
 </body>
 </html>
