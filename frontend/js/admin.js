@@ -12,15 +12,9 @@ let ventasDataGlobal = [];
 let reloadAfterAlert = false; 
 
 let accionConfirmada = null;
-
-// LÓGICA CATEGORÍAS
 let categoriasGlobal = [];
 let cPagina = 1;
 const cPorPagina = 10;
-
-// ==========================================
-// VARIABLE MÁGICA PARA MODO EDICIÓN
-// ==========================================
 let idProductoEditando = null;
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -35,7 +29,6 @@ window.addEventListener('DOMContentLoaded', () => {
 function togglePassword() {
     const passInput = document.getElementById('login-password');
     const eyeIcon = document.getElementById('toggle-eye');
-    
     if (passInput.type === 'password') {
         passInput.type = 'text';
         eyeIcon.classList.remove('fa-eye');
@@ -66,9 +59,7 @@ if(formLogin) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-            
             const data = await res.json();
-
             if (res.ok && data.success) { 
                 sessionStorage.setItem('adminLogueado', 'true');
                 document.getElementById('login-wrapper').style.display = 'none';
@@ -94,23 +85,16 @@ function cerrarSesionLocal() {
     const panelDashboard = document.getElementById('panel-dashboard');
     if(loginWrapper) loginWrapper.style.display = 'flex';
     if(panelDashboard) panelDashboard.style.display = 'none';
-    
     const passInput = document.getElementById('login-password');
     if(passInput) passInput.value = '';
 }
 
 window.onload = () => { 
-    if (sessionStorage.getItem('adminLogueado') === 'true') {
-        cargarTodo(); 
-    }
-    
+    if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
     const tabGuardada = sessionStorage.getItem('adminTabActiva') || 'tab-pedidos';
     document.querySelectorAll('.tab-link').forEach(l => {
-        if(l.getAttribute('onclick').includes(tabGuardada)) {
-            l.classList.add('active');
-        } else {
-            l.classList.remove('active');
-        }
+        if(l.getAttribute('onclick').includes(tabGuardada)) l.classList.add('active');
+        else l.classList.remove('active');
     });
 };
 
@@ -118,15 +102,9 @@ function showCustomAlert(msg, type = 'error', reload = false) {
     reloadAfterAlert = reload;
     const modal = document.getElementById('custom-alert-modal');
     const icon = document.getElementById('custom-alert-icon');
-    
     document.getElementById('custom-alert-text').innerText = msg;
-    
-    if(type === 'success') {
-        icon.innerHTML = '<i class="fas fa-check-circle" style="color:#27ae60;"></i>';
-    } else {
-        icon.innerHTML = '<i class="fas fa-times-circle" style="color:#e74c3c;"></i>';
-    }
-    
+    if(type === 'success') icon.innerHTML = '<i class="fas fa-check-circle" style="color:#27ae60;"></i>';
+    else icon.innerHTML = '<i class="fas fa-times-circle" style="color:#e74c3c;"></i>';
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('active'), 10); 
 }
@@ -167,14 +145,12 @@ function mostrarNombreArchivo(input, labelId, textoDefault) {
     const label = document.getElementById(labelId);
     const span = label.querySelector('span');
     const icon = label.querySelector('i');
-    
     if (input.files && input.files.length > 0) {
         span.innerText = input.files.length === 1 ? input.files[0].name : `${input.files.length} fotos elegidas`; 
         label.classList.add('selected'); 
         icon.className = 'fas fa-check-circle'; 
     } else {
-        // En modo edición, mostramos el mensaje correcto si no hay archivo
-        span.innerText = idProductoEditando ? 'Agregar más fotos (Opcional)' : textoDefault; 
+        span.innerText = idProductoEditando ? 'Reemplazar Fotos (Opcional)' : textoDefault; 
         label.classList.remove('selected'); 
         icon.className = idProductoEditando ? 'fas fa-images' : 'fas fa-camera';
     }
@@ -190,11 +166,8 @@ function verTab(id) {
     document.documentElement.setAttribute('data-active-tab', id);
     sessionStorage.setItem('adminTabActiva', id);
     document.querySelectorAll('.tab-link').forEach(l => {
-        if(l.getAttribute('onclick').includes(id)) {
-            l.classList.add('active');
-        } else {
-            l.classList.remove('active');
-        }
+        if(l.getAttribute('onclick').includes(id)) l.classList.add('active');
+        else l.classList.remove('active');
     });
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
     document.getElementById(id).style.display = 'block';
@@ -206,14 +179,10 @@ function toggleDetalle(id) {
 }
 
 async function cargarTodo() {
-    cargarBanners(); 
-    cargarCupones();
-    cargarCategorias();
-
+    cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos`); 
-        const dataI = await resI.json(); 
-        pTotales = dataI; 
+        pTotales = await resI.json(); 
         pFiltrados = [...pTotales]; 
         renderStock();
 
@@ -236,40 +205,23 @@ async function cargarCategorias() {
         const res = await fetchSeguro(`${API}/categorias`);
         if(res.ok) {
             categoriasGlobal = await res.json();
-            renderCategorias();
-            actualizarSelectCategorias();
+            renderCategorias(); actualizarSelectCategorias();
         }
-    } catch(e) { console.error(e); }
+    } catch(e) {}
 }
 
 function actualizarSelectCategorias() {
     const select = document.getElementById('add-categoria');
-    if(categoriasGlobal.length === 0) {
-        select.innerHTML = '<option value="" disabled selected>No hay categorías</option>';
-    } else {
-        select.innerHTML = '<option value="" disabled selected>Categoría...</option>' + 
-            categoriasGlobal.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
-    }
+    if(categoriasGlobal.length === 0) select.innerHTML = '<option value="" disabled selected>No hay categorías</option>';
+    else select.innerHTML = '<option value="" disabled selected>Categoría...</option>' + categoriasGlobal.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
 }
 
 function renderCategorias() {
     const inicio = (cPagina - 1) * cPorPagina;
     const items = categoriasGlobal.slice(inicio, inicio + cPorPagina);
     const tbody = document.getElementById('body-categorias');
-
-    if(categoriasGlobal.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray; padding:20px;">Aún no hay categorías creadas.</td></tr>';
-    } else {
-        tbody.innerHTML = items.map(c => `
-            <tr>
-                <td>#${c.id}</td>
-                <td style="font-weight:bold; text-transform:capitalize;">${c.nombre}</td>
-                <td style="text-align: center;">
-                    <button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button>
-                </td>
-            </tr>
-        `).join('');
-    }
+    if(categoriasGlobal.length === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray; padding:20px;">Aún no hay categorías creadas.</td></tr>';
+    else tbody.innerHTML = items.map(c => `<tr><td>#${c.id}</td><td style="font-weight:bold; text-transform:capitalize;">${c.nombre}</td><td style="text-align: center;"><button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button></td></tr>`).join('');
     document.getElementById('pagi-info-cat').innerText = `Página ${cPagina}`;
     document.getElementById('pagi-anterior-cat').disabled = cPagina === 1;
     document.getElementById('pagi-siguiente-cat').disabled = inicio + cPorPagina >= categoriasGlobal.length;
@@ -283,68 +235,48 @@ async function agregarCategoria(e) {
     const inputNombre = document.getElementById('add-nombre-categoria');
     const nombre = inputNombre.value.trim();
     const btn = document.getElementById('btn-submit-categoria');
-
     if (!nombre) return;
-
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
     try {
-        const res = await fetchSeguro(`${API}/categorias`, {
-            method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nombre})
-        });
-        if(res.ok) {
-            inputNombre.value = '';
-            showCustomAlert('Categoría añadida', 'success');
-            cargarCategorias();
-        } else {
-            showCustomAlert('La categoría ya existe', 'error');
-        }
-    } catch(e) {
-        showCustomAlert('Error de conexión', 'error');
-    }
-    btn.innerHTML = '<i class="fas fa-plus"></i> Añadir';
-    btn.disabled = false;
+        const res = await fetchSeguro(`${API}/categorias`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nombre}) });
+        if(res.ok) { inputNombre.value = ''; showCustomAlert('Categoría añadida', 'success'); cargarCategorias(); } 
+        else { showCustomAlert('La categoría ya existe', 'error'); }
+    } catch(e) { showCustomAlert('Error de conexión', 'error'); }
+    btn.innerHTML = '<i class="fas fa-plus"></i> Añadir'; btn.disabled = false;
 }
 
 function eliminarCategoria(id) {
     showCustomConfirm('¿Borrar categoría?', async () => {
-        try {
-            await fetchSeguro(`${API}/categorias/${id}`, {method:'DELETE'});
-            cargarCategorias();
-        } catch(e) {}
+        try { await fetchSeguro(`${API}/categorias/${id}`, {method:'DELETE'}); cargarCategorias(); } catch(e) {}
     });
 }
 
-// LÓGICA INVENTARIO - CON BOTÓN DE EDITAR AÑADIDO
+// INVENTARIO Y TABLA
 function renderStock() {
     const inicio = (pagina - 1) * pPorPagina; 
     const items = pFiltrados.slice(inicio, inicio + pPorPagina);
     
     document.getElementById('body-inventario').innerHTML = items.map(p => {
-        let tallesTxt = "";
-        let stockTotalSumado = 0;
-
+        let tallesTxt = ""; let stockTotalSumado = 0;
         if (p.inventario_talles && typeof p.inventario_talles === 'object') {
             tallesTxt = Object.entries(p.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
-            Object.values(p.inventario_talles).forEach(cantidad => {
-                stockTotalSumado += parseInt(cantidad) || 0;
-            });
+            Object.values(p.inventario_talles).forEach(cantidad => { stockTotalSumado += parseInt(cantidad) || 0; });
         }
 
         let mainImg = 'https://via.placeholder.com/60';
         try { 
             const arr = JSON.parse(p.imagen_url); 
-            if(Array.isArray(arr) && arr.length > 0) mainImg = arr[0]; 
-            else mainImg = p.imagen_url; 
-        } catch(e) { 
-            mainImg = p.imagen_url; 
-        }
+            if(Array.isArray(arr) && arr.length > 0) mainImg = arr[0]; else mainImg = p.imagen_url; 
+        } catch(e) { mainImg = p.imagen_url; }
+
+        // Mostrar el circulito de color si lo tiene cargado
+        let colorDot = p.color_hex ? `<span style="display:inline-block; width:12px; height:12px; background:${p.color_hex}; border-radius:50%; border:1px solid #ccc; vertical-align:middle; margin-right:6px;" title="${p.color_nombre || ''}"></span>` : '';
+        let modBadge = p.codigo_modelo ? `<span style="background:#eee; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Mod: ${p.codigo_modelo}</span>` : '';
 
         return `
         <tr>
             <td><img src="${mainImg}" style="width:60px;height:60px;object-fit:cover; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></td>
-            <td><strong>${p.nombre}</strong><br><small style="color:gray">${p.categoria}</small></td>
+            <td><strong>${colorDot}${p.nombre}</strong><br><small style="color:gray">${p.categoria} ${modBadge}</small></td>
             <td><input type="number" id="efvo-${p.id}" value="${p.precio_efectivo}" style="width:90px; padding:5px;"></td>
             <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
             <td>
@@ -353,15 +285,9 @@ function renderStock() {
             </td>
             <td style="text-align: center; vertical-align: middle;">
                 <div style="display: flex; justify-content: center; gap: 8px;">
-                    <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Edición Rápida">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="editarProducto(${p.id})" title="Editar Prenda">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                    <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="borrarP(${p.id})" title="Eliminar Producto">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Edición Rápida"><i class="fas fa-check"></i></button>
+                    <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="editarProducto(${p.id})" title="Editar Prenda"><i class="fas fa-pencil-alt"></i></button>
+                    <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="borrarP(${p.id})" title="Eliminar Producto"><i class="fas fa-trash-alt"></i></button>
                 </div>
             </td>
         </tr>`;
@@ -372,11 +298,9 @@ function renderStock() {
     document.getElementById('pagi-siguiente').disabled = inicio + pPorPagina >= pFiltrados.length;
 }
 
-// FUNCIÓN PARA EDITAR LA PRENDA EN EL FORMULARIO
 function editarProducto(id) {
     const producto = pTotales.find(p => p.id === id);
     if (!producto) return;
-
     idProductoEditando = id;
     
     const titulo = document.getElementById('titulo-form-admin');
@@ -387,36 +311,32 @@ function editarProducto(id) {
     document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || producto.tarjeta || '';
     document.getElementById('add-precio-efvo').value = producto.precio_efectivo || producto.efectivo || '';
     document.getElementById('add-descripcion').value = producto.descripcion || '';
+    
+    // CAMPOS NUEVOS
+    document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
+    document.getElementById('add-color-hex').value = producto.color_hex || '#d4ba92';
+    document.getElementById('add-color-nombre').value = producto.color_nombre || '';
 
     const chkUnico = document.getElementById('chk-unico');
     const inputTalles = document.getElementById('add-talles');
     const inputStockUnico = document.getElementById('add-stock-unico');
 
     if (producto.inventario_talles && producto.inventario_talles['ÚNICO'] !== undefined) {
-        chkUnico.checked = true;
-        inputTalles.style.display = 'none';
-        inputStockUnico.style.display = 'block';
-        inputStockUnico.value = producto.inventario_talles['ÚNICO'];
-        inputTalles.value = '';
+        chkUnico.checked = true; inputTalles.style.display = 'none'; inputStockUnico.style.display = 'block';
+        inputStockUnico.value = producto.inventario_talles['ÚNICO']; inputTalles.value = '';
     } else {
-        chkUnico.checked = false;
-        inputTalles.style.display = 'block';
-        inputStockUnico.style.display = 'none';
-        if (producto.inventario_talles) {
-            inputTalles.value = Object.entries(producto.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
-        } else {
-            inputTalles.value = '';
-        }
+        chkUnico.checked = false; inputTalles.style.display = 'block'; inputStockUnico.style.display = 'none';
+        if (producto.inventario_talles) inputTalles.value = Object.entries(producto.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
+        else inputTalles.value = '';
         inputStockUnico.value = '';
     }
 
     const btnGuardar = document.getElementById('btn-crear-producto');
-    btnGuardar.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar';
+    btnGuardar.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
     btnGuardar.style.background = '#f39c12';
     
     const labelImg = document.getElementById('label-add-img');
-    // ACÁ CAMBIA EL TEXTO A "Agregar más fotos"
-    labelImg.innerHTML = '<i class="fas fa-images"></i> <span>Agregar más fotos (Opcional)</span>';
+    labelImg.innerHTML = '<i class="fas fa-images"></i> <span>Reemplazar Fotos (Opcional)</span>';
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -433,21 +353,24 @@ function limpiarFormularioAdmin() {
     document.getElementById('add-talles').value = '';
     document.getElementById('add-stock-unico').value = '';
     document.getElementById('chk-unico').checked = false;
+    
+    // Limpiar campos nuevos
+    document.getElementById('add-codigo-modelo').value = '';
+    document.getElementById('add-color-hex').value = '#d4ba92';
+    document.getElementById('add-color-nombre').value = '';
+
     toggleTalleUnico();
     
     const imgInput = document.getElementById('add-img');
-    imgInput.value = '';
-    mostrarNombreArchivo(imgInput, 'label-add-img', 'Abrir Galería');
+    imgInput.value = ''; mostrarNombreArchivo(imgInput, 'label-add-img', 'Abrir Galería');
 
     idProductoEditando = null;
-    
     const btnGuardar = document.getElementById('btn-crear-producto');
-    btnGuardar.innerHTML = '<i class="fas fa-save"></i> Guardar';
-    btnGuardar.style.background = '#111';
-    btnGuardar.disabled = false;
+    btnGuardar.innerHTML = '<i class="fas fa-save"></i> Guardar Prenda';
+    btnGuardar.style.background = '#111'; btnGuardar.disabled = false;
 }
 
-// FUNCIÓN PARA EL TICK VERDE (QUEDA IGUAL)
+// TICK VERDE
 async function guardarEdicionFila(id, event) {
     const efvo = document.getElementById(`efvo-${id}`).value;
     const tarj = document.getElementById(`tarj-${id}`).value;
@@ -457,87 +380,37 @@ async function guardarEdicionFila(id, event) {
     if (tallesTxt) {
         tallesTxt.split(',').forEach(item => {
             const parts = item.split(':');
-            if (parts.length === 2) {
-                inventarioFinal[parts[0].trim().toUpperCase()] = parseInt(parts[1].trim());
-            }
+            if (parts.length === 2) inventarioFinal[parts[0].trim().toUpperCase()] = parseInt(parts[1].trim());
         });
-    } else {
-        return showCustomAlert("Debes ingresar al menos un talle o ÚNICO:1", "error", false);
-    }
+    } else { return showCustomAlert("Debes ingresar al menos un talle o ÚNICO:1", "error", false); }
 
-    const btn = event.currentTarget;
-    const ogHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
+    const btn = event.currentTarget; const ogHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
 
     try {
-        const res = await fetchSeguro(`${API}/productos/${id}`, {
-            method: 'PATCH', 
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                precio_efectivo: efvo, 
-                precio_tarjeta: tarj, 
-                inventario_talles: inventarioFinal 
-            })
-        });
-
-        if (res.ok) {
-            showCustomAlert("¡Cambios guardados correctamente!", "success", false);
-            const resI = await fetchSeguro(`${API}/productos`); 
-            pTotales = await resI.json(); 
-            pFiltrados = [...pTotales]; 
-            renderStock();
-        } else {
-            showCustomAlert("Error al actualizar el producto.", "error", false);
-            btn.innerHTML = ogHtml;
-            btn.disabled = false;
-        }
-    } catch(e) { 
-        showCustomAlert("Error de conexión.", "error", false);
-        btn.innerHTML = ogHtml;
-        btn.disabled = false;
-    }
+        const res = await fetchSeguro(`${API}/productos/${id}`, { method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ precio_efectivo: efvo, precio_tarjeta: tarj, inventario_talles: inventarioFinal }) });
+        if (res.ok) { showCustomAlert("¡Cambios guardados correctamente!", "success", false); const resI = await fetchSeguro(`${API}/productos`); pTotales = await resI.json(); pFiltrados = [...pTotales]; renderStock(); } 
+        else { showCustomAlert("Error al actualizar el producto.", "error", false); btn.innerHTML = ogHtml; btn.disabled = false; }
+    } catch(e) { showCustomAlert("Error de conexión.", "error", false); btn.innerHTML = ogHtml; btn.disabled = false; }
 }
 
 function borrarP(id) { 
     showCustomConfirm('¿Seguro que querés borrar este producto de la base de datos?', async () => {
         try {
             const res = await fetchSeguro(`${API}/productos/${id}`, { method: 'DELETE' });
-            if(res.ok) {
-                showCustomAlert("Producto eliminado correctamente", "success", false); 
-                const resI = await fetchSeguro(`${API}/productos`); 
-                pTotales = await resI.json(); 
-                pFiltrados = [...pTotales]; 
-                renderStock();
-            } else {
-                showCustomAlert("Error al eliminar el producto.", "error", false);
-            }
-        } catch (error) {
-            showCustomAlert("Error de conexión.", "error", false);
-        }
+            if(res.ok) { showCustomAlert("Producto eliminado correctamente", "success", false); const resI = await fetchSeguro(`${API}/productos`); pTotales = await resI.json(); pFiltrados = [...pTotales]; renderStock(); } 
+            else { showCustomAlert("Error al eliminar el producto.", "error", false); }
+        } catch (error) { showCustomAlert("Error de conexión.", "error", false); }
     }, "Sí, borrar");
 }
 
-function paginaSiguiente() { 
-    const inicio = (pagina - 1) * pPorPagina;
-    if (inicio + pPorPagina < pFiltrados.length) {
-        pagina++; 
-        renderStock(); 
-    }
-}
-
-function paginaAnterior() { 
-    if (pagina > 1) {
-        pagina--; 
-        renderStock(); 
-    }
-}
+function paginaSiguiente() { const inicio = (pagina - 1) * pPorPagina; if (inicio + pPorPagina < pFiltrados.length) { pagina++; renderStock(); } }
+function paginaAnterior() { if (pagina > 1) { pagina--; renderStock(); } }
 
 function filtrarInventario() { 
     const txt = document.getElementById('buscador-admin').value.toLowerCase(); 
     pFiltrados = txt === "" ? [...pTotales] : pTotales.filter(p => p.nombre.toLowerCase().includes(txt)); 
-    pagina = 1; 
-    renderStock(); 
+    pagina = 1; renderStock(); 
 }
 
 function toggleTalleUnico() { 
@@ -548,54 +421,29 @@ function toggleTalleUnico() {
     document.getElementById('add-stock-unico').classList.remove('input-error');
 }
 
-function validarLetras(input) { 
-    input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9]/g, ''); 
-}
+function validarLetras(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9-]/g, ''); }
+function validarNumeros(input) { input.value = input.value.replace(/[^0-9]/g, ''); }
 
-function validarNumeros(input) { 
-    input.value = input.value.replace(/[^0-9]/g, ''); 
-}
-
-// PROCESADOR DE IMÁGENES MULTIPLES
 const procesarImg = (file) => {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
-            const img = new Image(); 
-            img.src = e.target.result;
+            const img = new Image(); img.src = e.target.result;
             img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 800; 
-                const MAX_HEIGHT = 800;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                } else {
-                    if (height > MAX_HEIGHT) {
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
-                    }
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
+                const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
+                let width = img.width; let height = img.height;
+                if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
                 resolve(canvas.toDataURL('image/jpeg', 0.7));
             };
-        };
-        reader.readAsDataURL(file);
+        }; reader.readAsDataURL(file);
     });
 };
 
 // ==========================================
-// FUNCIÓN CENTRAL PARA GUARDAR Y ACTUALIZAR (CON LÓGICA DE FOTOS INTELIGENTE)
+// FUNCIÓN CENTRAL PARA GUARDAR Y ACTUALIZAR (AHORA CON CODIGO Y COLOR)
 // ==========================================
 async function guardarOActualizarProducto() { 
     const btn = document.getElementById('btn-crear-producto');
@@ -606,6 +454,11 @@ async function guardarOActualizarProducto() {
     const desc = document.getElementById('add-descripcion').value.trim();
     const esUnico = document.getElementById('chk-unico').checked;
     const imgInput = document.getElementById('add-img');
+    
+    // CAMPOS NUEVOS
+    const codigoModelo = document.getElementById('add-codigo-modelo').value.trim().toUpperCase();
+    const colorHex = document.getElementById('add-color-hex').value;
+    const colorNombre = document.getElementById('add-color-nombre').value.trim();
 
     let error = false;
 
@@ -615,33 +468,23 @@ async function guardarOActualizarProducto() {
     if (!pEfvo) { document.getElementById('add-precio-efvo').classList.add('input-error'); error = true; }
     if (!desc) { document.getElementById('add-descripcion').classList.add('input-error'); error = true; }
     
-    // Solo da error la foto si estamos creando uno NUEVO
     if (idProductoEditando === null && (!imgInput.files || imgInput.files.length === 0)) {
-        document.getElementById('label-add-img').classList.add('input-error');
-        error = true;
+        document.getElementById('label-add-img').classList.add('input-error'); error = true;
     }
 
-    let inventarioFinal = {};
-    let stockIngresado = 0;
+    let inventarioFinal = {}; let stockIngresado = 0;
 
     if (esUnico) {
         const stock = document.getElementById('add-stock-unico').value;
         if (!stock) { document.getElementById('add-stock-unico').classList.add('input-error'); error = true; }
-        else { 
-            inventarioFinal["ÚNICO"] = parseInt(stock); 
-            stockIngresado = parseInt(stock);
-        }
+        else { inventarioFinal["ÚNICO"] = parseInt(stock); stockIngresado = parseInt(stock); }
     } else {
         const tallesTxt = document.getElementById('add-talles').value.trim();
         if (!tallesTxt) { document.getElementById('add-talles').classList.add('input-error'); error = true; }
         else {
             tallesTxt.split(',').forEach(item => {
                 const parts = item.split(':');
-                if(parts.length === 2) {
-                    let cant = parseInt(parts[1].trim());
-                    inventarioFinal[parts[0].trim().toUpperCase()] = cant;
-                    stockIngresado += cant;
-                }
+                if(parts.length === 2) { let cant = parseInt(parts[1].trim()); inventarioFinal[parts[0].trim().toUpperCase()] = cant; stockIngresado += cant; }
             });
         }
     }
@@ -649,41 +492,15 @@ async function guardarOActualizarProducto() {
     if(error) return showCustomAlert("Por favor, completá todos los recuadros rojos.", "error", false);
     if(stockIngresado <= 0) return showCustomAlert("El stock no puede ser 0.", "error", false);
 
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
-    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...'; btn.disabled = true;
 
     try {
         let imgDataToSave = null;
         
-        // Si subió fotos nuevas...
         if (imgInput.files && imgInput.files.length > 0) {
-            const base64Nuevas = [];
-            const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
-            for (let file of filesToProcess) { 
-                base64Nuevas.push(await procesarImg(file)); 
-            }
-            
-            // Si estamos EDITANDO, buscamos las fotos viejas y le SUMAMOS las nuevas
-            if (idProductoEditando !== null) {
-                const productoOriginal = pTotales.find(p => p.id === idProductoEditando);
-                let fotosViejas = [];
-                if (productoOriginal && productoOriginal.imagen_url) {
-                    try {
-                        const arr = JSON.parse(productoOriginal.imagen_url);
-                        if (Array.isArray(arr)) fotosViejas = arr;
-                        else fotosViejas = [productoOriginal.imagen_url];
-                    } catch(e) {
-                        fotosViejas = [productoOriginal.imagen_url];
-                    }
-                }
-                
-                // Unimos las viejas con las nuevas (Máximo 10 fotos por prenda para no romper todo)
-                const todasLasFotos = [...fotosViejas, ...base64Nuevas].slice(0, 10);
-                imgDataToSave = JSON.stringify(todasLasFotos);
-            } else {
-                // Si es un producto NUEVO, solo guardamos las fotos nuevas
-                imgDataToSave = JSON.stringify(base64Nuevas);
-            }
+            const base64Images = []; const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
+            for (let file of filesToProcess) { base64Images.push(await procesarImg(file)); }
+            imgDataToSave = JSON.stringify(base64Images);
         }
 
         const bodyPayload = {
@@ -692,45 +509,32 @@ async function guardarOActualizarProducto() {
             precio_efectivo: pEfvo,
             precio_tarjeta: pTarj,
             descripcion: desc,
-            inventario_talles: inventarioFinal
+            inventario_talles: inventarioFinal,
+            // Agregamos los campos de vinculación a la Base de Datos
+            codigo_modelo: codigoModelo,
+            color_hex: colorHex,
+            color_nombre: colorNombre
         };
 
-        // Solo sobreescribimos la imagen en la base de datos si imgDataToSave tiene algo
-        if (imgDataToSave !== null) {
-            bodyPayload.imagen_url = imgDataToSave;
-        }
+        if (imgDataToSave) { bodyPayload.imagen_url = imgDataToSave; }
 
-        let url = `${API}/productos`;
-        let metodo = 'POST'; // Crear nuevo por defecto
+        let url = `${API}/productos`; let metodo = 'POST';
+        if (idProductoEditando !== null) { url = `${API}/productos/${idProductoEditando}`; metodo = 'PUT'; }
 
-        if (idProductoEditando !== null) {
-            url = `${API}/productos/${idProductoEditando}`;
-            metodo = 'PUT'; // Actualizar
-        }
-
-        const res = await fetchSeguro(url, {
-            method: metodo,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(bodyPayload)
-        });
+        const res = await fetchSeguro(url, { method: metodo, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(bodyPayload) });
 
         if(res.ok) {
-            showCustomAlert(idProductoEditando ? "¡Producto actualizado exitosamente!" : "¡Producto creado exitosamente!", "success", false);
-            
+            showCustomAlert(idProductoEditando ? "¡Producto actualizado!" : "¡Producto creado!", "success", false);
             limpiarFormularioAdmin();
-
-            const resI = await fetchSeguro(`${API}/productos`); 
-            pTotales = await resI.json(); 
-            pFiltrados = [...pTotales]; 
-            renderStock();
+            const resI = await fetchSeguro(`${API}/productos`); pTotales = await resI.json(); pFiltrados = [...pTotales]; renderStock();
         } else {
-            showCustomAlert("Error al guardar el producto.", "error", false);
-            btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar' : '<i class="fas fa-save"></i> Guardar';
+            showCustomAlert("Error al guardar.", "error", false);
+            btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar' : '<i class="fas fa-save"></i> Guardar Prenda';
             btn.disabled = false;
         }
     } catch(e) {
-        showCustomAlert("Error de conexión con el servidor.", "error", false);
-        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar' : '<i class="fas fa-save"></i> Guardar';
+        showCustomAlert("Error de conexión.", "error", false);
+        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar' : '<i class="fas fa-save"></i> Guardar Prenda';
         btn.disabled = false;
     }
 }
