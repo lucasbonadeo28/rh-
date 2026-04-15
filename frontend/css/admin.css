@@ -38,16 +38,18 @@ body {
 /* NAVEGACIÓN Y TABS (PC)                     */
 /* ========================================== */
 .admin-nav { 
-    background: #111; 
+    background: #111 !important; 
     color: white; 
     display: flex; 
     justify-content: space-between; 
-    padding: 15px 30px; 
+    padding: 15px 30px !important; 
     align-items: center; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    position: sticky; 
+    position: sticky !important; 
     top: 0; 
     z-index: 1000; 
+    height: auto !important; /* ESTO ARREGLA EL CORTE DEL FONDO NEGRO */
+    min-height: auto !important;
 }
 
 .admin-nav h2 { 
@@ -140,7 +142,7 @@ html[data-active-tab="tab-historial"] .tab-link[onclick*="tab-historial"] {
 .col-span-2 { grid-column: span 2; }
 .col-span-3 { grid-column: span 3; }
 
-.admin-form-grid label {
+.admin-form-grid label.form-label {
     font-size: 0.85rem; 
     color: #555; 
     font-weight: 700; 
@@ -151,7 +153,7 @@ html[data-active-tab="tab-historial"] .tab-link[onclick*="tab-historial"] {
 .admin-form-grid input, 
 .admin-form-grid select {
     width: 100%; 
-    padding: 12px 15px; 
+    padding: 13px 15px; 
     border-radius: 6px; 
     border: 1px solid #ddd; 
     font-family: 'Montserrat', sans-serif; 
@@ -245,13 +247,14 @@ th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; font-size: 
 /* === RESPONSIVE CELULARES (100% BLINDADO)                  */
 /* ========================================================= */
 @media (max-width: 992px) {
-    /* 1. Menú superior: Carril horizontal deslizable (estilo historias IG) */
+    /* 1. Menú superior: Forzamos la altura a auto para que nada se desborde */
     .admin-nav { 
-        position: relative; 
-        flex-direction: column; 
-        padding: 20px 0 0 0; 
-        gap: 15px;
+        position: relative !important; 
+        flex-direction: column !important; 
+        padding: 20px 0 15px 0 !important; 
+        gap: 15px !important;
         align-items: center;
+        height: auto !important; 
     }
     
     .admin-tabs { 
@@ -262,24 +265,26 @@ th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; font-size: 
         width: 100%;
         overflow-x: auto; /* Permite el scroll con el dedo */
         -webkit-overflow-scrolling: touch;
-        padding: 0 15px 15px 15px;
+        padding: 0 15px;
     }
     
     .admin-tabs::-webkit-scrollbar { display: none; } /* Oculta la barrita fea */
     
+    /* Botones de navegación tipo pastillas funcionales */
     .tab-link { 
-        background: #eee; 
-        color: #555 !important; 
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-size: 0.9rem;
+        background: #333 !important; 
+        color: #fff !important; 
+        padding: 12px 18px !important;
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
         border: none !important;
-        white-space: nowrap; /* Evita que el texto se rompa */
-        flex-shrink: 0; /* Evita que el botón se achique */
+        white-space: nowrap !important; 
+        flex-shrink: 0 !important; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     
     .tab-link.active {
-        background: #111 !important; 
+        background: #27ae60 !important; 
         color: #fff !important; 
     }
     
@@ -309,10 +314,10 @@ th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; font-size: 
     }
     
     /* 3. Contenedores y Tablas */
-    .container { margin: 15px auto; padding: 0 10px; }
-    .tab-content { padding: 20px 15px; }
+    .container { margin: 25px auto; padding: 0 15px; }
+    .tab-content { padding: 25px 20px; }
     .admin-header-row { flex-direction: column; gap: 10px; text-align: center; }
-    .admin-header-row h2 { font-size: 1.3rem; }
+    .admin-header-row h2 { font-size: 1.4rem; }
     
     .form-row-flex { flex-direction: column !important; gap: 10px !important; }
     .form-row-flex > * { width: 100% !important; flex: none !important; }
