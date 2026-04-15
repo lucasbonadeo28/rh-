@@ -300,9 +300,41 @@ th {
 /* RESPONSIVE (CELULARES)                     */
 /* ========================================== */
 @media (max-width: 992px) {
-    .admin-nav { flex-direction: column; gap: 15px; padding: 15px; }
-    .admin-tabs { flex-wrap: wrap; justify-content: center; gap: 15px; }
-    .tab-link { font-size: 0.95rem; }
+    /* Mantenemos la nav en columna pero ajustamos el padding */
+    .admin-nav { 
+        flex-direction: column; 
+        gap: 15px; 
+        padding: 15px 0; /* Quitamos el padding lateral para que el scroll de los botones vaya de borde a borde */
+    }
+    
+    /* ACÁ ESTÁ LA MAGIA: El menú de botones ahora es deslizable horizontalmente */
+    .admin-tabs { 
+        display: flex;
+        flex-wrap: nowrap; /* Evita que se apilen hacia abajo */
+        justify-content: flex-start; 
+        gap: 15px; 
+        width: 100%;
+        overflow-x: auto; /* Permite el scroll horizontal */
+        -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+        padding: 0 15px 10px 15px; /* Agregamos padding interno para que no quede pegado a los bordes */
+    }
+    
+    /* Ocultamos la barra de scroll para que quede más limpio en Android/Chrome */
+    .admin-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .admin-tabs {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* Aseguramos que los botones no se achiquen solos */
+    .tab-link { 
+        font-size: 0.95rem; 
+        white-space: nowrap; /* Impide que el texto del botón se parta en dos renglones */
+        flex-shrink: 0; /* Evita que el botón se comprima si no entra */
+    }
+    
     .container { margin: 15px auto; padding: 0 10px; }
     .tab-content { padding: 20px 15px; }
     .admin-header-row { flex-direction: column; gap: 15px; text-align: center; }
@@ -315,6 +347,13 @@ th {
     .admin-form-grid { grid-template-columns: 1fr; gap: 15px; }
     .form-col-2, .form-col-1 { grid-column: span 1; width: 100%; }
     .form-caja-talles { height: auto; padding: 15px; }
+    
+    /* Hacemos el botón de guardar un poco más grandote para el dedo */
+    #btn-crear-producto {
+        height: 50px !important;
+        margin-top: 10px;
+        font-size: 1rem !important;
+    }
     
     .btn-agregar-derecha { width: 100%; padding: 15px; font-size: 1rem; margin-top: 10px;}
     th, td { padding: 12px 10px; font-size: 0.85rem; }
