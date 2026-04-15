@@ -6,7 +6,7 @@
     <title>Panel Admin LUCAS</title>
     
     <link rel="icon" type="image/png" href="./rh3.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <script>
@@ -15,7 +15,7 @@
     </script>
 
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin.css?v=4">
+    <link rel="stylesheet" href="css/admin.css?v=5">
 </head>
 <body>
 
@@ -23,11 +23,8 @@
         <div class="login-box">
             <h2>Ingreso Admin</h2>
             <div id="login-error" class="login-error">Error de conexión. ¿Está prendido el servidor?</div>
-            
             <form id="form-login">
-                <div class="login-input-group">
-                    <input type="email" id="login-email" placeholder="Email" required>
-                </div>
+                <div class="login-input-group"><input type="email" id="login-email" placeholder="Email" required></div>
                 <div class="login-input-group">
                     <input type="password" id="login-password" placeholder="Contraseña" required>
                     <i class="fas fa-eye toggle-pass" id="toggle-eye" onclick="togglePassword()"></i>
@@ -49,30 +46,17 @@
                 <a class="tab-link" onclick="verTab('tab-historial')">Estadísticas Mensuales</a>
             </div>
             <div>
-                <a onclick="cerrarSesionLocal()" style="color: white; cursor: pointer; text-decoration: none;"><i class="fas fa-sign-out-alt"></i> Salir</a>
+                <a onclick="cerrarSesionLocal()" style="color: white; cursor: pointer; text-decoration: none; font-weight: bold;"><i class="fas fa-sign-out-alt"></i> Salir</a>
             </div>
         </nav>
 
         <div class="container">
             
             <div id="tab-pedidos" class="tab-content">
-                <div class="admin-header-row">
-                    <h2>Últimos Pedidos Realizados</h2>
-                </div>
+                <div class="admin-header-row"><h2>Últimos Pedidos Realizados</h2></div>
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>N° Venta</th>
-                                <th>Fecha</th>
-                                <th>Cliente y Contacto</th>
-                                <th>Pago</th>
-                                <th>Estado</th>
-                                <th>Detalle</th>
-                                <th>Total</th>
-                                <th style="text-align: center;">Acción</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>N° Venta</th><th>Fecha</th><th>Cliente y Contacto</th><th>Pago</th><th>Estado</th><th>Detalle</th><th>Total</th><th style="text-align: center;">Acción</th></tr></thead>
                         <tbody id="body-pedidos"></tbody>
                     </table>
                 </div>
@@ -91,51 +75,49 @@
                 <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <div class="admin-form-grid">
                         
-                        <div class="form-col-2">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Nombre del producto</label>
-                            <input type="text" id="add-nombre" placeholder="Ej: Jean Recto Clásico..." style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none; transition: 0.2s;" oninput="validarLetras(this)">
+                        <div class="col-span-2">
+                            <label class="form-label">Nombre del producto</label>
+                            <input type="text" id="add-nombre" placeholder="Ej: Jean Recto Clásico..." oninput="validarLetras(this)">
                         </div>
                         
-                        <div class="form-col-1">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Categoría</label>
-                            <select id="add-categoria" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; background: white; outline: none;">
-                                <option value="" disabled selected>Categorías...</option>
-                            </select>
+                        <div class="col-span-1">
+                            <label class="form-label">Categoría</label>
+                            <select id="add-categoria"><option value="" disabled selected>Categorías...</option></select>
                         </div>
 
-                        <div class="form-col-1">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Precio Tarj. ($)</label>
-                            <input type="text" id="add-precio-tarj" placeholder="Ej: 35000" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarNumeros(this)">
+                        <div class="col-span-1">
+                            <label class="form-label">Precio Tarj. ($)</label>
+                            <input type="text" id="add-precio-tarj" placeholder="Ej: 35000" oninput="validarNumeros(this)">
                         </div>
 
-                        <div class="form-col-1">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Precio Transf. ($)</label>
-                            <input type="text" id="add-precio-efvo" placeholder="Ej: 30000" style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarNumeros(this)">
+                        <div class="col-span-1">
+                            <label class="form-label">Precio Transf. ($)</label>
+                            <input type="text" id="add-precio-efvo" placeholder="Ej: 30000" oninput="validarNumeros(this)">
                         </div>
 
-                        <div class="form-col-2">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Breve descripción</label>
-                            <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; outline: none;" oninput="validarLetras(this)">
+                        <div class="col-span-2">
+                            <label class="form-label">Breve descripción</label>
+                            <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." oninput="validarLetras(this)">
                         </div>
 
-                        <div class="form-col-1 form-caja-talles">
-                            <label style="font-size: 0.8rem; font-weight: 600; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0;"> Es Talle Único
+                        <div class="col-span-1 caja-talles">
+                            <label style="font-size: 0.8rem; font-weight: 700; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0; width: auto;"> Es Talle Único
                             </label>
-                            <input type="text" id="add-talles" placeholder="S:10, M:5" style="width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; outline: none;">
-                            <input type="text" id="add-stock-unico" placeholder="Stock Total" style="width: 100%; padding: 4px 6px; border-radius: 4px; border: 1px solid #ddd; font-family: 'Montserrat', sans-serif; font-size: 0.8rem; outline: none; display: none;" oninput="validarNumeros(this)">
+                            <input type="text" id="add-talles" placeholder="S:10, M:5" style="padding: 8px; font-size: 0.85rem;">
+                            <input type="text" id="add-stock-unico" placeholder="Stock Total" style="padding: 8px; font-size: 0.85rem; display: none;" oninput="validarNumeros(this)">
                         </div>
 
-                        <div class="form-col-1">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 6px; display: block;">Fotos</label>
-                            <label for="add-img" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px; border: 1px dashed #999; border-radius: 6px; cursor: pointer; background: #fafafa; font-size: 0.85rem; font-weight: 600; color: #555; margin: 0; box-sizing: border-box; transition: 0.2s;" id="label-add-img">
+                        <div class="col-span-1">
+                            <label class="form-label">Fotos</label>
+                            <label for="add-img" class="custom-file-upload" id="label-add-img">
                                 <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                             </label>
                             <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
                         </div>
 
-                        <div class="form-col-1">
-                            <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 43px; margin: 0; padding: 0; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: white; border-radius: 6px; border: none; cursor: pointer;" onclick="guardarOActualizarProducto()">
+                        <div class="col-span-1">
+                            <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 48px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="guardarOActualizarProducto()">
                                 <i class="fas fa-save"></i> Guardar
                             </button>
                         </div>
@@ -147,19 +129,12 @@
                     <h2>Inventario (Edición Rápida)</h2>
                 </div>
                 
-                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid #ccc;" onkeyup="filtrarInventario()">
+                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Montserrat', sans-serif;" onkeyup="filtrarInventario()">
                 
                 <div class="table-responsive">
                     <table>
                         <thead>
-                            <tr>
-                                <th>Foto</th>
-                                <th>Producto</th>
-                                <th>Efectivo ($)</th>
-                                <th>Tarjeta ($)</th>
-                                <th>Talles y Stock Real</th>
-                                <th style="text-align: center;">Acción</th>
-                            </tr>
+                            <tr><th>Foto</th><th>Producto</th><th>Efectivo ($)</th><th>Tarjeta ($)</th><th>Talles y Stock Real</th><th style="text-align: center;">Acción</th></tr>
                         </thead>
                         <tbody id="body-inventario"></tbody>
                     </table>
@@ -173,32 +148,22 @@
             </div>
 
             <div id="tab-categorias" class="tab-content">
-                <div class="admin-header-row">
-                    <h2>Administrar Categorías</h2>
-                </div>
+                <div class="admin-header-row"><h2>Administrar Categorías</h2></div>
                 <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <form class="form-row-flex" onsubmit="agregarCategoria(event)" style="display:flex; gap:15px; width:100%; align-items: flex-end;">
                         <div style="flex: 3;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Nombre de la nueva categoría</label>
-                            <input type="text" id="add-nombre-categoria" placeholder="Ej: Camperas" style="width:100%;" required>
+                            <label style="font-size: 0.85rem; color: #555; font-weight: 700; margin-bottom: 8px; display: block;">Nombre de la nueva categoría</label>
+                            <input type="text" id="add-nombre-categoria" placeholder="Ej: Camperas" required>
                         </div>
-                        <button type="submit" class="btn-agregar-derecha" id="btn-submit-categoria" style="flex: 1; height: 46px; margin: 0;">
+                        <button type="submit" class="btn-agregar-derecha" id="btn-submit-categoria" style="flex: 1; height: 48px; margin: 0;">
                             <i class="fas fa-plus"></i> Añadir
                         </button>
                     </form>
                 </div>
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 100px;">ID</th>
-                                <th>Nombre de la Categoría</th>
-                                <th style="width: 150px; text-align: center;">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-categorias">
-                            <tr><td colspan="3" style="text-align:center; padding:30px;">Cargando categorías...</td></tr>
-                        </tbody>
+                        <thead><tr><th style="width: 100px;">ID</th><th>Nombre de la Categoría</th><th style="width: 150px; text-align: center;">Acción</th></tr></thead>
+                        <tbody id="body-categorias"><tr><td colspan="3" style="text-align:center; padding:30px;">Cargando categorías...</td></tr></tbody>
                     </table>
                 </div>
                 <div class="paginacion-container">
@@ -209,18 +174,14 @@
             </div>
 
             <div id="tab-banners" class="tab-content">
-                <div class="admin-header-row">
-                    <h2>Imágenes del Carrusel Principal</h2>
-                </div>
-
+                <div class="admin-header-row"><h2>Imágenes del Carrusel Principal</h2></div>
                 <div style="background: #eafaf1; border-left: 4px solid var(--success); padding: 15px; margin-bottom: 20px; border-radius: 4px;">
                     <p style="margin: 0; font-size: 0.9rem; color: #333;"><strong><i class="fas fa-info-circle"></i> Regla de la tienda:</strong> El carrusel muestra exactamente <strong>4 imágenes</strong>. Si agregás una quinta, el sistema borrará automáticamente la foto más vieja.</p>
                 </div>
-                
                 <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <form class="form-row-flex" id="form-banner" onsubmit="agregarBanner(event)" style="display:flex; gap:30px; width:100%; align-items: flex-end;">
                         <div style="flex: 3; display: flex; flex-direction: column;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px;">Foto del carrusel:</label>
+                            <label style="font-size: 0.85rem; color: #555; font-weight: 700; margin-bottom: 8px;">Foto del carrusel:</label>
                             <label for="add-banner-file" class="custom-file-upload" id="label-add-banner-file">
                                 <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                             </label>
@@ -233,62 +194,39 @@
                         </div>
                     </form>
                 </div>
-
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">ID</th>
-                                <th style="width: 200px;">Vista Previa</th>
-                                <th>Info de la foto</th>
-                                <th style="width: 100px; text-align: center;">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-banners">
-                            <tr><td colspan="4" style="text-align:center; padding:30px;">Cargando imágenes...</td></tr>
-                        </tbody>
+                        <thead><tr><th style="width: 50px;">ID</th><th style="width: 200px;">Vista Previa</th><th>Info de la foto</th><th style="width: 100px; text-align: center;">Acción</th></tr></thead>
+                        <tbody id="body-banners"><tr><td colspan="4" style="text-align:center; padding:30px;">Cargando imágenes...</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
             <div id="tab-cupones" class="tab-content">
-                <div class="admin-header-row">
-                    <h2>Cupones de Descuento</h2>
-                </div>
-                
+                <div class="admin-header-row"><h2>Cupones de Descuento</h2></div>
                 <div style="background: #fcfcfc; padding: 20px; border-radius: 8px; display: flex; flex-direction:column; gap: 15px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <form class="form-row-flex" onsubmit="agregarCupon(event)" style="display:flex; gap:15px; width:100%; align-items: flex-end;">
                         <div style="flex: 2;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Código del Cupón</label>
-                            <input type="text" id="add-cupon-codigo" placeholder="Ej: VERANO20" style="width:100%; text-transform: uppercase;" required>
+                            <label style="font-size: 0.85rem; color: #555; font-weight: 700; margin-bottom: 8px; display: block;">Código del Cupón</label>
+                            <input type="text" id="add-cupon-codigo" placeholder="Ej: VERANO20" style="text-transform: uppercase;" required>
                         </div>
                         <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">% Descuento</label>
-                            <input type="number" id="add-cupon-porcentaje" placeholder="Ej: 15" style="width:100%;" min="1" max="100" required>
+                            <label style="font-size: 0.85rem; color: #555; font-weight: 700; margin-bottom: 8px; display: block;">% Descuento</label>
+                            <input type="number" id="add-cupon-porcentaje" placeholder="Ej: 15" min="1" max="100" required>
                         </div>
                         <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; display: block;">Cant. de Usos</label>
-                            <input type="number" id="add-cupon-usos" placeholder="Ej: 50" style="width:100%;" min="1" required>
+                            <label style="font-size: 0.85rem; color: #555; font-weight: 700; margin-bottom: 8px; display: block;">Cant. de Usos</label>
+                            <input type="number" id="add-cupon-usos" placeholder="Ej: 50" min="1" required>
                         </div>
-                        <button type="submit" class="btn-agregar-derecha" id="btn-submit-cupon" style="flex: 1; height: 46px; margin: 0;">
+                        <button type="submit" class="btn-agregar-derecha" id="btn-submit-cupon" style="flex: 1; height: 48px; margin: 0;">
                             <i class="fas fa-plus"></i> Crear
                         </button>
                     </form>
                 </div>
-
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Descuento</th>
-                                <th>Usos Restantes</th>
-                                <th style="text-align: center;">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="body-cupones">
-                            <tr><td colspan="4" style="text-align:center; padding:30px;">Cargando cupones...</td></tr>
-                        </tbody>
+                        <thead><tr><th>Código</th><th>Descuento</th><th>Usos Restantes</th><th style="text-align: center;">Acción</th></tr></thead>
+                        <tbody id="body-cupones"><tr><td colspan="4" style="text-align:center; padding:30px;">Cargando cupones...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -296,17 +234,11 @@
             <div id="tab-historial" class="tab-content">
                 <div class="admin-header-row">
                     <h2>Resumen Mensual de Ventas</h2>
-                    <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0; background: #27ae60;" onclick="descargarExcel()"><i class="fas fa-file-excel"></i> Exportar Planilla Mensual</button>
+                    <button class="btn-agregar-derecha" style="width: auto; padding: 10px 20px; margin: 0; background: #27ae60;" onclick="descargarExcel()"><i class="fas fa-file-excel"></i> Exportar Planilla</button>
                 </div>
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Año y Mes</th>
-                                <th>Ventas Totales</th>
-                                <th>Total Recaudado</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Año y Mes</th><th>Ventas Totales</th><th>Total Recaudado</th></tr></thead>
                         <tbody id="body-meses"></tbody>
                     </table>
                 </div>
@@ -336,6 +268,6 @@
 
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="js/admin.js?v=7"></script>
+    <script src="js/admin.js?v=8"></script>
 </body>
 </html>
