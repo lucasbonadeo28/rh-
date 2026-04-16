@@ -448,49 +448,127 @@ function aplicarFiltrosCatalogo() {
     }
 }
 
-function generarGridHTML(lista) {
-    if(!lista || !Array.isArray(lista) || lista.length === 0) {
+// =========================================================================
+// NUEVA FUNCIÓN: AGRUPA PRODUCTOS POR CÓDIGO Y ARMA LAS TARJETAS MÁGICAS
+// =========================================================================
+function generarGridHTML(listaRaw) {
+    if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos ? "Aún no tenés productos en favoritos." : "No hay productos en esta categoría.";
         return `<div style="grid-column: 1/-1; text-align:center; padding: 60px 20px;"><i class="fas fa-box-open" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i><p style="color:var(--secondary); font-size: 1.1rem; margin: 0; font-weight: 500;">${msj}</p></div>`;
     }
-    
-    return lista.map(p => { 
-        if (!p) return ''; 
+
+    const grupos = {};
+    const listaAgrupada = [];
+
+    listaRaw.forEach(p => {
+        const claveAgrupacion = (p.codigo_modelo && p.codigo_modelo.trim() !== '') 
+                                ? p.codigo_modelo.trim().toUpperCase() 
+                                : p.nombre.trim().toUpperCase(); 
+
+        if (!grupos[claveAgrupacion]) {
+            grupos[claveAgrupacion] = {
+                isGroup: true,
+                clave: claveAgrupacion.replace(/\s+/g, '-'), 
+                variantes: []
+            };
+            listaAgrupada.push(grupos[claveAgrupacion]);
+        }
+        grupos[claveAgrupacion].variantes.push(p);
+    });
+
+    return listaAgrupada.map(item => {
+        const vDefault = item.variantes[0]; 
         
         let stockTotalPrenda = 0;
-        if (p.inventario_talles && typeof p.inventario_talles === 'object') {
-            Object.values(p.inventario_talles).forEach(cant => stockTotalPrenda += (parseInt(cant) || 0));
+        if (vDefault.inventario_talles && typeof vDefault.inventario_talles === 'object') {
+            Object.values(vDefault.inventario_talles).forEach(cant => stockTotalPrenda += (parseInt(cant) || 0));
         }
-        const productoAgotado = stockTotalPrenda <= 0; 
-
-        const esFav = favoritos.includes(p.id) ? 'active' : ''; 
-        const nombre = p.nombre || 'Producto sin nombre';
-        const pTarj = p.precio_tarjeta || p.tarjeta || 0;
-        const pEfvo = p.precio_efectivo || p.efectivo || 0;
-
-        const arrayFotos = obtenerArrayImagenes(p.imagen_url);
+        const productoAgotado = stockTotalPrenda <= 0;
+        const esFav = favoritos.includes(parseInt(vDefault.id)) ? 'active' : '';
+        const nombre = vDefault.nombre || 'Producto sin nombre';
+        const pTarj = vDefault.precio_tarjeta || vDefault.tarjeta || 0;
+        const pEfvo = vDefault.precio_efectivo || vDefault.efectivo || 0;
+        const arrayFotos = obtenerArrayImagenes(vDefault.imagen_url);
         const imgUrl = arrayFotos[0];
 
+        let circulosHTML = '';
+        if (item.variantes.length > 1) {
+            circulosHTML = `<div class="colores-container">` + item.variantes.map((v, index) => {
+                const isAct = index === 0 ? 'active' : '';
+                const colorVal = v.color_hex || '#d4ba92';
+                return `<div class="color-circle ${isAct}" style="background-color: ${colorVal};" onclick="cambiarVarianteCard(event, '${item.clave}', ${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
+            }).join('') + `</div>`;
+        }
+
         return `
-        <div class="card">
-            <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="abrirDetalle(${p.id})">
-                <button class="btn-fav ${esFav}" onclick="toggleFavorito(${p.id}, event)" title="Añadir a favoritos"><i class="fas fa-heart"></i></button>
+        <div class="card" id="card-${item.clave}">
+            <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="document.getElementById('btn-${item.clave}').click()">
+                <button class="btn-fav ${esFav}" onclick="toggleFavoritoCard(event, '${item.clave}')" title="Añadir a favoritos"><i class="fas fa-heart"></i></button>
                 ${productoAgotado ? '<div class="badge-agotado">SIN STOCK</div>' : ''}
-                <img src="${imgUrl}">
+                <img src="${imgUrl}" id="img-${item.clave}">
             </div>
             <div class="card-info">
-                <h4 onclick="abrirDetalle(${p.id})">${nombre}</h4>
-                <div class="precios-container" onclick="abrirDetalle(${p.id})">
-                    <p class="p-tarj">$${pTarj}</p>
-                    <p class="p-efvo"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
+                ${circulosHTML}
+                <h4 id="nom-${item.clave}" onclick="document.getElementById('btn-${item.clave}').click()">${nombre}</h4>
+                <div class="precios-container" onclick="document.getElementById('btn-${item.clave}').click()">
+                    <p class="p-tarj" id="ptarj-${item.clave}">$${pTarj}</p>
+                    <p class="p-efvo" id="pefvo-${item.clave}"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
                 </div>
-                <button class="btn-card-add ${productoAgotado ? 'disabled' : ''}" ${productoAgotado ? 'disabled' : `onclick="abrirDetalle(${p.id})"`}>
+                <button id="btn-${item.clave}" class="btn-card-add ${productoAgotado ? 'disabled' : ''}" ${productoAgotado ? 'disabled' : `onclick="abrirDetalle(${vDefault.id})"`} data-id="${vDefault.id}">
                     ${productoAgotado ? 'AGOTADO' : 'AGREGAR AL CARRITO'}
                 </button>
             </div>
-        </div>`; 
+        </div>`;
     }).join(''); 
 }
+
+function cambiarVarianteCard(event, claveGrupo, idVariante) {
+    event.stopPropagation();
+    const variante = productosCargados.find(p => p.id === idVariante);
+    if(!variante) return;
+
+    const arrayFotos = obtenerArrayImagenes(variante.imagen_url);
+    document.querySelector(`#img-${claveGrupo}`).src = arrayFotos[0];
+    document.querySelector(`#nom-${claveGrupo}`).innerText = variante.nombre || 'Producto';
+    document.querySelector(`#ptarj-${claveGrupo}`).innerText = `$${variante.precio_tarjeta || variante.tarjeta || 0}`;
+    document.querySelector(`#pefvo-${claveGrupo}`).innerHTML = `<strong>$${variante.precio_efectivo || variante.efectivo || 0}</strong> con<br>Transferencia/depósito`;
+
+    const btn = document.querySelector(`#btn-${claveGrupo}`);
+    btn.setAttribute('data-id', idVariante);
+
+    let totalStock = 0;
+    if (variante.inventario_talles) Object.values(variante.inventario_talles).forEach(c => totalStock += parseInt(c)||0);
+
+    if(totalStock <= 0) {
+        btn.innerText = 'AGOTADO'; btn.disabled = true; btn.classList.add('disabled');
+        document.querySelector(`#card-${claveGrupo} .img-wrapper`).classList.add('agotado');
+    } else {
+        btn.innerText = 'AGREGAR AL CARRITO'; btn.disabled = false; btn.classList.remove('disabled');
+        btn.setAttribute('onclick', `abrirDetalle(${idVariante})`);
+        document.querySelector(`#card-${claveGrupo} .img-wrapper`).classList.remove('agotado');
+    }
+
+    const favBtn = document.querySelector(`#card-${claveGrupo} .btn-fav`);
+    if(favoritos.includes(parseInt(idVariante))) favBtn.classList.add('active');
+    else favBtn.classList.remove('active');
+
+    const circles = event.target.parentElement.querySelectorAll('.color-circle');
+    circles.forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function toggleFavoritoCard(event, claveGrupo) {
+    event.stopPropagation();
+    const btnAgregar = document.getElementById(`btn-${claveGrupo}`);
+    if(btnAgregar) {
+        const idActual = parseInt(btnAgregar.getAttribute('data-id')); 
+        toggleFavorito(idActual, null);
+        const favBtn = event.currentTarget;
+        if(favoritos.includes(idActual)) favBtn.classList.add('active');
+        else favBtn.classList.remove('active');
+    }
+}
+
 
 function initBeneficiosSlider() {
     // Ya no se usa, la animación la hace CSS
