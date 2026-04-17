@@ -17,6 +17,23 @@ let cPagina = 1;
 const cPorPagina = 10;
 let idProductoEditando = null;
 
+// DICCIONARIO PARA AUTOCOMPLETAR COLOR
+const mapaColores = {
+    'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
+    'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 'marron': '#8b4513', 'marrón': '#8b4513',
+    'rosa': '#ffc0cb', 'naranja': '#ffa500', 'violeta': '#ee82ee', 'celeste': '#87ceeb', 
+    'beige': '#f5f5dc', 'crema': '#fffdd0', 'arena': '#d4ba92', 'mostaza': '#ffdb58', 
+    'bordo': '#800000', 'bordó': '#800000', 'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b'
+};
+
+function detectarColor(texto) {
+    const hex = document.getElementById('add-color-hex');
+    const colorLower = texto.toLowerCase().trim();
+    if(mapaColores[colorLower]) {
+        hex.value = mapaColores[colorLower];
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
@@ -467,6 +484,7 @@ async function guardarOActualizarProducto() {
     if (!pTarj) { document.getElementById('add-precio-tarj').classList.add('input-error'); error = true; }
     if (!pEfvo) { document.getElementById('add-precio-efvo').classList.add('input-error'); error = true; }
     if (!desc) { document.getElementById('add-descripcion').classList.add('input-error'); error = true; }
+    if (!codigoModelo) { document.getElementById('add-codigo-modelo').classList.add('input-error'); error = true; }
     
     if (idProductoEditando === null && (!imgInput.files || imgInput.files.length === 0)) {
         document.getElementById('label-add-img').classList.add('input-error'); error = true;

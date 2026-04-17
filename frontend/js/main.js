@@ -452,70 +452,60 @@ function aplicarFiltrosCatalogo() {
 // NUEVA FUNCIÓN: AGRUPA PRODUCTOS POR CÓDIGO Y ARMA LAS TARJETAS MÁGICAS
 // =========================================================================
 function generarGridHTML(listaRaw) {
-    if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
-        let msj = filtrandoFavoritos ? "Aún no tenés productos en favoritos." : "No hay productos en esta categoría.";
-        return `<div style="grid-column: 1/-1; text-align:center; padding: 60px 20px;"><i class="fas fa-box-open" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i><p style="color:var(--secondary); font-size: 1.1rem; margin: 0; font-weight: 500;">${msj}</p></div>`;
+    if(!listaRaw || listaRaw.length === 0) {
+        let msj = filtrandoFavoritos 
+            ? "Aún no tenés productos en favoritos." 
+            : "No hay productos en esta categoría.";
+        let icono = filtrandoFavoritos ? "fa-heart-broken" : "fa-box-open";
+        
+        return `
+        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: #fdfdfd; border-radius: 12px; margin-top: 20px; border: 2px dashed #ddd;">
+            <i class="fas ${icono}" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+            <p style="color: #666; font-size: 1.1rem; font-weight: 600; margin: 0;">${msj}</p>
+            ${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 15px; padding: 10px 20px; width: auto;" onclick="cambiarVista('home')">Ver Catálogo</button>` : ''}
+        </div>`;
     }
 
-    const grupos = {};
-    const listaAgrupada = [];
-
+    // AGRUPA SI TIENEN EL MISMO NOMBRE EXACTO
     listaRaw.forEach(p => {
-        const claveAgrupacion = (p.codigo_modelo && p.codigo_modelo.trim() !== '') 
-                                ? p.codigo_modelo.trim().toUpperCase() 
-                                : p.nombre.trim().toUpperCase(); 
-
-        if (!grupos[claveAgrupacion]) {
-            grupos[claveAgrupacion] = {
-                isGroup: true,
-                clave: claveAgrupacion.replace(/\s+/g, '-'), 
-                variantes: []
-            };
-            listaAgrupada.push(grupos[claveAgrupacion]);
+        const clave = p.nombre.trim().toLowerCase(); 
+        if (!grupos[clave]) {
+            grupos[clave] = { isGroup: true, clave: clave.replace(/\s+/g, '-'), variantes: [] };
+            listaAgrupada.push(grupos[clave]);
         }
-        grupos[claveAgrupacion].variantes.push(p);
+        grupos[clave].variantes.push(p);
     });
 
     return listaAgrupada.map(item => {
         const vDefault = item.variantes[0]; 
-        
-        let stockTotalPrenda = 0;
-        if (vDefault.inventario_talles && typeof vDefault.inventario_talles === 'object') {
-            Object.values(vDefault.inventario_talles).forEach(cant => stockTotalPrenda += (parseInt(cant) || 0));
-        }
-        const productoAgotado = stockTotalPrenda <= 0;
-        const esFav = favoritos.includes(parseInt(vDefault.id)) ? 'active' : '';
-        const nombre = vDefault.nombre || 'Producto sin nombre';
         const pTarj = vDefault.precio_tarjeta || vDefault.tarjeta || 0;
         const pEfvo = vDefault.precio_efectivo || vDefault.efectivo || 0;
         const arrayFotos = obtenerArrayImagenes(vDefault.imagen_url);
-        const imgUrl = arrayFotos[0];
 
+        // DIBUJA LOS CÍRCULOS SI HAY MÁS DE 1 COLOR
         let circulosHTML = '';
         if (item.variantes.length > 1) {
-            circulosHTML = `<div class="colores-container">` + item.variantes.map((v, index) => {
-                const isAct = index === 0 ? 'active' : '';
-                const colorVal = v.color_hex || '#d4ba92';
-                return `<div class="color-circle ${isAct}" style="background-color: ${colorVal};" onclick="cambiarVarianteCard(event, '${item.clave}', ${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
+            circulosHTML = `<div class="colores-container">` + item.variantes.map((v, i) => {
+                const isAct = i === 0 ? 'active' : '';
+                const colorVal = v.color_hex || '#d4ba92'; 
+                return `<div class="color-circle ${isAct}" style="background-color: ${colorVal};" onclick="cambiarVarianteCard(event, '${item.clave}', ${v.id})"></div>`;
             }).join('') + `</div>`;
         }
 
         return `
         <div class="card" id="card-${item.clave}">
-            <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="document.getElementById('btn-${item.clave}').click()">
-                <button class="btn-fav ${esFav}" onclick="toggleFavoritoCard(event, '${item.clave}')" title="Añadir a favoritos"><i class="fas fa-heart"></i></button>
-                ${productoAgotado ? '<div class="badge-agotado">SIN STOCK</div>' : ''}
-                <img src="${imgUrl}" id="img-${item.clave}">
+            <div class="img-wrapper" onclick="document.getElementById('btn-${item.clave}').click()">
+                <img src="${arrayFotos[0]}" id="img-${item.clave}">
             </div>
             <div class="card-info">
                 ${circulosHTML}
-                <h4 id="nom-${item.clave}" onclick="document.getElementById('btn-${item.clave}').click()">${nombre}</h4>
+                <h4 id="nom-${item.clave}" onclick="document.getElementById('btn-${item.clave}').click()">${vDefault.nombre}</h4>
                 <div class="precios-container" onclick="document.getElementById('btn-${item.clave}').click()">
                     <p class="p-tarj" id="ptarj-${item.clave}">$${pTarj}</p>
-                    <p class="p-efvo" id="pefvo-${item.clave}"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
+                    <p class="p-efvo" id="pefvo-${item.clave}"><strong>$${pEfvo}</strong> con<br>Transferencia</p>
                 </div>
-                <button id="btn-${item.clave}" class="btn-card-add ${productoAgotado ? 'disabled' : ''}" ${productoAgotado ? 'disabled' : `onclick="abrirDetalle(${vDefault.id})"`} data-id="${vDefault.id}">
-                    ${productoAgotado ? 'AGOTADO' : 'AGREGAR AL CARRITO'}
+                <button id="btn-${item.clave}" class="btn-card-add" onclick="abrirDetalle(${vDefault.id})" data-id="${vDefault.id}">
+                    AGREGAR AL CARRITO
                 </button>
             </div>
         </div>`;
