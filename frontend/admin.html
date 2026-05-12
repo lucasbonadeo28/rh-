@@ -15,7 +15,7 @@
     </script>
 
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin.css?v=11">
+    <link rel="stylesheet" href="css/admin.css?v=12">
 </head>
 <body>
 
@@ -86,7 +86,7 @@
                         </div>
 
                         <div class="col-span-1">
-                            <label title="Usá el mismo código para agrupar colores de un mismo modelo">Cód. Modelo <i class="fas fa-info-circle" style="color:#aaa;"></i></label>
+                            <label>Cód. Modelo (Obligatorio)</label>
                             <input type="text" id="add-codigo-modelo" placeholder="Ej: CHAL-01" style="text-transform: uppercase;">
                         </div>
 
@@ -94,7 +94,7 @@
                             <label>Tono Variante</label>
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <input type="color" id="add-color-hex" value="#d4ba92" style="width: 40px; height: 43px; padding: 0; cursor: pointer; border-radius: 4px; border: 1px solid #ddd;">
-                                <input type="text" id="add-color-nombre" placeholder="Ej: Beige" oninput="validarLetras(this)" style="flex: 1;">
+                                <input type="text" id="add-color-nombre" placeholder="Ej: Rojo" oninput="validarLetras(this); detectarColor(this.value);" style="flex: 1;">
                             </div>
                         </div>
 
@@ -142,7 +142,7 @@
                     <h2>Inventario (Edición Rápida)</h2>
                 </div>
                 
-                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Montserrat', sans-serif;" onkeyup="filtrarInventario()">
+                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre..." style="width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Montserrat', sans-serif;" onkeyup="filtrarInventario()">
                 
                 <div class="table-responsive">
                     <table>
@@ -281,6 +281,6 @@
 
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="js/admin.js?v=11"></script>
+    <script src="js/admin.js?v=12"></script>
 </body>
 </html>
