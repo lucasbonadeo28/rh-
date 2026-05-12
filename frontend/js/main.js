@@ -36,18 +36,18 @@ window.onload = async () => {
     
     actualizarContadores(); 
     renderizarCarritoSidebar();
-    
     initCustomSelect();
 
-    await fetchBanners();
-    await fetchProductos(); 
-    
-    await renderizarCategoriasDinamicas();
+    // OPTIMIZACIÓN: Carga todo a la vez para eliminar el LAG al abrir la tienda
+    await Promise.all([
+        fetchBanners(),
+        fetchProductos(),
+        renderizarCategoriasDinamicas()
+    ]);
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
 
-    // AHORA PERMITE SELECCIONAR VARIOS TALLES A LA VEZ
     document.querySelectorAll('.chk-talle').forEach(cb => {
         cb.checked = false;
         cb.onchange = function() {
@@ -177,7 +177,7 @@ function updateCarousel() {
     const track = document.getElementById('carousel-track');
     const dots = document.querySelectorAll('.carousel-dot');
     if(!track) return;
-    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    track.style.transform = `translate3d(-${currentSlide * 100}%, 0, 0)`; 
     dots.forEach((d, i) => { 
         if(i === currentSlide) d.classList.add('active'); 
         else d.classList.remove('active'); 
@@ -236,7 +236,7 @@ function cerrarFiltrosMobile() { document.getElementById('filter-sidebar').class
 
 function cambiarVista(vista, categoria = 'Todos') {
     document.getElementById('input-buscador-nav').value = '';
-    window.scrollTo(0, 0); 
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
 
     vistaActual = vista;
     categoriaActual = categoria;
@@ -273,18 +273,23 @@ function cambiarVista(vista, categoria = 'Todos') {
     cerrarFiltrosMobile(); 
 }
 
+// OPTIMIZACIÓN: Debounce buscador para matar LAG al tipear rápido
+let timeoutBuscador = null;
 function ejecutarBusquedaNav(event) {
-    const txt = event.target.value.toLowerCase().trim();
-    if (txt === "") { cambiarVista('catalogo', 'Todos'); return; }
-    window.scrollTo(0, 0);
-    vistaActual = 'catalogo'; categoriaActual = 'Todos'; filtrandoFavoritos = false;
-    sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
-    document.documentElement.setAttribute('data-vista-activa', 'catalogo');
-    document.getElementById('titulo-catalogo').innerText = `Resultados para: "${txt}"`;
-    
-    const listafiltrada = productosCargados.filter(p => (p.nombre || '').toLowerCase().includes(txt));
-    const grid = document.getElementById('grid-catalogo');
-    if (grid) grid.innerHTML = generarGridHTML(listafiltrada);
+    clearTimeout(timeoutBuscador);
+    timeoutBuscador = setTimeout(() => {
+        const txt = event.target.value.toLowerCase().trim();
+        if (txt === "") { cambiarVista('catalogo', 'Todos'); return; }
+        window.scrollTo(0, 0);
+        vistaActual = 'catalogo'; categoriaActual = 'Todos'; filtrandoFavoritos = false;
+        sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
+        document.documentElement.setAttribute('data-vista-activa', 'catalogo');
+        document.getElementById('titulo-catalogo').innerText = `Resultados para: "${txt}"`;
+        
+        const listafiltrada = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
+        const grid = document.getElementById('grid-catalogo');
+        if (grid) grid.innerHTML = generarGridHTML(listafiltrada);
+    }, 300);
 }
 
 function aplicarFiltrosCatalogo() {
@@ -308,8 +313,8 @@ function aplicarFiltrosCatalogo() {
 
         if (ordenActual === 'menor') listaFiltrada.sort((a, b) => parseFloat(a.precio_tarjeta || 0) - parseFloat(b.precio_tarjeta || 0));
         else if (ordenActual === 'mayor') listaFiltrada.sort((a, b) => parseFloat(b.precio_tarjeta || 0) - parseFloat(a.precio_tarjeta || 0));
-        else if (ordenActual === 'a-z') listaFiltrada.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
-        else if (ordenActual === 'z-a') listaFiltrada.sort((a, b) => (b.nombre || '').localeCompare(a.nombre || ''));
+        else if (ordenActual === 'a-z') listaFiltrada.sort((a, b) => (String(a.nombre || '')).localeCompare(String(b.nombre || '')));
+        else if (ordenActual === 'z-a') listaFiltrada.sort((a, b) => (String(b.nombre || '')).localeCompare(String(a.nombre || '')));
         else if (ordenActual === 'nuevo') listaFiltrada.sort((a, b) => (b.id || 0) - (a.id || 0)); 
         else if (ordenActual === 'viejo') listaFiltrada.sort((a, b) => (a.id || 0) - (b.id || 0));
 
@@ -321,21 +326,18 @@ function aplicarFiltrosCatalogo() {
     }
 }
 
-// =========================================================================
-// AGRUPACIÓN Y MENSAJE DE FAVORITOS
-// =========================================================================
 function generarGridHTML(listaRaw) {
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos 
-            ? "Aún no tenés productos en favoritos." 
+            ? "¡Uy! Aún no guardaste ninguna prenda en favoritos." 
             : "No hay productos en esta categoría.";
         let icono = filtrandoFavoritos ? "fa-heart-broken" : "fa-box-open";
         
         return `
-        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: #fdfdfd; border-radius: 12px; margin-top: 20px; border: 2px dashed #ddd;">
-            <i class="fas ${icono}" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
-            <p style="color: #666; font-size: 1.1rem; font-weight: 600; margin: 0;">${msj}</p>
-            ${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 15px; padding: 10px 20px; width: auto;" onclick="cambiarVista('catalogo', 'Todos')">Ver Catálogo</button>` : ''}
+        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-radius: 12px; margin-top: 20px; border: 2px dashed #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <i class="fas ${icono}" style="font-size: 3.5rem; color: #ccc; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.1);"></i>
+            <p style="color: #444; font-size: 1.2rem; font-weight: 700; margin: 0; text-transform: uppercase;">${msj}</p>
+            ${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 25px; padding: 12px 30px; width: auto;" onclick="cambiarVista('catalogo', 'Todos')">Ver Catálogo</button>` : ''}
         </div>`;
     }
 
@@ -387,7 +389,7 @@ function generarGridHTML(listaRaw) {
             <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="document.getElementById('btn-${item.clave}').click()">
                 <button class="btn-fav ${esFav}" onclick="toggleFavoritoCard(event, '${item.clave}')" title="Añadir a favoritos"><i class="fas fa-heart"></i></button>
                 ${productoAgotado ? '<div class="badge-agotado">SIN STOCK</div>' : ''}
-                <img src="${imgUrl}" id="img-${item.clave}">
+                <img loading="lazy" src="${imgUrl}" id="img-${item.clave}">
             </div>
             <div class="card-info">
                 ${circulosHTML}
@@ -452,7 +454,7 @@ function toggleFavoritoCard(event, claveGrupo) {
 }
 
 function mostrarFavoritos() { 
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     filtrandoFavoritos = true; 
     vistaActual = 'catalogo'; 
     
@@ -576,9 +578,9 @@ function abrirDetalle(id) {
     const btnComprarModal = document.getElementById('btn-add-modal');
 
     if (estaAgotado) {
-        btnComprarModal.innerHTML = '<i class="fas fa-times-circle"></i> Producto Agotado'; btnComprarModal.disabled = true; btnComprarModal.style.background = '#ccc';
+        btnComprarModal.innerHTML = '<i class="fas fa-times-circle"></i> Producto Agotado'; btnComprarModal.disabled = true; btnComprarModal.style.background = '#eee'; btnComprarModal.style.color = '#999'; btnComprarModal.style.boxShadow = 'none';
     } else {
-        btnComprarModal.innerHTML = '<i class="fas fa-shopping-bag"></i> Añadir al Carrito'; btnComprarModal.disabled = false; btnComprarModal.style.background = ''; 
+        btnComprarModal.innerHTML = '<i class="fas fa-shopping-bag"></i> Añadir al Carrito'; btnComprarModal.disabled = false; btnComprarModal.style.background = ''; btnComprarModal.style.color = ''; btnComprarModal.style.boxShadow = '';
     }
 
     const containerTalles = document.getElementById('det-talles-container'); containerTalles.innerHTML = ''; 
@@ -640,7 +642,7 @@ function cerrarCarritoSidebar() { document.getElementById('cart-sidebar').classL
 function renderizarCarritoSidebar() { 
     const lista = document.getElementById('lista-carrito-sidebar'); let subtotal = 0; 
     if(carrito.length === 0) { 
-        lista.innerHTML = '<p style="text-align:center; color:gray; margin-top:50px;">No hay productos.</p>'; 
+        lista.innerHTML = '<div style="text-align:center; padding:40px 0;"><i class="fas fa-shopping-cart" style="font-size:3rem; color:#eee; margin-bottom:15px;"></i><p style="color:#888; font-weight:600;">No hay productos.</p></div>'; 
         document.getElementById('subtotal-sidebar').innerText = '0'; document.getElementById('fila-descuento-sidebar').style.display = 'none'; return; 
     } 
     
@@ -651,17 +653,17 @@ function renderizarCarritoSidebar() {
             <div style="display:flex; align-items:center;">
                 <img src="${p.imagen_url || 'https://via.placeholder.com/400x500?text=Sin+Imagen'}">
                 <div style="max-width: 130px;">
-                    <strong style="display:block; font-size: 0.85rem; color:var(--primary); line-height: 1.2; margin-bottom:4px; font-weight:500;">${p.nombre}</strong>
-                    <span style="color:var(--success); font-size:0.85rem; font-weight:bold;">$${p.precio_efectivo}</span>
+                    <strong style="display:block; font-size: 0.85rem; color:var(--primary); line-height: 1.2; margin-bottom:4px; font-weight:700;">${p.nombre}</strong>
+                    <span style="color:var(--success); font-size:0.85rem; font-weight:800;">$${p.precio_efectivo}</span>
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap: 15px;">
                 <div class="cant-control">
                     <button class="btn-cant" onclick="ajustarCantidad('${p.idUnico}', -1)">-</button>
-                    <span style="font-weight:600; font-size:0.9rem;">${p.cantidad}</span>
+                    <span style="font-weight:700; font-size:0.9rem;">${p.cantidad}</span>
                     <button class="btn-cant" onclick="ajustarCantidad('${p.idUnico}', 1)">+</button>
                 </div>
-                <button class="btn-eliminar-item" onclick="eliminarDelCarrito('${p.idUnico}')" title="Eliminar de una"><i class="fas fa-trash-alt"></i></button>
+                <button class="btn-eliminar-item" onclick="eliminarDelCarrito('${p.idUnico}')" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
             </div>
         </div>`; 
     }).join(''); 
@@ -726,7 +728,7 @@ function recalcularTotalPaso2() {
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; let totalPrendas = 0; 
     document.getElementById('resumen-checkout-paso2').innerHTML = carrito.map(p => { 
         const precio = metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta; totalPrendas += (precio * p.cantidad); 
-        return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom: 5px; font-size:0.9rem; color:#555;"><span>${p.cantidad}x ${p.nombre}</span><strong style="color:var(--primary)">$${precio * p.cantidad}</strong></div>`; 
+        return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom: 5px; font-size:0.9rem; color:#555; font-weight:500;"><span>${p.cantidad}x ${p.nombre}</span><strong style="color:var(--primary)">$${precio * p.cantidad}</strong></div>`; 
     }).join(''); 
     let descuentoMonto = 0;
     if (cuponAplicado && cuponAplicado.descuento > 0) {

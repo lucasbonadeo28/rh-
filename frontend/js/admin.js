@@ -216,7 +216,6 @@ async function cargarTodo() {
     }
 }
 
-// LÓGICA CATEGORÍAS
 async function cargarCategorias() {
     try {
         const res = await fetchSeguro(`${API}/categorias`);
@@ -268,7 +267,6 @@ function eliminarCategoria(id) {
     });
 }
 
-// INVENTARIO Y TABLA
 function renderStock() {
     const inicio = (pagina - 1) * pPorPagina; 
     const items = pFiltrados.slice(inicio, inicio + pPorPagina);
@@ -286,7 +284,6 @@ function renderStock() {
             if(Array.isArray(arr) && arr.length > 0) mainImg = arr[0]; else mainImg = p.imagen_url; 
         } catch(e) { mainImg = p.imagen_url; }
 
-        // Mostrar el circulito de color si lo tiene cargado
         let colorDot = p.color_hex ? `<span style="display:inline-block; width:12px; height:12px; background:${p.color_hex}; border-radius:50%; border:1px solid #ccc; vertical-align:middle; margin-right:6px;" title="${p.color_nombre || ''}"></span>` : '';
         let modBadge = p.codigo_modelo ? `<span style="background:#eee; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Mod: ${p.codigo_modelo}</span>` : '';
 
@@ -329,7 +326,6 @@ function editarProducto(id) {
     document.getElementById('add-precio-efvo').value = producto.precio_efectivo || producto.efectivo || '';
     document.getElementById('add-descripcion').value = producto.descripcion || '';
     
-    // CAMPOS NUEVOS
     document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
     document.getElementById('add-color-hex').value = producto.color_hex || '#d4ba92';
     document.getElementById('add-color-nombre').value = producto.color_nombre || '';
@@ -371,7 +367,6 @@ function limpiarFormularioAdmin() {
     document.getElementById('add-stock-unico').value = '';
     document.getElementById('chk-unico').checked = false;
     
-    // Limpiar campos nuevos
     document.getElementById('add-codigo-modelo').value = '';
     document.getElementById('add-color-hex').value = '#d4ba92';
     document.getElementById('add-color-nombre').value = '';
@@ -387,7 +382,6 @@ function limpiarFormularioAdmin() {
     btnGuardar.style.background = '#111'; btnGuardar.disabled = false;
 }
 
-// TICK VERDE
 async function guardarEdicionFila(id, event) {
     const efvo = document.getElementById(`efvo-${id}`).value;
     const tarj = document.getElementById(`tarj-${id}`).value;
@@ -459,9 +453,6 @@ const procesarImg = (file) => {
     });
 };
 
-// ==========================================
-// FUNCIÓN CENTRAL PARA GUARDAR Y ACTUALIZAR (AHORA CON CODIGO Y COLOR)
-// ==========================================
 async function guardarOActualizarProducto() { 
     const btn = document.getElementById('btn-crear-producto');
     const nombre = document.getElementById('add-nombre').value.trim();
@@ -472,7 +463,6 @@ async function guardarOActualizarProducto() {
     const esUnico = document.getElementById('chk-unico').checked;
     const imgInput = document.getElementById('add-img');
     
-    // CAMPOS NUEVOS
     const codigoModelo = document.getElementById('add-codigo-modelo').value.trim().toUpperCase();
     const colorHex = document.getElementById('add-color-hex').value;
     const colorNombre = document.getElementById('add-color-nombre').value.trim();
@@ -528,7 +518,6 @@ async function guardarOActualizarProducto() {
             precio_tarjeta: pTarj,
             descripcion: desc,
             inventario_talles: inventarioFinal,
-            // Agregamos los campos de vinculación a la Base de Datos
             codigo_modelo: codigoModelo,
             color_hex: colorHex,
             color_nombre: colorNombre
@@ -557,7 +546,6 @@ async function guardarOActualizarProducto() {
     }
 }
 
-// PEDIDOS
 function renderPedidos() {
     const inicio = (vPagina - 1) * vPorPagina; 
     const items = vTotales.slice(inicio, inicio + vPorPagina);
