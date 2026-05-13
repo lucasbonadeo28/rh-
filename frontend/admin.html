@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Panel Admin LUCAS</title>
+    <title>Panel Admin</title>
     
     <link rel="icon" type="image/png" href="./rh3.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -87,7 +87,7 @@
 
                         <div class="col-span-1">
                             <label>Cód. Modelo (Obligatorio)</label>
-                            <input type="text" id="add-codigo-modelo" placeholder="Ej: CHAL-01" style="text-transform: uppercase;">
+                            <input type="text" id="add-codigo-modelo" placeholder="Ej: CHAL-01" style="text-transform: uppercase;" required>
                         </div>
 
                         <div class="col-span-1">
@@ -142,7 +142,7 @@
                     <h2>Inventario (Edición Rápida)</h2>
                 </div>
                 
-                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre..." style="width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Montserrat', sans-serif;" onkeyup="filtrarInventario()">
+                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Montserrat', sans-serif;" onkeyup="filtrarInventario()">
                 
                 <div class="table-responsive">
                     <table>
@@ -281,6 +281,6 @@
 
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="js/admin.js?v=12"></script>
+    <script src="js/admin.js?v=11"></script>
 </body>
 </html>
