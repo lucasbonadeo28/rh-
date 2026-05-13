@@ -38,7 +38,7 @@ window.onload = async () => {
     renderizarCarritoSidebar();
     initCustomSelect();
 
-    // OPTIMIZACIÓN: Carga todo a la vez para eliminar el LAG al abrir la tienda
+    // OPTIMIZACIÓN: Carga todo a la vez para matar el LAG inicial
     await Promise.all([
         fetchBanners(),
         fetchProductos(),
@@ -273,7 +273,6 @@ function cambiarVista(vista, categoria = 'Todos') {
     cerrarFiltrosMobile(); 
 }
 
-// OPTIMIZACIÓN: Debounce buscador para matar LAG al tipear rápido
 let timeoutBuscador = null;
 function ejecutarBusquedaNav(event) {
     clearTimeout(timeoutBuscador);
@@ -326,16 +325,19 @@ function aplicarFiltrosCatalogo() {
     }
 }
 
+// =========================================================================
+// ACA ESTA EL ARREGLO DE AGRUPACION DE FOTOS Y MENSAJE DE FAVORITOS VACIOS
+// =========================================================================
 function generarGridHTML(listaRaw) {
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos 
-            ? "¡Uy! Aún no guardaste ninguna prenda en favoritos." 
+            ? "No tenés productos en favoritos." 
             : "No hay productos en esta categoría.";
         let icono = filtrandoFavoritos ? "fa-heart-broken" : "fa-box-open";
         
         return `
-        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-radius: 12px; margin-top: 20px; border: 2px dashed #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
-            <i class="fas ${icono}" style="font-size: 3.5rem; color: #ccc; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.1);"></i>
+        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: #fdfdfd; border-radius: 12px; margin-top: 20px; border: 2px dashed #ddd;">
+            <i class="fas ${icono}" style="font-size: 3.5rem; color: #ccc; margin-bottom: 20px;"></i>
             <p style="color: #444; font-size: 1.2rem; font-weight: 700; margin: 0; text-transform: uppercase;">${msj}</p>
             ${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 25px; padding: 12px 30px; width: auto;" onclick="cambiarVista('catalogo', 'Todos')">Ver Catálogo</button>` : ''}
         </div>`;
@@ -345,14 +347,14 @@ function generarGridHTML(listaRaw) {
     const listaAgrupada = [];
 
     listaRaw.forEach(p => {
-        const codigoModeloSafe = String(p.codigo_modelo || '').trim().toUpperCase();
-        const nombreSafe = String(p.nombre || 'SIN NOMBRE').trim().toUpperCase();
-        const claveAgrupacion = (codigoModeloSafe !== '') ? codigoModeloSafe : nombreSafe;
+        // Agrupa por Cód. Modelo (si existe) o por Nombre si no hay código.
+        const codigoModeloSafe = (p.codigo_modelo && String(p.codigo_modelo).trim() !== '') ? String(p.codigo_modelo).trim().toUpperCase() : String(p.nombre || 'SIN NOMBRE').trim().toUpperCase();
+        const claveAgrupacion = codigoModeloSafe.replace(/[^a-zA-Z0-9]/g, '-');
 
         if (!grupos[claveAgrupacion]) {
             grupos[claveAgrupacion] = {
                 isGroup: true,
-                clave: claveAgrupacion.replace(/[^a-zA-Z0-9]/g, '-'), 
+                clave: claveAgrupacion, 
                 variantes: []
             };
             listaAgrupada.push(grupos[claveAgrupacion]);
@@ -453,10 +455,13 @@ function toggleFavoritoCard(event, claveGrupo) {
     }
 }
 
+// =========================================================================
+// ACA ESTA EL ARREGLO PARA QUE FAVORITOS SOLO MUESTRE LO QUE SE GUARDÓ
+// =========================================================================
 function mostrarFavoritos() { 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     filtrandoFavoritos = true; 
-    vistaActual = 'catalogo'; 
+    vistaActual = 'favoritos'; 
     
     sessionStorage.setItem('tiendaVista', 'favoritos');
     document.documentElement.setAttribute('data-vista-activa', 'favoritos');
