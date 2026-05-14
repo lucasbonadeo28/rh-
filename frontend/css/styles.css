@@ -110,9 +110,9 @@ nav {
 .precios-container { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; margin-bottom: 15px; margin-top: auto !important; }
 
 /* === CORRECCIONES DEFINITIVAS: PRECIOS, COLORES Y TALLES === */
-.p-tarj, .price-box-detail .p-tarj { margin: 0; color: #000000 !important; font-weight: 800; font-size: 1.05rem; }
-.p-efvo, .price-box-detail .p-efvo { margin: 0; color: #333 !important; font-weight: 500; font-size: 0.75rem; line-height: 1.2; }
-.p-efvo strong, .price-box-detail .p-efvo strong { color: #000000 !important; font-weight: 800; font-size: 0.85rem; }
+.p-tarj { margin: 0; color: #000000 !important; font-weight: 800; font-size: 1.05rem; }
+.p-efvo { margin: 0; color: #333 !important; font-weight: 500; font-size: 0.75rem; line-height: 1.2; }
+.p-efvo strong { color: #000000 !important; font-weight: 800; font-size: 0.85rem; }
 
 .colores-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; justify-content: flex-start; min-height: 26px; }
 .color-circle { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
@@ -163,31 +163,100 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .btn-filtrar-mobile { display: none; }
 .titulo-catalogo { display: none; margin-top: 0; color: var(--primary); font-weight: 800; font-size: 1.6rem; margin-bottom: 25px; text-align: left; }
 
-/* === MODALES (DETALLE PRODUCTO LUMINOSO Y SIN PUNTOS) === */
-.product-detail-modal, .checkout-modal, .cart-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); z-index: 2500; justify-content: center; align-items: center; padding: 20px; }
+/* ========================================================================= */
+/* === MODAL DETALLE PRODUCTO REDISEÑADO (NUEVA VERSIÓN PREMIUM) ===         */
+/* ========================================================================= */
+.product-detail-modal, .checkout-modal, .cart-overlay { 
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); 
+    z-index: 2500; justify-content: center; align-items: center; padding: 20px; 
+}
 .cart-overlay { display: block; opacity: 0; visibility: hidden; transition: var(--anim-speed) ease; }
 .cart-overlay.active { opacity: 1; visibility: visible; }
 
-.detail-box, .checkout-box { background: #ffffff !important; border-radius: 20px !important; width: 950px; max-width: 100%; max-height: 90vh; display: flex; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.2) !important; animation: modalIn var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); }
+/* Fondo y sombra del recuadro principal */
+.detail-box, .checkout-box { 
+    background: #ffffff !important; 
+    border-radius: 24px !important; 
+    width: 950px; max-width: 100%; max-height: 90vh; 
+    display: flex; overflow: hidden; position: relative; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2) !important; 
+    animation: modalIn var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); 
+}
 .checkout-box { padding: 40px; gap: 50px; overflow-y: auto; flex-direction: row; }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-.product-detail-modal .detail-img { flex: 1; display: flex !important; flex-direction: column !important; position: relative !important; background: #f9f9f9; height: auto !important; }
-.product-detail-modal .detail-img img#det-img-url { width: 100% !important; height: auto !important; max-height: 55vh !important; object-fit: cover !important; object-position: center top !important; transition: opacity 0.3s ease; display: block; border-radius: var(--radius-md) 0 0 0; }
-.product-detail-modal .detail-img #det-mini-gallery { display: flex !important; gap: 12px; padding: 15px 10px !important; margin: 0 !important; background: white; overflow-x: auto; justify-content: center; align-items: center; width: 100%; box-sizing: border-box; border-bottom: 1px solid #eee; z-index: 10; min-height: 95px; }
-.product-detail-modal .detail-img #det-mini-gallery img { width: 65px !important; height: 65px !important; object-fit: cover !important; border-radius: 8px !important; cursor: pointer; border: 2px solid transparent !important; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 0 !important; padding: 0 !important; }
-.product-detail-modal .detail-img #det-mini-gallery img.selected { border-color: var(--brand-brown) !important; transform: scale(1.1); opacity: 1 !important; box-shadow: 0 4px 10px rgba(212, 181, 142, 0.4); }
-.product-detail-modal .detail-img #det-mini-gallery img.img-gall-inactive { opacity: 0.5 !important; border-color: transparent !important; transform: scale(1); }
+/* Contenedor izquierdo: Foto flotante */
+.product-detail-modal .detail-img { 
+    flex: 1; display: flex !important; flex-direction: column !important; position: relative !important; 
+    background: #ffffff; padding: 30px; /* Padding para que la imagen flote */ 
+}
 
-.detail-info { flex: 1; padding: 40px 50px; overflow-y: auto; display: flex; flex-direction: column; text-align: left; background: #ffffff !important; color: #111 !important; border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+/* La Imagen principal ahora tiene bordes muy curvos y sombrita */
+.product-detail-modal .detail-img img#det-img-url { 
+    width: 100% !important; height: auto !important; max-height: 60vh !important; 
+    object-fit: cover !important; object-position: center top !important; transition: opacity 0.3s ease; 
+    display: block; 
+    border-radius: 16px !important; /* Bordes redondeados pedios */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08); /* Sombra elegante */
+}
+
+/* Rediseño de las miniaturas para que hagan juego */
+.product-detail-modal .detail-img #det-mini-gallery { 
+    display: flex !important; gap: 12px; padding: 20px 0 0 0 !important; margin: 0 !important; 
+    background: white; overflow-x: auto; justify-content: flex-start; align-items: center; 
+    width: 100%; box-sizing: border-box; border-bottom: none; z-index: 10; min-height: 85px; 
+}
+.product-detail-modal .detail-img #det-mini-gallery img { 
+    width: 70px !important; height: 70px !important; object-fit: cover !important; 
+    border-radius: 10px !important; cursor: pointer; border: 2px solid transparent !important; 
+    transition: all 0.3s ease; margin: 0 !important; padding: 0 !important; 
+}
+.product-detail-modal .detail-img #det-mini-gallery img.selected { 
+    border-color: var(--brand-brown) !important; transform: scale(1.05); opacity: 1 !important; 
+    box-shadow: 0 4px 10px rgba(212, 181, 142, 0.4); 
+}
+.product-detail-modal .detail-img #det-mini-gallery img.img-gall-inactive { 
+    opacity: 0.5 !important; border-color: transparent !important; transform: scale(1); 
+}
+
+/* Mitad Derecha de Textos y Botones */
+.detail-info { 
+    flex: 1; padding: 40px 40px 40px 10px; overflow-y: auto; display: flex; 
+    flex-direction: column; text-align: left; background: #ffffff !important; color: #111 !important; 
+}
+
 .btn-close-modal { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.5rem; cursor: pointer; color: var(--secondary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; }
 .btn-close-modal:hover { color: var(--danger); transform: rotate(90deg) scale(1.1); background: #fff; }
-.btn-fav-modal { position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 1.3rem; color: #999; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 20; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; }
+
+/* El corazon re-posicionado para que caiga perfecto sobre la imagen curva */
+.btn-fav-modal { 
+    position: absolute; top: 40px; left: 40px; /* Movido para coincidir con el padding interno */
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: none; border-radius: 50%; 
+    width: 45px; height: 45px; font-size: 1.3rem; color: #999; cursor: pointer; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 20; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; 
+}
 .btn-fav-modal:hover { transform: scale(1.1); color: var(--danger); }
 .btn-fav-modal.active { color: var(--danger); }
 
-.detail-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; color: #111 !important; }
-.detail-desc { font-size: 0.9rem; color: #555 !important; line-height: 1.6; margin-bottom: 25px; }
+.detail-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 15px; color: #111 !important; line-height: 1.1; }
+
+/* RECUADRO DE PRECIO PREMIUM */
+.price-box-detail {
+    background: #fdfdfd;
+    border: 1px solid #eaeaea;
+    padding: 18px 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+.price-box-detail .p-tarj { color: #777 !important; font-size: 1rem !important; font-weight: 600 !important; }
+.price-box-detail .p-efvo { color: var(--success) !important; font-size: 1.4rem !important; font-weight: 800 !important; }
+
+.detail-desc { font-size: 0.95rem; color: #555 !important; line-height: 1.6; margin-bottom: 30px; }
 
 /* Talles en Arena - Botones clickeables */
 .talles-selector {
@@ -361,19 +430,15 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 }
 
 @media (max-width: 768px) {
+    /* Ajustes específicos del modal rediseñado para celular */
+    .detail-box { flex-direction: column; border-radius: 20px 20px 0 0 !important; width: 100%; max-height: 85vh !important; overflow-y: auto !important; padding: 0; }
     .product-detail-modal { align-items: flex-end; padding: 0; }
-    .detail-box { width: 100%; max-height: 85vh !important; flex-direction: column; border-radius: 25px 25px 0 0; overflow-y: auto !important; padding: 0; }
-    .detail-img { width: 100%; height: 50vh; min-height: 350px; }
-    .detail-img img#det-img-url { height: 100%; width: 100%; object-fit: cover; border-radius: 25px 25px 0 0; }
-    .detail-info { width: 100%; padding: 30px 25px; }
+    .product-detail-modal .detail-img { padding: 15px; width: 100%; height: auto; min-height: 350px; }
+    .product-detail-modal .detail-img img#det-img-url { max-height: 50vh !important; width: 100%; object-fit: cover; border-radius: 12px !important; }
+    .detail-info { width: 100%; padding: 20px; }
     .btn-close-modal { top: 15px; right: 15px; background: rgba(255,255,255,0.95); box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 40px; height: 40px; }
+    .btn-fav-modal { top: 25px; left: 25px; } /* Ajuste del corazón en celu */
     #btn-add-modal { width: 100%; padding: 20px; font-size: 1.1rem; border-radius: 12px; }
-}
-
-@media (min-width: 992px) {
-    .product-detail-modal .detail-img { height: 100% !important; }
-    .product-detail-modal .detail-img img#det-img-url { height: calc(100% - 95px) !important; max-height: none !important; border-radius: 12px 0 0 0 !important; }
-    .product-detail-modal .detail-img #det-mini-gallery { border-radius: 0 0 0 12px !important; border-bottom: none; }
 }
 
 @keyframes girarRuedita { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
