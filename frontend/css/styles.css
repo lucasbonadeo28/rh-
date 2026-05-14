@@ -370,7 +370,8 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 @keyframes girarRuedita { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .ruedita-girando { animation: girarRuedita 1.2s linear infinite; display: inline-block; }
 
-/* --- OCULTAR FILTROS Y ORDENAMIENTO (SOLO CATÁLOGO) --- */
+/* --- OCULTAR FILTROS Y ORDENAMIENTO (PEDIDO POR LUCAS) --- */
+/* Esta regla oculta el menú de categorías/talles, el botón de filtros móvil y el selector de orden */
 #sidebar-desktop,
 .catalogo-controls,
 .btn-filtrar-mobile,
@@ -378,6 +379,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     display: none !important;
 }
 
+/* Esta regla hace que el grid de productos ocupe todo el ancho disponible */
 .main-catalogo {
     width: 100% !important;
     flex: 1 !important;
