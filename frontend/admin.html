@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Panel Admin</title>
-    
+    <title>Panel Admin LUCAS</title>
     <link rel="icon" type="image/png" href="./rh3.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script>
         const tabActivaInit = sessionStorage.getItem('adminTabActiva') || 'tab-pedidos';
         document.documentElement.setAttribute('data-active-tab', tabActivaInit);
     </script>
-
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/admin.css?v=12">
 </head>
 <body>
-
     <div id="login-wrapper" class="login-wrapper">
         <div class="login-box">
             <h2>Ingreso Admin</h2>
@@ -51,7 +47,6 @@
         </nav>
 
         <div class="container">
-            
             <div id="tab-pedidos" class="tab-content">
                 <div class="admin-header-row"><h2>Últimos Pedidos Realizados</h2></div>
                 <div class="table-responsive">
@@ -71,15 +66,12 @@
                 <div class="admin-header-row">
                     <h2 id="titulo-form-admin">Cargar Nueva Prenda</h2>
                 </div>
-                
                 <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <div class="admin-form-grid">
-                        
                         <div class="col-span-2">
                             <label>Nombre del producto (y Color)</label>
                             <input type="text" id="add-nombre" placeholder="Ej: Chaleco Gamuzado Beige" oninput="validarLetras(this)">
                         </div>
-                        
                         <div class="col-span-1">
                             <label>Categoría</label>
                             <select id="add-categoria"><option value="" disabled selected>Categorías...</option></select>
@@ -102,17 +94,14 @@
                             <label>Precio Tarj. ($)</label>
                             <input type="number" id="add-precio-tarj" placeholder="Ej: 35000" oninput="validarNumeros(this)">
                         </div>
-
                         <div class="col-span-1">
                             <label>Precio Transf. ($)</label>
                             <input type="number" id="add-precio-efvo" placeholder="Ej: 30000" oninput="validarNumeros(this)">
                         </div>
-
                         <div class="col-span-2">
                             <label>Breve descripción</label>
                             <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." oninput="validarLetras(this)">
                         </div>
-
                         <div class="col-span-1 caja-talles">
                             <label style="font-size: 0.8rem; font-weight: 700; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
                                 <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0; width: auto;"> Es Talle Único
@@ -120,7 +109,6 @@
                             <input type="text" id="add-talles" placeholder="S:10, M:5" style="padding: 8px; font-size: 0.85rem;">
                             <input type="text" id="add-stock-unico" placeholder="Stock Total" style="padding: 8px; font-size: 0.85rem; display: none;" oninput="validarNumeros(this)">
                         </div>
-
                         <div class="col-span-3">
                             <label>Fotos (De esta variante)</label>
                             <label for="add-img" class="custom-file-upload" id="label-add-img">
@@ -128,22 +116,18 @@
                             </label>
                             <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
                         </div>
-
                         <div class="col-span-2" style="display: flex; align-items: flex-end;">
                             <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 48px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="guardarOActualizarProducto()">
                                 <i class="fas fa-save"></i> Guardar Prenda
                             </button>
                         </div>
-                        
                     </div>
                 </div>
                 
                 <div class="admin-header-row" style="margin-top: 50px;">
                     <h2>Inventario (Edición Rápida)</h2>
                 </div>
-                
-                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre (solo letras)..." style="width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Montserrat', sans-serif;" onkeyup="filtrarInventario()">
-                
+                <input type="text" id="buscador-admin" placeholder="Buscar producto por nombre..." style="width: 100%; margin-bottom: 15px; padding: 15px; border-radius: 6px; border: 1px solid #ccc; font-family: 'Montserrat', sans-serif;" onkeyup="filtrarInventario()">
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -152,7 +136,6 @@
                         <tbody id="body-inventario"></tbody>
                     </table>
                 </div>
-                
                 <div class="paginacion-container">
                     <button id="pagi-anterior" class="btn-pagi" onclick="paginaAnterior()">← Anterior</button>
                     <span id="pagi-info" style="color: #666;">Página 1</span>
@@ -179,18 +162,10 @@
                         <tbody id="body-categorias"><tr><td colspan="3" style="text-align:center; padding:30px;">Cargando categorías...</td></tr></tbody>
                     </table>
                 </div>
-                <div class="paginacion-container">
-                    <button id="pagi-anterior-cat" class="btn-pagi" onclick="paginaAnteriorCat()">← Anterior</button>
-                    <span id="pagi-info-cat" style="color: #666;">Página 1</span>
-                    <button id="pagi-siguiente-cat" class="btn-pagi" onclick="paginaSiguienteCat()">Siguiente →</button>
-                </div>
             </div>
 
             <div id="tab-banners" class="tab-content">
                 <div class="admin-header-row"><h2>Imágenes del Carrusel Principal</h2></div>
-                <div style="background: #eafaf1; border-left: 4px solid var(--success); padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                    <p style="margin: 0; font-size: 0.9rem; color: #333;"><strong><i class="fas fa-info-circle"></i> Regla de la tienda:</strong> El carrusel muestra exactamente <strong>4 imágenes</strong>. Si agregás una quinta, el sistema borrará automáticamente la foto más vieja.</p>
-                </div>
                 <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
                     <form class="form-row-flex" id="form-banner" onsubmit="agregarBanner(event)" style="display:flex; gap:30px; width:100%; align-items: flex-end;">
                         <div style="flex: 3; display: flex; flex-direction: column;">
@@ -256,7 +231,6 @@
                     </table>
                 </div>
             </div>
-            
         </div>
     </div>
 
@@ -279,8 +253,6 @@
         </div>
     </div>
 
-    <div id="toast-container" class="toast-container"></div>
-
-    <script src="js/admin.js?v=11"></script>
+    <script src="js/admin.js?v=12"></script>
 </body>
 </html>
