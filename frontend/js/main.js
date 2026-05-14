@@ -283,7 +283,10 @@ function ejecutarBusquedaNav(event) {
         vistaActual = 'catalogo'; categoriaActual = 'Todos'; filtrandoFavoritos = false;
         sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
         document.documentElement.setAttribute('data-vista-activa', 'catalogo');
-        document.getElementById('titulo-catalogo').innerText = `Resultados para: "${txt}"`;
+        
+        // CORRECCIÓN ID
+        const tituloCat = document.getElementById('bread-cat-nombre');
+        if (tituloCat) { tituloCat.innerText = `Resultados para: "${txt}"`; }
         
         const listafiltrada = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
         const grid = document.getElementById('grid-catalogo');
@@ -325,9 +328,6 @@ function aplicarFiltrosCatalogo() {
     }
 }
 
-// =========================================================================
-// ACA ESTA EL ARREGLO DE AGRUPACION DE FOTOS Y MENSAJE DE FAVORITOS VACIOS
-// =========================================================================
 function generarGridHTML(listaRaw) {
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos 
@@ -347,7 +347,6 @@ function generarGridHTML(listaRaw) {
     const listaAgrupada = [];
 
     listaRaw.forEach(p => {
-        // Agrupa por Cód. Modelo (si existe) o por Nombre si no hay código.
         const codigoModeloSafe = (p.codigo_modelo && String(p.codigo_modelo).trim() !== '') ? String(p.codigo_modelo).trim().toUpperCase() : String(p.nombre || 'SIN NOMBRE').trim().toUpperCase();
         const claveAgrupacion = codigoModeloSafe.replace(/[^a-zA-Z0-9]/g, '-');
 
@@ -455,9 +454,7 @@ function toggleFavoritoCard(event, claveGrupo) {
     }
 }
 
-// =========================================================================
-// ACA ESTA EL ARREGLO PARA QUE FAVORITOS SOLO MUESTRE LO QUE SE GUARDÓ
-// =========================================================================
+// CORRECCIÓN ID PARA FAVORITOS (SECCIÓN APARTE)
 function mostrarFavoritos() { 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     filtrandoFavoritos = true; 
@@ -465,7 +462,9 @@ function mostrarFavoritos() {
     
     sessionStorage.setItem('tiendaVista', 'favoritos');
     document.documentElement.setAttribute('data-vista-activa', 'favoritos');
-    document.getElementById('titulo-catalogo').innerText = `Mis Favoritos (${favoritos.length})`; 
+    
+    const tituloCat = document.getElementById('bread-cat-nombre');
+    if (tituloCat) { tituloCat.innerText = `Mis Favoritos (${favoritos.length})`; }
     
     const listaFavs = productosCargados.filter(p => favoritos.includes(parseInt(p.id))); 
     const grid = document.getElementById('grid-catalogo');
