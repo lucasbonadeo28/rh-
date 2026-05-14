@@ -17,13 +17,22 @@ let cPagina = 1;
 const cPorPagina = 10;
 let idProductoEditando = null;
 
-// DICCIONARIO PARA AUTOCOMPLETAR COLOR
+// DICCIONARIO PARA AUTOCOMPLETAR COLOR (VERSIÓN TEXTIL SUPER COMPLETA)
 const mapaColores = {
+    // Básicos
     'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
-    'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 'marron': '#8b4513', 'marrón': '#8b4513',
-    'rosa': '#ffc0cb', 'naranja': '#ffa500', 'violeta': '#ee82ee', 'celeste': '#87ceeb', 
-    'beige': '#f5f5dc', 'crema': '#fffdd0', 'arena': '#d4ba92', 'mostaza': '#ffdb58', 
-    'bordo': '#800000', 'bordó': '#800000', 'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b'
+    'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 
+    // Tonos de tienda de ropa
+    'marron': '#8b4513', 'marrón': '#8b4513', 'rosa': '#ffc0cb', 'naranja': '#ffa500', 
+    'violeta': '#ee82ee', 'celeste': '#87ceeb', 'beige': '#f5f5dc', 'crema': '#fffdd0', 
+    'arena': '#d4ba92', 'mostaza': '#e1ad01', 'bordo': '#800000', 'bordó': '#800000', 
+    'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b', 'fucsia': '#ff00ff',
+    'coral': '#ff7f50', 'vison': '#ccb8a5', 'visón': '#ccb8a5', 'tiza': '#f5f5f0',
+    'oliva': '#808000', 'esmeralda': '#50c878', 'turquesa': '#40e0d0', 'lila': '#c8a2c8',
+    'salmon': '#fa8072', 'salmón': '#fa8072', 'terracota': '#e2725b', 'habano': '#593c1f',
+    'crudo': '#f3e5ab', 'hueso': '#e3dac9', 'lima': '#bfff00', 'ocre': '#cc7722',
+    'guinda': '#800000', 'ciruela': '#dda0dd', 'pastel': '#aec6cf',
+    'francia': '#318ce7', 'melange': '#d3d3d3', 'ingles': '#1b4d3e', 'inglés': '#1b4d3e'
 };
 
 function detectarColor(texto) {
