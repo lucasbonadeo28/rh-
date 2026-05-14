@@ -38,12 +38,13 @@ window.onload = async () => {
     renderizarCarritoSidebar();
     initCustomSelect();
 
-    // OPTIMIZACIÓN: Carga todo a la vez para matar el LAG inicial
+    // OPTIMIZACIÓN Y ORDEN DE CARGA:
+    // 1ro descargamos productos, 2do renderizamos categorías (para poder contar qué cat tiene más ropa)
     await Promise.all([
         fetchBanners(),
-        fetchProductos(),
-        renderizarCategoriasDinamicas()
+        fetchProductos()
     ]);
+    await renderizarCategoriasDinamicas();
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
@@ -83,20 +84,30 @@ async function renderizarCategoriasDinamicas() {
         }
     } catch (error) {}
 
+    // MAGIA: ORDENAR CATEGORÍAS SEGÚN LA CANTIDAD DE PRODUCTOS QUE TIENEN
+    categoriasUnicas.sort((a, b) => {
+        const countA = productosCargados.filter(p => p && p.categoria === a).length;
+        const countB = productosCargados.filter(p => p && p.categoria === b).length;
+        return countB - countA; // Ordena de mayor cantidad a menor cantidad
+    });
+
     const navCenter = document.getElementById('nav-menu-celular');
     if (navCenter) {
         let htmlNav = `<a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>`;
-        const limiteSueltas = 4; 
+        
+        // MOSTRAR SUELTAS LAS 3 CATEGORÍAS CON MÁS PRODUCTOS
+        const limiteSueltas = 3; 
         const sueltas = categoriasUnicas.slice(0, limiteSueltas);
         const ocultas = categoriasUnicas.slice(limiteSueltas);
 
         htmlNav += sueltas.map(cat => `<a class="filter-link" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</a>`).join('');
 
+        // EL RESTO AL ACORDEÓN
         if (ocultas.length > 0) {
             let dropHtml = ocultas.map(cat => `<a class="drop-link" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</a>`).join('');
             htmlNav += `
             <div class="nav-dropdown-wrapper">
-                <a class="filter-link btn-mas-cat">MÁS <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></a>
+                <a class="filter-link btn-mas-cat" onclick="toggleAcordeonMobile(this)">MÁS CATEGORÍAS <i class="fas fa-chevron-down" style="transition: 0.3s;"></i></a>
                 <div class="nav-dropdown-menu">${dropHtml}</div>
             </div>`;
         }
@@ -123,6 +134,23 @@ async function renderizarCategoriasDinamicas() {
             footerUl.innerHTML = categoriasFooter.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')">${cat}</a></li>`).join('');
             footerUl.innerHTML += `<li><a onclick="cambiarVista('catalogo', 'Todos')" style="font-weight: 800; text-decoration: underline; margin-top: 8px; display: inline-block; cursor: pointer;">Ver todos los productos</a></li>`;
         }
+    }
+}
+
+// FUNCIÓN PARA ABRIR Y CERRAR EL ACORDEÓN EN CELULAR
+function toggleAcordeonMobile(btn) {
+    if(window.innerWidth > 992) return; // En PC sigue funcionando con hover normal
+    
+    btn.classList.toggle('active-acordeon');
+    const icon = btn.querySelector('i');
+    const content = btn.nextElementSibling;
+    
+    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+        content.style.maxHeight = '0px';
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        content.style.maxHeight = content.scrollHeight + "px";
+        icon.style.transform = 'rotate(180deg)';
     }
 }
 
@@ -269,6 +297,7 @@ function cambiarVista(vista, categoria = 'Todos') {
         aplicarFiltrosCatalogo(); 
     }
     
+    // Al clickear algo en el menú de celular, lo cerramos
     if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) toggleMenuMobile();
     cerrarFiltrosMobile(); 
 }
@@ -332,10 +361,7 @@ function generarGridHTML(listaRaw) {
         let msj = filtrandoFavoritos 
             ? "No tenés productos en favoritos." 
             : "No hay productos en esta categoría.";
-        
-        // Corazón cuando es favoritos vacio, caja cuando es categoria vacia
         let icono = filtrandoFavoritos ? "fa-heart" : "fa-box-open";
-        // Color arena para el corazón, color gris para la caja
         let colorIcono = filtrandoFavoritos ? "var(--brand-brown)" : "#ccc";
         
         return `
