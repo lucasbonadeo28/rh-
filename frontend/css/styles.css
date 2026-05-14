@@ -119,7 +119,6 @@ nav {
 .color-circle:hover { transform: scale(1.15); }
 .color-circle.active { border: 2px solid #000000; transform: scale(1.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 
-/* Corrección de la lista de talles para que no tengan puntos (Foto 3) */
 ul.filter-checkbox-list, ul.mobile-checkbox-list { list-style: none !important; padding: 0 !important; margin: 0 !important; }
 ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !important; margin-bottom: 12px; }
 
@@ -191,30 +190,11 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .detail-desc { font-size: 0.9rem; color: #555 !important; line-height: 1.6; margin-bottom: 25px; }
 
 /* Talles en Arena - Botones clickeables */
-.talles-selector {
-    display: flex !important; 
-    flex-wrap: wrap !important; 
-    gap: 8px !important; 
-    margin-top: 10px !important;
-    justify-content: flex-start !important;
-}
-.talle-label {
-    background-color: #d4ba92 !important; 
-    color: #000000 !important; 
-    border: none !important; 
-    border-radius: 8px !important;
-    padding: 10px 15px !important;
-    cursor: pointer !important; 
-    font-weight: 800 !important; 
-    text-align: center !important; 
-    min-width: 45px !important; 
-    flex: 0 0 auto !important; /* EVITA QUE SE APLASTEN */
-    transition: all 0.2s ease;
-}
+.talles-selector { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; margin-top: 10px !important; justify-content: flex-start !important; }
+.talle-label { background-color: #d4ba92 !important; color: #000000 !important; border: none !important; border-radius: 8px !important; padding: 10px 15px !important; cursor: pointer !important; font-weight: 800 !important; text-align: center !important; min-width: 45px !important; flex: 0 0 auto !important; transition: all 0.2s ease; }
 .talle-label:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(212, 186, 146, 0.4); }
 .talle-label.selected { background-color: #000000 !important; color: #d4ba92 !important; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .talle-label.sin-stock { background-color: #f0f0f0 !important; color: #bbb !important; text-decoration: line-through; cursor: not-allowed; box-shadow: none; transform: none; }
-
 
 /* === SIDEBAR CARRITO === */
 .cart-sidebar { position: fixed; top: 0; right: -500px; width: 100%; max-width: 450px; height: 100vh; background: var(--white); z-index: 2600; box-shadow: -15px 0 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; transition: right var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); }
@@ -389,3 +369,16 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 
 @keyframes girarRuedita { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .ruedita-girando { animation: girarRuedita 1.2s linear infinite; display: inline-block; }
+
+/* --- OCULTAR FILTROS Y ORDENAMIENTO (SOLO CATÁLOGO) --- */
+#sidebar-desktop,
+.catalogo-controls,
+.btn-filtrar-mobile,
+#filter-sidebar {
+    display: none !important;
+}
+
+.main-catalogo {
+    width: 100% !important;
+    flex: 1 !important;
+}
