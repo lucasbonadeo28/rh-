@@ -284,7 +284,6 @@ function ejecutarBusquedaNav(event) {
         sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
         document.documentElement.setAttribute('data-vista-activa', 'catalogo');
         
-        // CORRECCIÓN ID
         const tituloCat = document.getElementById('bread-cat-nombre');
         if (tituloCat) { tituloCat.innerText = `Resultados para: "${txt}"`; }
         
@@ -328,15 +327,19 @@ function aplicarFiltrosCatalogo() {
     }
 }
 
+// FUNCIÓN MODIFICADA PARA ELIMINAR RECUADRO Y CORAZÓN ROTO
 function generarGridHTML(listaRaw) {
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos 
             ? "No tenés productos en favoritos." 
             : "No hay productos en esta categoría.";
-        let icono = filtrandoFavoritos ? "fa-heart-broken" : "fa-box-open";
         
+        // MODIFICACIÓN: Usar corazón normal para favoritos vacíos, icono de caja para categorías vacías
+        let icono = filtrandoFavoritos ? "fa-heart" : "fa-box-open";
+        
+        // MODIFICACIÓN: Se ha quitado el fondo (background), el radio (border-radius) y el borde discontinuo (border) para integrar con el fondo
         return `
-        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; background: #fdfdfd; border-radius: 12px; margin-top: 20px; border: 2px dashed #ddd;">
+        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; margin-top: 20px;">
             <i class="fas ${icono}" style="font-size: 3.5rem; color: #ccc; margin-bottom: 20px;"></i>
             <p style="color: #444; font-size: 1.2rem; font-weight: 700; margin: 0; text-transform: uppercase;">${msj}</p>
             ${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 25px; padding: 12px 30px; width: auto;" onclick="cambiarVista('catalogo', 'Todos')">Ver Catálogo</button>` : ''}
@@ -454,7 +457,6 @@ function toggleFavoritoCard(event, claveGrupo) {
     }
 }
 
-// CORRECCIÓN ID PARA FAVORITOS (SECCIÓN APARTE)
 function mostrarFavoritos() { 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     filtrandoFavoritos = true; 
