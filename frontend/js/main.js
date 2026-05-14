@@ -327,20 +327,20 @@ function aplicarFiltrosCatalogo() {
     }
 }
 
-// FUNCIÓN MODIFICADA PARA ELIMINAR RECUADRO Y CORAZÓN ROTO
 function generarGridHTML(listaRaw) {
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos 
             ? "No tenés productos en favoritos." 
             : "No hay productos en esta categoría.";
         
-        // MODIFICACIÓN: Usar corazón normal para favoritos vacíos, icono de caja para categorías vacías
+        // Corazón cuando es favoritos vacio, caja cuando es categoria vacia
         let icono = filtrandoFavoritos ? "fa-heart" : "fa-box-open";
+        // Color arena para el corazón, color gris para la caja
+        let colorIcono = filtrandoFavoritos ? "var(--brand-brown)" : "#ccc";
         
-        // MODIFICACIÓN: Se ha quitado el fondo (background), el radio (border-radius) y el borde discontinuo (border) para integrar con el fondo
         return `
         <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; margin-top: 20px;">
-            <i class="fas ${icono}" style="font-size: 3.5rem; color: #ccc; margin-bottom: 20px;"></i>
+            <i class="fas ${icono}" style="font-size: 3.5rem; color: ${colorIcono}; margin-bottom: 20px;"></i>
             <p style="color: #444; font-size: 1.2rem; font-weight: 700; margin: 0; text-transform: uppercase;">${msj}</p>
             ${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 25px; padding: 12px 30px; width: auto;" onclick="cambiarVista('catalogo', 'Todos')">Ver Catálogo</button>` : ''}
         </div>`;
