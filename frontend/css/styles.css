@@ -65,7 +65,7 @@ nav {
 
 .nav-dropdown-wrapper { position: relative; display: flex; align-items: center; height: 100%; }
 .btn-mas-cat { cursor: pointer; display: flex !important; align-items: center; gap: 5px; }
-.nav-dropdown-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.05); border-radius: var(--radius-md); box-shadow: 0 15px 35px rgba(0,0,0,0.08); min-width: 180px; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 2000; padding: 10px 0; }
+.nav-dropdown-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(10px); background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.05); border-radius: var(--radius-md); box-shadow: 0 15px 35px rgba(0,0,0,0.08); min-width: 180px; display: flex; flex-direction: column; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 2000; padding: 10px 0; max-height: none; }
 .nav-dropdown-wrapper:hover .nav-dropdown-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 .drop-link { padding: 12px 20px; color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; text-align: center; cursor: pointer; transition: 0.2s; text-decoration: none; }
 .drop-link:hover, .drop-link.active { color: var(--brand-brown); background-color: rgba(212, 186, 146, 0.05); }
@@ -190,11 +190,30 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .detail-desc { font-size: 0.9rem; color: #555 !important; line-height: 1.6; margin-bottom: 25px; }
 
 /* Talles en Arena - Botones clickeables */
-.talles-selector { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; margin-top: 10px !important; justify-content: flex-start !important; }
-.talle-label { background-color: #d4ba92 !important; color: #000000 !important; border: none !important; border-radius: 8px !important; padding: 10px 15px !important; cursor: pointer !important; font-weight: 800 !important; text-align: center !important; min-width: 45px !important; flex: 0 0 auto !important; transition: all 0.2s ease; }
+.talles-selector {
+    display: flex !important; 
+    flex-wrap: wrap !important; 
+    gap: 8px !important; 
+    margin-top: 10px !important;
+    justify-content: flex-start !important;
+}
+.talle-label {
+    background-color: #d4ba92 !important; 
+    color: #000000 !important; 
+    border: none !important; 
+    border-radius: 8px !important;
+    padding: 10px 15px !important;
+    cursor: pointer !important; 
+    font-weight: 800 !important; 
+    text-align: center !important; 
+    min-width: 45px !important; 
+    flex: 0 0 auto !important; /* EVITA QUE SE APLASTEN */
+    transition: all 0.2s ease;
+}
 .talle-label:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(212, 186, 146, 0.4); }
 .talle-label.selected { background-color: #000000 !important; color: #d4ba92 !important; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .talle-label.sin-stock { background-color: #f0f0f0 !important; color: #bbb !important; text-decoration: line-through; cursor: not-allowed; box-shadow: none; transform: none; }
+
 
 /* === SIDEBAR CARRITO === */
 .cart-sidebar { position: fixed; top: 0; right: -500px; width: 100%; max-width: 450px; height: 100vh; background: var(--white); z-index: 2600; box-shadow: -15px 0 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; transition: right var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); }
@@ -281,22 +300,12 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .nav-center.active { display: flex; }
     .filter-link { display: block; width: 100%; padding: 20px 25px; box-sizing: border-box; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.95rem; font-weight: 600; text-align: center; }
     
-    /* Arreglo Menú MÁS (Foto 2) */
-    .nav-dropdown-wrapper { width: 100%; }
-    .nav-dropdown-menu { 
-        position: static !important; box-shadow: none !important; 
-        background: transparent !important; display: flex !important; 
-        flex-wrap: wrap !important; justify-content: center !important; 
-        gap: 8px !important; padding: 15px 10px !important; 
-        opacity: 1 !important; visibility: visible !important; border: none; 
-    }
-    .nav-dropdown-menu .drop-link { 
-        background-color: var(--primary); color: #fff; 
-        border-radius: var(--radius-sm); padding: 10px 15px !important; 
-        font-size: 0.85rem !important; flex: 1 1 calc(50% - 10px); 
-        text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    }
-    .btn-mas-cat { display: none !important; }
+    /* ACORDEÓN MÓVIL: Arreglo Menú "MÁS CATEGORÍAS" */
+    .nav-dropdown-wrapper { width: 100%; flex-direction: column; }
+    .btn-mas-cat { display: flex !important; justify-content: space-between; align-items: center; width: 100%; padding: 20px 25px; box-sizing: border-box; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.95rem; font-weight: 800; color: var(--brand-brown) !important; cursor: pointer; }
+    .nav-dropdown-menu { position: static !important; max-height: 0; overflow: hidden; opacity: 1 !important; visibility: visible !important; transition: max-height 0.3s ease-out !important; background: #fafafa !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; border: none; transform: none !important; display: block !important; width: 100% !important;}
+    .nav-dropdown-menu .drop-link { display: block; width: 100%; padding: 18px 25px !important; border-bottom: 1px solid rgba(0,0,0,0.03) !important; color: var(--secondary) !important; text-align: center !important; }
+    .nav-dropdown-menu .drop-link.active { color: var(--brand-brown) !important; font-weight: 800; }
 
     .search-container { width: 38px; height: 38px; }
     .search-container:hover { width: 38px; background: transparent; }
@@ -316,7 +325,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .btn-filtrar-mobile { display: flex; padding: 12px 18px; border: 2px solid var(--primary); background: #fff; color: var(--primary); font-weight: 700; font-size: 0.85rem; cursor: pointer; align-items: center; gap: 8px; border-radius: var(--radius-sm); height: 45px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     .sidebar-filtros { display: none; }
     
-    /* Arreglo de Tarjetas y Espacios en Celular (Foto 1) */
+    /* Arreglo de Tarjetas y Espacios en Celular */
     .productos-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px 12px !important; padding: 0 !important; margin-bottom: 30px; }
     .card-info { padding: 12px 10px !important; }
     .card-info h4 { font-size: 0.7rem !important; margin-bottom: 8px !important; line-height: 1.2 !important; min-height: auto !important; }
@@ -370,8 +379,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 @keyframes girarRuedita { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .ruedita-girando { animation: girarRuedita 1.2s linear infinite; display: inline-block; }
 
-/* --- OCULTAR FILTROS Y ORDENAMIENTO (PEDIDO POR LUCAS) --- */
-/* Esta regla oculta el menú de categorías/talles, el botón de filtros móvil y el selector de orden */
+/* --- OCULTAR FILTROS Y ORDENAMIENTO (SOLO CATÁLOGO) --- */
 #sidebar-desktop,
 .catalogo-controls,
 .btn-filtrar-mobile,
@@ -379,7 +387,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     display: none !important;
 }
 
-/* Esta regla hace que el grid de productos ocupe todo el ancho disponible */
 .main-catalogo {
     width: 100% !important;
     flex: 1 !important;
