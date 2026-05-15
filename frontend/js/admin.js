@@ -238,7 +238,7 @@ async function cargarCategorias() {
 function actualizarSelectCategorias() {
     const select = document.getElementById('add-categoria');
     if(categoriasGlobal.length === 0) select.innerHTML = '<option value="" disabled selected>No hay categorías</option>';
-    else select.innerHTML = '<option value="" disabled selected>Categoría...</option>' + categoriasGlobal.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+    else select.innerHTML = '<option value="" disabled selected>Categorías...</option>' + categoriasGlobal.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
 }
 
 function renderCategorias() {
@@ -247,9 +247,11 @@ function renderCategorias() {
     const tbody = document.getElementById('body-categorias');
     if(categoriasGlobal.length === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray; padding:20px;">Aún no hay categorías creadas.</td></tr>';
     else tbody.innerHTML = items.map(c => `<tr><td>#${c.id}</td><td style="font-weight:bold; text-transform:capitalize;">${c.nombre}</td><td style="text-align: center;"><button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button></td></tr>`).join('');
-    document.getElementById('pagi-info-cat').innerText = `Página ${cPagina}`;
-    document.getElementById('pagi-anterior-cat').disabled = cPagina === 1;
-    document.getElementById('pagi-siguiente-cat').disabled = inicio + cPorPagina >= categoriasGlobal.length;
+    
+    // ACÁ ESTABA EL PROBLEMA: Le agregamos los IF para que no choque si no encuentra los botones
+    if (document.getElementById('pagi-info-cat')) document.getElementById('pagi-info-cat').innerText = `Página ${cPagina}`;
+    if (document.getElementById('pagi-anterior-cat')) document.getElementById('pagi-anterior-cat').disabled = cPagina === 1;
+    if (document.getElementById('pagi-siguiente-cat')) document.getElementById('pagi-siguiente-cat').disabled = inicio + cPorPagina >= categoriasGlobal.length;
 }
 
 function paginaAnteriorCat() { if (cPagina > 1) { cPagina--; renderCategorias(); } }
