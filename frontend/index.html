@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="./css/styles.css?v=500">
+    <link rel="stylesheet" href="./css/styles.css?v=502">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -48,8 +48,7 @@
             <img src="./rh.jpg?v=56" alt="RH+ Jeans Store" style="height: 45px; width: 45px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
         </div>
 
-        <div class="nav-center" id="nav-menu-celular">
-        </div>
+        <div class="nav-center" id="nav-menu-celular"></div>
 
         <div class="nav-right">
             <div class="search-container"><i class="fas fa-search"></i><input type="search" id="input-buscador-nav" placeholder="Buscar..." onkeyup="ejecutarBusquedaNav(event)"></div>
@@ -126,60 +125,25 @@
                             </div>
                         </div>
                     </div>
-                    <button class="btn-filtrar-mobile" onclick="abrirFiltrosMobile()">FILTRAR <i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="filtros-talles-top">
+                <span style="font-size: 0.85rem; font-weight: 800; color: #111; text-transform: uppercase; margin-right: 5px;">Filtrar Talles:</span>
+                <div class="talles-pills-scroll">
+                    <label class="talle-pill-top"><input type="checkbox" class="chk-talle" value="S"> S</label>
+                    <label class="talle-pill-top"><input type="checkbox" class="chk-talle" value="M"> M</label>
+                    <label class="talle-pill-top"><input type="checkbox" class="chk-talle" value="L"> L</label>
+                    <label class="talle-pill-top"><input type="checkbox" class="chk-talle" value="XL"> XL</label>
+                    <label class="talle-pill-top"><input type="checkbox" class="chk-talle" value="XXL"> XXL</label>
+                    <label class="talle-pill-top"><input type="checkbox" class="chk-talle" value="ÚNICO"> ÚNICO</label>
                 </div>
             </div>
 
             <div class="layout-catalogo">
-                <aside class="sidebar-filtros" id="sidebar-desktop">
-                    <div class="filter-group">
-                        <h4>Categorías</h4>
-                        <ul class="filter-list" id="sidebar-categorias">
-                            </ul>
-                    </div>
-                    
-                    <div class="filter-group filtros-extra">
-                        <h5>Talles</h5>
-                        <ul class="filter-checkbox-list" style="list-style: none; padding: 0; margin: 0;">
-                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="S"> S</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="M"> M</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="L"> L</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="XL"> XL</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="XXL"> XXL</label></li>
-                            <li><label class="checkbox-label"><input type="checkbox" class="chk-talle" value="ÚNICO"> Talle Único</label></li>
-                        </ul>
-                    </div>
-                </aside>
-                
                 <main class="main-catalogo">
                     <div id="grid-catalogo" class="productos-grid"></div>
                 </main>
-            </div>
-        </div>
-    </div>
-
-    <div id="filter-overlay" class="cart-overlay" onclick="cerrarFiltrosMobile()"></div>
-    <div id="filter-sidebar" class="filter-sidebar">
-        <div class="filter-sidebar-header">
-            <button onclick="cerrarFiltrosMobile()"><i class="fas fa-chevron-left"></i> Filtrar por:</button>
-        </div>
-        <div class="filter-sidebar-body">
-            <div class="mobile-filter-group">
-                <h4>Categorías</h4>
-                <div class="pills-container" id="mobile-categorias">
-                </div>
-            </div>
-
-            <div class="mobile-filter-group">
-                <h4>Talles</h4>
-                <ul class="mobile-checkbox-list" style="list-style: none; padding: 0; margin: 0;">
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="S"> S</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="M"> M</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="L"> L</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="XL"> XL</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="XXL"> XXL</label></li>
-                    <li><label class="mobile-checkbox-label"><input type="checkbox" class="chk-talle" value="ÚNICO"> Talle Único</label></li>
-                </ul>
             </div>
         </div>
     </div>
@@ -213,8 +177,7 @@
             </div>
             <div class="footer-col">
                 <h4>CATEGORÍAS</h4>
-                <ul id="footer-categorias">
-                    </ul>
+                <ul id="footer-categorias"></ul>
             </div>
             <div class="footer-col" style="min-width: 250px;">
                 <h4>MEDIOS DE PAGO</h4>
@@ -276,6 +239,12 @@
                 <button class="btn-close-modal" onclick="cerrarDetalle()">×</button>
                 <h2 id="det-titulo" class="detail-title">Nombre</h2>
                 <div class="price-box-detail"><p id="det-precio-tarj" class="p-tarj">$0 Tarjeta</p><p id="det-precio-efvo" class="p-efvo">$0 Transferencia</p></div>
+                
+                <div id="seccion-colores-modal" style="margin-bottom: 20px; display: none;">
+                    <h4 style="margin-bottom: 10px; font-size: 0.85rem; color: #555; text-transform: uppercase;">COLOR: <span id="det-color-nombre" style="font-weight: bold; color: #111;"></span></h4>
+                    <div id="det-colores-container" class="colores-container" style="gap: 10px;"></div>
+                </div>
+
                 <p id="det-descripcion" class="detail-desc">Descripción...</p>
                 
                 <div id="seccion-selector-talles" class="talles-selector-section" style="margin-bottom: 25px;">
@@ -293,8 +262,10 @@
                 <button class="btn-close-modal" onclick="cerrarCheckoutModal()">×</button>
                 <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase; color: #111;">1. Datos de Envío</h3>
                 
-                <div class="form-group"><label>Nombre</label><input type="text" id="chk-nom" maxlength="20" oninput="validarLetras(this)" autocomplete="given-name"></div>
-                <div class="form-group"><label>Apellido</label><input type="text" id="chk-ape" maxlength="20" oninput="validarLetras(this)" autocomplete="family-name"></div>
+                <div class="form-group">
+                    <label>Nombre Completo (Ej: Juan Pedro Pérez)</label>
+                    <input type="text" id="chk-nom-completo" placeholder="Nombre y Apellido" oninput="validarLetrasCompleto(this)" autocomplete="name">
+                </div>
                 
                 <div class="form-group">
                     <label>Email</label>
@@ -374,6 +345,6 @@
         </div>
     </div>
 
-    <script src="./js/main.js?v=500"></script>
+    <script src="./js/main.js?v=501"></script>
 </body>
 </html>
