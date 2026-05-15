@@ -49,6 +49,19 @@ function getColorSeguro(v) {
     return '#d4ba92'; 
 }
 
+// === CERRAR MODALES TOCANDO AFUERA ===
+window.addEventListener('click', function(event) {
+    const modalProducto = document.getElementById('modal-detalle-producto');
+    const modalCheckout = document.getElementById('modal-principal');
+    
+    if (event.target === modalProducto) {
+        cerrarDetalle();
+    }
+    if (event.target === modalCheckout) {
+        cerrarCheckoutModal();
+    }
+});
+
 window.onload = async () => { 
     window.scrollTo(0, 0);
 
@@ -722,20 +735,17 @@ function abrirDetalle(id) {
     if (favoritos.includes(parseInt(prodSeleccionado.id))) btnFavModal.classList.add('active'); 
     else btnFavModal.classList.remove('active'); 
 
-    // === MAGIA: OCULTAR TÍTULO SI ES TALLE ÚNICO ===
     const containerTalles = document.getElementById('det-talles-container'); 
     containerTalles.innerHTML = ''; 
     const tituloTalles = document.getElementById('titulo-talles');
     
     if(prodSeleccionado.inventario_talles) { 
         if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
-            // Si es talle único, ESCONDEMOS el título "SELECCIONAR TALLE"
             if(tituloTalles) tituloTalles.style.display = 'none';
             const stockUnico = parseInt(prodSeleccionado.inventario_talles['ÚNICO']) || 0;
             if(stockUnico <= 0) { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`; talleTemporal = null; } 
             else { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO'; }
         } else { 
-            // Si tiene S, M, L, VOLVEMOS A MOSTRAR el título "SELECCIONAR TALLE"
             if(tituloTalles) tituloTalles.style.display = 'block';
             let htmlTalles = '';
             Object.entries(prodSeleccionado.inventario_talles).forEach(([talle, stock]) => { 
@@ -746,7 +756,6 @@ function abrirDetalle(id) {
             containerTalles.innerHTML = htmlTalles;
         } 
     } else {
-        // Por las dudas, si viene fallado de la base de datos, lo tratamos como Único
         if(tituloTalles) tituloTalles.style.display = 'none';
         containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO';
     }

@@ -17,12 +17,10 @@ let cPagina = 1;
 const cPorPagina = 10;
 let idProductoEditando = null;
 
-// DICCIONARIO PARA AUTOCOMPLETAR COLOR (VERSIÓN TEXTIL SUPER COMPLETA)
+// DICCIONARIO PARA AUTOCOMPLETAR COLOR
 const mapaColores = {
-    // Básicos
     'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
     'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 
-    // Tonos de tienda de ropa
     'marron': '#8b4513', 'marrón': '#8b4513', 'rosa': '#ffc0cb', 'naranja': '#ffa500', 
     'violeta': '#ee82ee', 'celeste': '#87ceeb', 'beige': '#f5f5dc', 'crema': '#fffdd0', 
     'arena': '#d4ba92', 'mostaza': '#e1ad01', 'bordo': '#800000', 'bordó': '#800000', 
@@ -205,6 +203,7 @@ function toggleDetalle(id) {
 }
 
 async function cargarTodo() {
+    initTallesBuilder(); // Inicializa el constructor de talles
     cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos`); 
@@ -223,6 +222,77 @@ async function cargarTodo() {
         console.error("Error conectando a BD:", err); 
         showCustomAlert("Error al cargar datos.", "error", false);
     }
+}
+
+// === CREADOR VISUAL DE TALLES PARA EL FORMULARIO PRINCIPAL ===
+function initTallesBuilder() {
+    const inputTalles = document.getElementById('add-talles');
+    if(!inputTalles || document.getElementById('talles-builder-ui')) return;
+
+    inputTalles.style.display = 'none';
+
+    const container = document.createElement('div');
+    container.id = 'talles-builder-ui';
+    container.style.display = 'flex';
+    container.style.flexWrap = 'wrap';
+    container.style.gap = '10px';
+    container.style.marginTop = '10px';
+    container.style.marginBottom = '10px';
+
+    const btnAdd = document.createElement('button');
+    btnAdd.id = 'btn-add-talle-ui';
+    btnAdd.type = 'button';
+    btnAdd.className = 'btn-secundario';
+    btnAdd.innerHTML = '<i class="fas fa-plus"></i> Agregar Talle';
+    btnAdd.style.padding = '8px 12px';
+    btnAdd.style.fontSize = '0.8rem';
+    btnAdd.style.width = 'auto';
+    btnAdd.onclick = () => agregarTalleUI('', 0);
+
+    inputTalles.parentNode.insertBefore(container, inputTalles.nextSibling);
+    inputTalles.parentNode.insertBefore(btnAdd, container.nextSibling);
+
+    agregarTalleUI('S', 0);
+    agregarTalleUI('M', 0);
+    agregarTalleUI('L', 0);
+}
+
+function agregarTalleUI(nombre = '', cantidad = 0) {
+    const container = document.getElementById('talles-builder-ui');
+    if(!container) return;
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.gap = '5px';
+    div.style.background = '#fcfcfc';
+    div.style.padding = '8px';
+    div.style.borderRadius = '8px';
+    div.style.border = '1px solid #ddd';
+
+    div.innerHTML = `
+        <input type="text" placeholder="Talle (Ej: M)" value="${nombre}" class="builder-talle-nombre" style="width: 60px; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 6px; text-align: center; font-weight: bold; outline:none;">
+        <span style="font-weight: 800; color:#555;">:</span>
+        <input type="number" placeholder="Cant." value="${cantidad}" class="builder-talle-cant" min="0" style="width: 70px; border: 1px solid #ccc; border-radius: 4px; padding: 6px; text-align: center; font-weight: bold; outline:none;">
+        <i class="fas fa-trash-alt" style="color: #e74c3c; cursor: pointer; margin-left: 5px; padding:5px;" onclick="this.parentNode.remove()" title="Eliminar talle"></i>
+    `;
+    container.appendChild(div);
+}
+
+function toggleTalleUnico() { 
+    const esUnico = document.getElementById('chk-unico').checked; 
+    const builderUI = document.getElementById('talles-builder-ui');
+    const btnAddTalle = document.getElementById('btn-add-talle-ui');
+
+    if(esUnico) {
+        if(builderUI) builderUI.style.display = 'none';
+        if(btnAddTalle) btnAddTalle.style.display = 'none';
+        document.getElementById('add-stock-unico').style.display = 'block';
+    } else {
+        if(builderUI) builderUI.style.display = 'flex';
+        if(btnAddTalle) btnAddTalle.style.display = 'inline-block';
+        document.getElementById('add-stock-unico').style.display = 'none';
+    }
+    document.getElementById('add-stock-unico').classList.remove('input-error');
 }
 
 async function cargarCategorias() {
@@ -277,9 +347,6 @@ function eliminarCategoria(id) {
     });
 }
 
-// =========================================================================
-// EDICIÓN RÁPIDA REDISEÑADA (Talles separados y Foto sin caché)
-// =========================================================================
 function renderStock() {
     const inicio = (pagina - 1) * pPorPagina; 
     const items = pFiltrados.slice(inicio, inicio + pPorPagina);
@@ -289,7 +356,6 @@ function renderStock() {
         let tallesHtml = "";
         let stockTotalSumado = 0;
 
-        // Creador de las pastillitas individuales de talles
         if (inventario['ÚNICO'] !== undefined) {
             stockTotalSumado = parseInt(inventario['ÚNICO']) || 0;
             tallesHtml = `
@@ -317,7 +383,6 @@ function renderStock() {
             if(Array.isArray(arr) && arr.length > 0) mainImg = arr[0]; else mainImg = p.imagen_url; 
         } catch(e) { mainImg = p.imagen_url; }
 
-        // MAGIA ANTI-CACHÉ: Evita que el navegador te muestre la foto vieja
         if (mainImg && !mainImg.startsWith('data:')) {
             mainImg += (mainImg.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
         }
@@ -371,16 +436,23 @@ function editarProducto(id) {
     document.getElementById('add-color-nombre').value = producto.color_nombre || '';
 
     const chkUnico = document.getElementById('chk-unico');
-    const inputTalles = document.getElementById('add-talles');
     const inputStockUnico = document.getElementById('add-stock-unico');
+    const containerTalles = document.getElementById('talles-builder-ui');
+
+    if(containerTalles) containerTalles.innerHTML = '';
 
     if (producto.inventario_talles && producto.inventario_talles['ÚNICO'] !== undefined) {
-        chkUnico.checked = true; inputTalles.style.display = 'none'; inputStockUnico.style.display = 'block';
-        inputStockUnico.value = producto.inventario_talles['ÚNICO']; inputTalles.value = '';
+        chkUnico.checked = true;
+        toggleTalleUnico();
+        inputStockUnico.value = producto.inventario_talles['ÚNICO'];
     } else {
-        chkUnico.checked = false; inputTalles.style.display = 'block'; inputStockUnico.style.display = 'none';
-        if (producto.inventario_talles) inputTalles.value = Object.entries(producto.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
-        else inputTalles.value = '';
+        chkUnico.checked = false;
+        toggleTalleUnico();
+        if (producto.inventario_talles) {
+            Object.entries(producto.inventario_talles).forEach(([t, c]) => agregarTalleUI(t, c));
+        } else {
+            agregarTalleUI('S', 0);
+        }
         inputStockUnico.value = '';
     }
 
@@ -403,7 +475,6 @@ function limpiarFormularioAdmin() {
     document.getElementById('add-precio-tarj').value = '';
     document.getElementById('add-precio-efvo').value = '';
     document.getElementById('add-descripcion').value = '';
-    document.getElementById('add-talles').value = '';
     document.getElementById('add-stock-unico').value = '';
     document.getElementById('chk-unico').checked = false;
     
@@ -412,6 +483,14 @@ function limpiarFormularioAdmin() {
     document.getElementById('add-color-nombre').value = '';
 
     toggleTalleUnico();
+    
+    const containerTalles = document.getElementById('talles-builder-ui');
+    if(containerTalles) {
+        containerTalles.innerHTML = '';
+        agregarTalleUI('S', 0);
+        agregarTalleUI('M', 0);
+        agregarTalleUI('L', 0);
+    }
     
     const imgInput = document.getElementById('add-img');
     imgInput.value = ''; mostrarNombreArchivo(imgInput, 'label-add-img', 'Abrir Galería');
@@ -422,9 +501,6 @@ function limpiarFormularioAdmin() {
     btnGuardar.style.background = '#111'; btnGuardar.disabled = false;
 }
 
-// =========================================================================
-// ACA SE GUARDAN LOS DATOS DE LAS PASTILLAS DE EDICIÓN RÁPIDA
-// =========================================================================
 async function guardarEdicionFila(id, event) {
     const efvo = document.getElementById(`efvo-${id}`).value;
     const tarj = document.getElementById(`tarj-${id}`).value;
@@ -470,14 +546,6 @@ function filtrarInventario() {
     const txt = document.getElementById('buscador-admin').value.toLowerCase(); 
     pFiltrados = txt === "" ? [...pTotales] : pTotales.filter(p => p.nombre.toLowerCase().includes(txt)); 
     pagina = 1; renderStock(); 
-}
-
-function toggleTalleUnico() { 
-    const esUnico = document.getElementById('chk-unico').checked; 
-    document.getElementById('add-talles').style.display = esUnico ? 'none' : 'block'; 
-    document.getElementById('add-stock-unico').style.display = esUnico ? 'block' : 'none';
-    document.getElementById('add-talles').classList.remove('input-error');
-    document.getElementById('add-stock-unico').classList.remove('input-error');
 }
 
 function validarLetras(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9-]/g, ''); }
@@ -535,13 +603,23 @@ async function guardarOActualizarProducto() {
         if (!stock) { document.getElementById('add-stock-unico').classList.add('input-error'); error = true; }
         else { inventarioFinal["ÚNICO"] = parseInt(stock); stockIngresado = parseInt(stock); }
     } else {
-        const tallesTxt = document.getElementById('add-talles').value.trim();
-        if (!tallesTxt) { document.getElementById('add-talles').classList.add('input-error'); error = true; }
-        else {
-            tallesTxt.split(',').forEach(item => {
-                const parts = item.split(':');
-                if(parts.length === 2) { let cant = parseInt(parts[1].trim()); inventarioFinal[parts[0].trim().toUpperCase()] = cant; stockIngresado += cant; }
-            });
+        const nombres = document.querySelectorAll('.builder-talle-nombre');
+        const cants = document.querySelectorAll('.builder-talle-cant');
+        let hasTallesValidos = false;
+        
+        for(let i=0; i<nombres.length; i++) {
+            const n = nombres[i].value.trim().toUpperCase();
+            const c = parseInt(cants[i].value) || 0;
+            if(n && c > 0) {
+                inventarioFinal[n] = c;
+                stockIngresado += c;
+                hasTallesValidos = true;
+            }
+        }
+        
+        if (!hasTallesValidos) {
+            error = true;
+            return showCustomAlert("Por favor, agregá al menos un talle con cantidad mayor a 0.", "error", false);
         }
     }
 
