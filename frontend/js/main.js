@@ -19,13 +19,38 @@ let categoriaActual = 'Todos';
 let ordenActual = 'default';
 let talleTemporal = null; 
 
-// VARIABLES PARA EL NUEVO CARRUSEL DEL MODAL
 let modalImages = [];
 let currentModalImageIndex = 0;
 let imagenSeleccionadaUrl = '';     
 let indexImagenSeleccionada = 1;
 let modalTouchStartX = 0;
 let modalTouchEndX = 0;    
+
+// === LECTOR INTELIGENTE DE COLORES PARA PRENDAS VIEJAS ===
+function getColorSeguro(v) {
+    // Si la prenda tiene un color cargado desde el admin (que no sea el arena por defecto), lo usa.
+    if (v.color_hex && v.color_hex !== '#d4ba92') return v.color_hex;
+    
+    // Si no tiene color, lee el nombre o descripción para buscar de qué color es.
+    const text = ((v.color_nombre || '') + ' ' + (v.nombre || '') + ' ' + (v.descripcion || '')).toLowerCase();
+    const mapaFront = {
+        'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 
+        'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
+        'marron': '#8b4513', 'marrón': '#8b4513', 'rosa': '#ffc0cb', 'naranja': '#ffa500', 
+        'violeta': '#ee82ee', 'celeste': '#87ceeb', 'beige': '#f5f5dc', 'crema': '#fffdd0', 
+        'mostaza': '#e1ad01', 'bordo': '#800000', 'bordó': '#800000', 
+        'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b', 'fucsia': '#ff00ff',
+        'suela': '#c19a6b', 'francia': '#318ce7', 'melange': '#d3d3d3',
+        'oliva': '#808000', 'coral': '#ff7f50', 'lila': '#c8a2c8'
+    };
+
+    for (let c in mapaFront) {
+        // Busca la palabra exacta en el texto (ej: "suela" o "negro")
+        if (new RegExp(`\\b${c}\\b`).test(text)) return mapaFront[c];
+    }
+    
+    return '#d4ba92'; // Si no encuentra nada, usa arena.
+}
 
 window.onload = async () => { 
     window.scrollTo(0, 0);
@@ -426,7 +451,8 @@ function generarGridHTML(listaRaw) {
         if (item.variantes.length > 1) {
             circulosHTML = `<div class="colores-container">` + item.variantes.map((v, index) => {
                 const isAct = index === 0 ? 'active' : '';
-                const colorVal = v.color_hex || '#d4ba92';
+                // USAMOS EL LECTOR INTELIGENTE
+                const colorVal = getColorSeguro(v);
                 return `<div class="color-circle ${isAct}" style="background-color: ${colorVal};" onclick="cambiarVarianteCard(event, '${item.clave}', ${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
             }).join('') + `</div>`;
         }
@@ -649,7 +675,8 @@ function abrirDetalle(id) {
         txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
         contColores.innerHTML = variantes.map(v => {
             const isAct = v.id === prodSeleccionado.id ? 'active' : '';
-            const colorVal = v.color_hex || '#d4ba92';
+            // USAMOS EL LECTOR INTELIGENTE
+            const colorVal = getColorSeguro(v);
             return `<div class="color-circle ${isAct}" style="background-color: ${colorVal}; width: 32px; height: 32px; margin-right: 5px;" onclick="abrirDetalle(${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
         }).join('');
     } else {
@@ -700,16 +727,17 @@ function abrirDetalle(id) {
     if (favoritos.includes(parseInt(prodSeleccionado.id))) btnFavModal.classList.add('active'); 
     else btnFavModal.classList.remove('active'); 
 
-    // LÓGICA REDISEÑADA PARA OCULTAR EL TÍTULO "SELECCIONAR TALLE" SI ES ÚNICO
+    // === LÓGICA DE TALLES CORREGIDA PARA OCULTAR EL TÍTULO EN TALLE ÚNICO ===
     const containerTalles = document.getElementById('det-talles-container'); 
     containerTalles.innerHTML = ''; 
     const tituloTalles = document.getElementById('titulo-talles');
+    const seccionTalles = document.getElementById('seccion-selector-talles');
     
     if(prodSeleccionado.inventario_talles) { 
         if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
             if(tituloTalles) tituloTalles.style.display = 'none';
             const stockUnico = parseInt(prodSeleccionado.inventario_talles['ÚNICO']) || 0;
-            if(stockUnico <= 0) { containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--danger); font-weight:700; margin:0;">Agotado</p>`; talleTemporal = null; } 
+            if(stockUnico <= 0) { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`; talleTemporal = null; } 
             else { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO'; }
         } else { 
             if(tituloTalles) tituloTalles.style.display = 'block';
