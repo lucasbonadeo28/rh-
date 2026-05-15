@@ -203,7 +203,7 @@ function toggleDetalle(id) {
 }
 
 async function cargarTodo() {
-    initTallesBuilder(); // Inicializa el constructor de talles
+    initTallesBuilder(); // Inicializa el constructor de talles con caja protectora
     cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos`); 
@@ -224,33 +224,48 @@ async function cargarTodo() {
     }
 }
 
-// === CREADOR VISUAL DE TALLES PARA EL FORMULARIO PRINCIPAL ===
+// === CREADOR VISUAL DE TALLES PROTEGIDO (NUEVO) ===
 function initTallesBuilder() {
     const inputTalles = document.getElementById('add-talles');
-    if(!inputTalles || document.getElementById('talles-builder-ui')) return;
+    if(!inputTalles || document.getElementById('talles-builder-box')) return;
 
     inputTalles.style.display = 'none';
+
+    // Creamos la caja "escudo" para que nada desborde
+    const mainBox = document.createElement('div');
+    mainBox.id = 'talles-builder-box';
+    mainBox.style.background = '#f9f9f9';
+    mainBox.style.border = '1px solid #ddd';
+    mainBox.style.borderRadius = '8px';
+    mainBox.style.padding = '15px';
+    mainBox.style.marginTop = '10px';
+    mainBox.style.marginBottom = '25px'; // Esto empuja al botón de guardar lejos
+    mainBox.style.width = '100%';
+
+    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase;">Stock por Talles</h4>';
 
     const container = document.createElement('div');
     container.id = 'talles-builder-ui';
     container.style.display = 'flex';
-    container.style.flexWrap = 'wrap';
-    container.style.gap = '10px';
-    container.style.marginTop = '10px';
-    container.style.marginBottom = '10px';
+    container.style.flexDirection = 'column'; // Apilados hacia abajo para no desbordar
+    container.style.gap = '8px';
 
     const btnAdd = document.createElement('button');
     btnAdd.id = 'btn-add-talle-ui';
     btnAdd.type = 'button';
     btnAdd.className = 'btn-secundario';
-    btnAdd.innerHTML = '<i class="fas fa-plus"></i> Agregar Talle';
-    btnAdd.style.padding = '8px 12px';
-    btnAdd.style.fontSize = '0.8rem';
-    btnAdd.style.width = 'auto';
+    btnAdd.innerHTML = '<i class="fas fa-plus"></i> Añadir Talle';
+    btnAdd.style.padding = '10px 15px';
+    btnAdd.style.fontSize = '0.85rem';
+    btnAdd.style.width = '100%';
+    btnAdd.style.marginTop = '15px';
     btnAdd.onclick = () => agregarTalleUI('', 0);
 
-    inputTalles.parentNode.insertBefore(container, inputTalles.nextSibling);
-    inputTalles.parentNode.insertBefore(btnAdd, container.nextSibling);
+    mainBox.appendChild(container);
+    mainBox.appendChild(btnAdd);
+
+    // Insertamos la caja después del input oculto
+    inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
 
     agregarTalleUI('S', 0);
     agregarTalleUI('M', 0);
@@ -263,33 +278,31 @@ function agregarTalleUI(nombre = '', cantidad = 0) {
     const div = document.createElement('div');
     div.style.display = 'flex';
     div.style.alignItems = 'center';
-    div.style.gap = '5px';
-    div.style.background = '#fcfcfc';
-    div.style.padding = '8px';
-    div.style.borderRadius = '8px';
-    div.style.border = '1px solid #ddd';
+    div.style.gap = '10px';
+    div.style.background = '#ffffff';
+    div.style.padding = '10px';
+    div.style.borderRadius = '6px';
+    div.style.border = '1px solid #eee';
+    div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
 
     div.innerHTML = `
-        <input type="text" placeholder="Talle (Ej: M)" value="${nombre}" class="builder-talle-nombre" style="width: 60px; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 6px; text-align: center; font-weight: bold; outline:none;">
-        <span style="font-weight: 800; color:#555;">:</span>
-        <input type="number" placeholder="Cant." value="${cantidad}" class="builder-talle-cant" min="0" style="width: 70px; border: 1px solid #ccc; border-radius: 4px; padding: 6px; text-align: center; font-weight: bold; outline:none;">
-        <i class="fas fa-trash-alt" style="color: #e74c3c; cursor: pointer; margin-left: 5px; padding:5px;" onclick="this.parentNode.remove()" title="Eliminar talle"></i>
+        <input type="text" placeholder="Talle (Ej: M)" value="${nombre}" class="builder-talle-nombre" style="flex:1; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 8px; text-align: center; font-weight: bold; outline:none;">
+        <span style="font-weight: 800; color:#aaa;">:</span>
+        <input type="number" placeholder="Cant." value="${cantidad}" class="builder-talle-cant" min="0" style="flex:1; border: 1px solid #ccc; border-radius: 4px; padding: 8px; text-align: center; font-weight: bold; outline:none;">
+        <button type="button" style="background:transparent; border:none; color: #e74c3c; cursor: pointer; font-size:1.1rem; padding:5px 10px;" onclick="this.parentNode.remove()" title="Eliminar talle"><i class="fas fa-trash-alt"></i></button>
     `;
     container.appendChild(div);
 }
 
 function toggleTalleUnico() { 
     const esUnico = document.getElementById('chk-unico').checked; 
-    const builderUI = document.getElementById('talles-builder-ui');
-    const btnAddTalle = document.getElementById('btn-add-talle-ui');
+    const builderBox = document.getElementById('talles-builder-box');
 
     if(esUnico) {
-        if(builderUI) builderUI.style.display = 'none';
-        if(btnAddTalle) btnAddTalle.style.display = 'none';
+        if(builderBox) builderBox.style.display = 'none';
         document.getElementById('add-stock-unico').style.display = 'block';
     } else {
-        if(builderUI) builderUI.style.display = 'flex';
-        if(btnAddTalle) btnAddTalle.style.display = 'inline-block';
+        if(builderBox) builderBox.style.display = 'block';
         document.getElementById('add-stock-unico').style.display = 'none';
     }
     document.getElementById('add-stock-unico').classList.remove('input-error');
