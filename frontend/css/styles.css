@@ -71,7 +71,7 @@ nav {
 .drop-link:hover, .drop-link.active { color: var(--brand-brown); background-color: rgba(212, 186, 146, 0.05); }
 
 /* === CARRUSEL === */
-.hero-carousel { position: relative; width: 100%; max-width: 1400px; margin: 0 auto; overflow: hidden; background: #fafafa; border-radius: 0 0 var(--radius-lg) var(--radius-lg); transform: translateZ(0); will-change: transform; }
+.hero-carousel { position: relative; width: 100%; max-width: 1400px; margin: 20px auto; overflow: hidden; background: #fafafa; border-radius: 20px; transform: translateZ(0); will-change: transform; }
 .carousel-track { display: flex; transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); width: 100%; }
 .carousel-item { min-width: 100%; position: relative; }
 .carousel-item img { width: 100%; display: block; aspect-ratio: 21/9; object-fit: cover; }
@@ -246,7 +246,9 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     background: #fdfdfd; border: 1px solid #eaeaea; padding: 18px 20px; border-radius: 12px; margin-bottom: 25px; display: flex; flex-direction: column; gap: 5px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 .price-box-detail .p-tarj { color: #777 !important; font-size: 1rem !important; font-weight: 600 !important; }
-.price-box-detail .p-efvo { color: var(--success) !important; font-size: 1.4rem !important; font-weight: 800 !important; }
+
+/* ESTE ES EL PRECIO EN NEGRO COMO PEDISTE */
+.price-box-detail .p-efvo { color: var(--primary) !important; font-size: 1.4rem !important; font-weight: 800 !important; }
 
 .detail-desc { font-size: 0.95rem; color: #555 !important; line-height: 1.6; margin-bottom: 30px; }
 
