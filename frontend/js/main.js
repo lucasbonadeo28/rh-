@@ -26,24 +26,32 @@ let indexImagenSeleccionada = 1;
 let modalTouchStartX = 0;
 let modalTouchEndX = 0;    
 
-// === LECTOR INTELIGENTE DE COLORES PARA PRENDAS VIEJAS ===
+// === LECTOR INTELIGENTE DE COLORES (VERSIÓN MEJORADA ANTI-TILDES) ===
 function getColorSeguro(v) {
     if (v.color_hex && v.color_hex !== '#d4ba92') return v.color_hex;
     
-    const text = ((v.color_nombre || '') + ' ' + (v.nombre || '') + ' ' + (v.descripcion || '')).toLowerCase();
+    // Unimos todos los textos y le quitamos los acentos (para que "marrón" y "marron" se lean igual)
+    const textRaw = ((v.color_nombre || '') + ' ' + (v.nombre || '') + ' ' + (v.descripcion || '')).toLowerCase();
+    const text = textRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
     const mapaFront = {
         'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 
         'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
-        'marron': '#8b4513', 'marrón': '#8b4513', 'rosa': '#ffc0cb', 'naranja': '#ffa500', 
+        'marron': '#8b4513', 'rosa': '#ffc0cb', 'naranja': '#ffa500', 
         'violeta': '#ee82ee', 'celeste': '#87ceeb', 'beige': '#f5f5dc', 'crema': '#fffdd0', 
-        'mostaza': '#e1ad01', 'bordo': '#800000', 'bordó': '#800000', 
+        'mostaza': '#e1ad01', 'bordo': '#800000', 'arena': '#d4ba92', 
         'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b', 'fucsia': '#ff00ff',
         'suela': '#c19a6b', 'francia': '#318ce7', 'melange': '#d3d3d3',
-        'oliva': '#808000', 'coral': '#ff7f50', 'lila': '#c8a2c8'
+        'oliva': '#808000', 'coral': '#ff7f50', 'lila': '#c8a2c8',
+        'chocolate': '#d2691e', 'ladrillo': '#b22222', 'cafe': '#6f4e37'
     };
 
     for (let c in mapaFront) {
-        if (new RegExp(`\\b${c}\\b`).test(text)) return mapaFront[c];
+        // Busca la palabra ignorando si está pegada a guiones o puntos
+        const regex = new RegExp('(^|[^a-z])' + c + '([^a-z]|$)', 'i');
+        if (regex.test(text)) {
+            return mapaFront[c];
+        }
     }
     
     return '#d4ba92'; 
