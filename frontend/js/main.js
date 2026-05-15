@@ -28,10 +28,8 @@ let modalTouchEndX = 0;
 
 // === LECTOR INTELIGENTE DE COLORES PARA PRENDAS VIEJAS ===
 function getColorSeguro(v) {
-    // Si la prenda tiene un color cargado desde el admin (que no sea el arena por defecto), lo usa.
     if (v.color_hex && v.color_hex !== '#d4ba92') return v.color_hex;
     
-    // Si no tiene color, lee el nombre o descripción para buscar de qué color es.
     const text = ((v.color_nombre || '') + ' ' + (v.nombre || '') + ' ' + (v.descripcion || '')).toLowerCase();
     const mapaFront = {
         'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 
@@ -45,11 +43,10 @@ function getColorSeguro(v) {
     };
 
     for (let c in mapaFront) {
-        // Busca la palabra exacta en el texto (ej: "suela" o "negro")
         if (new RegExp(`\\b${c}\\b`).test(text)) return mapaFront[c];
     }
     
-    return '#d4ba92'; // Si no encuentra nada, usa arena.
+    return '#d4ba92'; 
 }
 
 window.onload = async () => { 
@@ -451,7 +448,6 @@ function generarGridHTML(listaRaw) {
         if (item.variantes.length > 1) {
             circulosHTML = `<div class="colores-container">` + item.variantes.map((v, index) => {
                 const isAct = index === 0 ? 'active' : '';
-                // USAMOS EL LECTOR INTELIGENTE
                 const colorVal = getColorSeguro(v);
                 return `<div class="color-circle ${isAct}" style="background-color: ${colorVal};" onclick="cambiarVarianteCard(event, '${item.clave}', ${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
             }).join('') + `</div>`;
@@ -675,7 +671,6 @@ function abrirDetalle(id) {
         txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
         contColores.innerHTML = variantes.map(v => {
             const isAct = v.id === prodSeleccionado.id ? 'active' : '';
-            // USAMOS EL LECTOR INTELIGENTE
             const colorVal = getColorSeguro(v);
             return `<div class="color-circle ${isAct}" style="background-color: ${colorVal}; width: 32px; height: 32px; margin-right: 5px;" onclick="abrirDetalle(${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
         }).join('');
@@ -727,19 +722,20 @@ function abrirDetalle(id) {
     if (favoritos.includes(parseInt(prodSeleccionado.id))) btnFavModal.classList.add('active'); 
     else btnFavModal.classList.remove('active'); 
 
-    // === LÓGICA DE TALLES CORREGIDA PARA OCULTAR EL TÍTULO EN TALLE ÚNICO ===
+    // === MAGIA: OCULTAR TÍTULO SI ES TALLE ÚNICO ===
     const containerTalles = document.getElementById('det-talles-container'); 
     containerTalles.innerHTML = ''; 
     const tituloTalles = document.getElementById('titulo-talles');
-    const seccionTalles = document.getElementById('seccion-selector-talles');
     
     if(prodSeleccionado.inventario_talles) { 
         if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
+            // Si es talle único, ESCONDEMOS el título "SELECCIONAR TALLE"
             if(tituloTalles) tituloTalles.style.display = 'none';
             const stockUnico = parseInt(prodSeleccionado.inventario_talles['ÚNICO']) || 0;
             if(stockUnico <= 0) { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`; talleTemporal = null; } 
             else { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO'; }
         } else { 
+            // Si tiene S, M, L, VOLVEMOS A MOSTRAR el título "SELECCIONAR TALLE"
             if(tituloTalles) tituloTalles.style.display = 'block';
             let htmlTalles = '';
             Object.entries(prodSeleccionado.inventario_talles).forEach(([talle, stock]) => { 
@@ -750,6 +746,7 @@ function abrirDetalle(id) {
             containerTalles.innerHTML = htmlTalles;
         } 
     } else {
+        // Por las dudas, si viene fallado de la base de datos, lo tratamos como Único
         if(tituloTalles) tituloTalles.style.display = 'none';
         containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO';
     }
