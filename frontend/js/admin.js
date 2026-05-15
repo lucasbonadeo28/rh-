@@ -248,7 +248,6 @@ function renderCategorias() {
     if(categoriasGlobal.length === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray; padding:20px;">Aún no hay categorías creadas.</td></tr>';
     else tbody.innerHTML = items.map(c => `<tr><td>#${c.id}</td><td style="font-weight:bold; text-transform:capitalize;">${c.nombre}</td><td style="text-align: center;"><button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button></td></tr>`).join('');
     
-    // ACÁ ESTABA EL PROBLEMA: Le agregamos los IF para que no choque si no encuentra los botones
     if (document.getElementById('pagi-info-cat')) document.getElementById('pagi-info-cat').innerText = `Página ${cPagina}`;
     if (document.getElementById('pagi-anterior-cat')) document.getElementById('pagi-anterior-cat').disabled = cPagina === 1;
     if (document.getElementById('pagi-siguiente-cat')) document.getElementById('pagi-siguiente-cat').disabled = inicio + cPorPagina >= categoriasGlobal.length;
@@ -278,15 +277,38 @@ function eliminarCategoria(id) {
     });
 }
 
+// =========================================================================
+// EDICIÓN RÁPIDA REDISEÑADA (Talles separados y Foto sin caché)
+// =========================================================================
 function renderStock() {
     const inicio = (pagina - 1) * pPorPagina; 
     const items = pFiltrados.slice(inicio, inicio + pPorPagina);
     
     document.getElementById('body-inventario').innerHTML = items.map(p => {
-        let tallesTxt = ""; let stockTotalSumado = 0;
-        if (p.inventario_talles && typeof p.inventario_talles === 'object') {
-            tallesTxt = Object.entries(p.inventario_talles).map(([t, c]) => `${t}:${c}`).join(', ');
-            Object.values(p.inventario_talles).forEach(cantidad => { stockTotalSumado += parseInt(cantidad) || 0; });
+        let inventario = p.inventario_talles || {};
+        let tallesHtml = "";
+        let stockTotalSumado = 0;
+
+        // Creador de las pastillitas individuales de talles
+        if (inventario['ÚNICO'] !== undefined) {
+            stockTotalSumado = parseInt(inventario['ÚNICO']) || 0;
+            tallesHtml = `
+            <div style="background:#eafaf1; border:1px solid #27ae60; padding:4px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
+                <span style="font-size:0.8rem; font-weight:800; color:#27ae60;">ÚNICO:</span>
+                <input type="number" id="talle-unico-${p.id}" value="${stockTotalSumado}" min="0" style="width:55px; padding:4px; text-align:center; border:1px solid #27ae60; border-radius:4px; font-weight:bold; color:#111;">
+            </div>`;
+        } else {
+            const claves = Object.keys(inventario);
+            claves.forEach(t => {
+                const cant = parseInt(inventario[t]) || 0;
+                stockTotalSumado += cant;
+                tallesHtml += `
+                <div style="display:inline-flex; align-items:center; gap:4px; background:#f5f5f5; padding:4px 8px; border-radius:6px; border:1px solid #ddd; margin-bottom:4px; margin-right:4px;">
+                    <span style="font-size:0.8rem; font-weight:800; color:#444;">${t}:</span>
+                    <input type="number" class="talle-input-fila-${p.id}" data-talle="${t}" value="${cant}" min="0" style="width:45px; padding:3px; text-align:center; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:#111;">
+                </div>`;
+            });
+            if (claves.length === 0) tallesHtml = `<span style="color:red; font-size:0.8rem; font-weight:bold;">Sin talles cargados</span>`;
         }
 
         let mainImg = 'https://via.placeholder.com/60';
@@ -294,6 +316,11 @@ function renderStock() {
             const arr = JSON.parse(p.imagen_url); 
             if(Array.isArray(arr) && arr.length > 0) mainImg = arr[0]; else mainImg = p.imagen_url; 
         } catch(e) { mainImg = p.imagen_url; }
+
+        // MAGIA ANTI-CACHÉ: Evita que el navegador te muestre la foto vieja
+        if (mainImg && !mainImg.startsWith('data:')) {
+            mainImg += (mainImg.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
+        }
 
         let colorDot = p.color_hex ? `<span style="display:inline-block; width:12px; height:12px; background:${p.color_hex}; border-radius:50%; border:1px solid #ccc; vertical-align:middle; margin-right:6px;" title="${p.color_nombre || ''}"></span>` : '';
         let modBadge = p.codigo_modelo ? `<span style="background:#eee; padding:2px 6px; border-radius:4px; font-size:0.75rem;">Mod: ${p.codigo_modelo}</span>` : '';
@@ -305,13 +332,15 @@ function renderStock() {
             <td><input type="number" id="efvo-${p.id}" value="${p.precio_efectivo}" style="width:90px; padding:5px;"></td>
             <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
             <td>
-                <input type="text" id="talles-${p.id}" value="${tallesTxt}" style="width:150px; margin-bottom:5px; padding:5px;" placeholder="S:10, M:5">
-                <br><small style="color:#27ae60; font-weight:bold;">Stock Total: ${stockTotalSumado}</small>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 240px;">
+                    ${tallesHtml}
+                </div>
+                <small style="color:#27ae60; font-weight:bold; display:block; margin-top:6px;">Stock Total: ${stockTotalSumado}</small>
             </td>
             <td style="text-align: center; vertical-align: middle;">
                 <div style="display: flex; justify-content: center; gap: 8px;">
                     <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Edición Rápida"><i class="fas fa-check"></i></button>
-                    <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="editarProducto(${p.id})" title="Editar Prenda"><i class="fas fa-pencil-alt"></i></button>
+                    <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="editarProducto(${p.id})" title="Editar Prenda / Agregar Nuevo Talle"><i class="fas fa-pencil-alt"></i></button>
                     <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;" onclick="borrarP(${p.id})" title="Eliminar Producto"><i class="fas fa-trash-alt"></i></button>
                 </div>
             </td>
@@ -393,25 +422,33 @@ function limpiarFormularioAdmin() {
     btnGuardar.style.background = '#111'; btnGuardar.disabled = false;
 }
 
+// =========================================================================
+// ACA SE GUARDAN LOS DATOS DE LAS PASTILLAS DE EDICIÓN RÁPIDA
+// =========================================================================
 async function guardarEdicionFila(id, event) {
     const efvo = document.getElementById(`efvo-${id}`).value;
     const tarj = document.getElementById(`tarj-${id}`).value;
-    const tallesTxt = document.getElementById(`talles-${id}`).value.trim();
-
+    
     let inventarioFinal = {};
-    if (tallesTxt) {
-        tallesTxt.split(',').forEach(item => {
-            const parts = item.split(':');
-            if (parts.length === 2) inventarioFinal[parts[0].trim().toUpperCase()] = parseInt(parts[1].trim());
+    const inputUnico = document.getElementById(`talle-unico-${id}`);
+    
+    if (inputUnico) {
+        inventarioFinal['ÚNICO'] = parseInt(inputUnico.value) || 0;
+    } else {
+        const inputsTalles = document.querySelectorAll(`.talle-input-fila-${id}`);
+        inputsTalles.forEach(input => {
+            const cant = parseInt(input.value) || 0;
+            inventarioFinal[input.getAttribute('data-talle')] = cant;
         });
-    } else { return showCustomAlert("Debes ingresar al menos un talle o ÚNICO:1", "error", false); }
+        if (inputsTalles.length === 0) return showCustomAlert("No hay talles para guardar. Entrá a 'Editar Prenda' para agregar uno nuevo.", "error", false);
+    }
 
     const btn = event.currentTarget; const ogHtml = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
 
     try {
         const res = await fetchSeguro(`${API}/productos/${id}`, { method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ precio_efectivo: efvo, precio_tarjeta: tarj, inventario_talles: inventarioFinal }) });
-        if (res.ok) { showCustomAlert("¡Cambios guardados correctamente!", "success", false); const resI = await fetchSeguro(`${API}/productos`); pTotales = await resI.json(); pFiltrados = [...pTotales]; renderStock(); } 
+        if (res.ok) { showCustomAlert("¡Stock y precios guardados!", "success", false); const resI = await fetchSeguro(`${API}/productos`); pTotales = await resI.json(); pFiltrados = [...pTotales]; renderStock(); } 
         else { showCustomAlert("Error al actualizar el producto.", "error", false); btn.innerHTML = ogHtml; btn.disabled = false; }
     } catch(e) { showCustomAlert("Error de conexión.", "error", false); btn.innerHTML = ogHtml; btn.disabled = false; }
 }
