@@ -109,6 +109,8 @@ nav {
 .card-info h4 { margin: 0 0 8px 0; font-size: 0.75rem; color: #444; font-weight: 600; text-transform: uppercase; cursor: pointer; line-height: 1.4; min-height: 2.8em; display: flex; align-items: flex-start; justify-content: center; }
 .precios-container { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; margin-bottom: 15px; margin-top: auto !important; }
 
+.card-talles { font-size: 0.65rem; color: #777; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+
 .p-tarj { margin: 0; color: #000000 !important; font-weight: 800; font-size: 1.05rem; }
 .p-efvo { margin: 0; color: #333 !important; font-weight: 500; font-size: 0.75rem; line-height: 1.2; }
 .p-efvo strong { color: #000000 !important; font-weight: 800; font-size: 0.85rem; }
@@ -118,8 +120,8 @@ nav {
 .color-circle:hover { transform: scale(1.15); }
 .color-circle.active { border: 2px solid #000000; transform: scale(1.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 
-/* === LOS TALLES DE "ARRIBA DEL TODO" (SOLO EN CELULAR SE VEN) === */
-.filtros-talles-top { display: none; } /* En PC se ocultan porque usamos la barra lateral */
+/* === LOS TALLES DE "ARRIBA DEL TODO" EN LA PC === */
+.filtros-talles-top { display: none; }
 
 ul.filter-checkbox-list, ul.mobile-checkbox-list { list-style: none !important; padding: 0 !important; margin: 0 !important; }
 ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !important; margin-bottom: 12px; }
@@ -128,7 +130,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .btn-card-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 186, 146, 0.5); }
 
 /* === CATALOGO Y FILTROS === */
-.layout-catalogo { display: flex; max-width: 1400px; margin: 0 auto 40px auto; padding: 0 40px; gap: 50px; align-items: flex-start; }
+.layout-catalogo { display: flex; max-width: 1400px; margin: 40px auto; padding: 0 40px; gap: 50px; align-items: flex-start; }
 .sidebar-filtros { width: 240px; flex-shrink: 0; position: sticky; top: 100px; background: var(--white); padding: 25px; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); display: block; }
 .filter-group { margin-bottom: 30px; }
 .filter-group h4 { font-size: 1.1rem; color: #111; margin-bottom: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -166,7 +168,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .titulo-catalogo { display: none; margin-top: 0; color: var(--primary); font-weight: 800; font-size: 1.6rem; margin-bottom: 25px; text-align: left; }
 
 /* ========================================================================= */
-/* === MODAL DETALLE PRODUCTO REDISEÑADO === */
+/* === MODAL DETALLE PRODUCTO === */
 /* ========================================================================= */
 .product-detail-modal, .checkout-modal, .cart-overlay { 
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -275,7 +277,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 
 
 /* ========================================================================= */
-/* === CHECKOUT REDISEÑADO PREMIUM ===                                       */
+/* === CHECKOUT === */
 /* ========================================================================= */
 .checkout-col { flex: 1; display: flex; flex-direction: column; gap: 15px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -396,21 +398,44 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .layout-catalogo { flex-direction: column; padding: 0 15px; margin: 0 auto 20px auto; gap: 20px; }
     
     .catalogo-top-bar { flex-direction: column; align-items: flex-start !important; gap: 15px; margin-bottom: 20px !important; }
-    .catalogo-controls { display: flex !important; width: 100%; justify-content: flex-start; }
+    .catalogo-controls { display: flex !important; width: 100%; justify-content: space-between; }
     .sort-control { width: 100%; flex-direction: row !important; align-items: center; gap: 10px; }
     .sort-control label { margin: 0; font-size: 0.8rem; }
     .custom-select-wrapper { flex: 1; }
     .custom-select-trigger { padding: 10px 15px; font-size: 0.85rem; }
     
-    .filtros-talles-top { display: flex !important; flex-direction: column; align-items: flex-start !important; gap: 8px !important; padding: 0 15px !important; margin-bottom: 20px !important;}
-    .filtros-talles-top > span { font-size: 0.8rem; font-weight: 700; color: #555; }
-    .talles-pills-scroll { width: 100%; overflow-x: auto; padding-bottom: 5px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; display: flex; gap: 8px; }
+    /* === TALLES DE ARRIBA DEL TODO EN CELULAR (PÍLDORAS) === */
+    .filtros-talles-top { display: flex !important; flex-direction: column; align-items: flex-start !important; gap: 10px !important; padding: 0 15px !important; margin-bottom: 20px !important;}
+    .filtros-talles-top > span { font-size: 0.85rem; font-weight: 800; color: #111; text-transform: uppercase; }
+    .talles-pills-scroll { width: 100%; overflow-x: auto; padding-bottom: 8px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; display: flex; gap: 8px; align-items: center; }
     .talles-pills-scroll::-webkit-scrollbar { display: none; }
     
-    /* PASTILLAS MÁS LINDAS EN CELULAR Y CHECKBOX INVISIBLE */
-    .talle-pill-top { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600; color: #444; cursor: pointer; transition: 0.2s; white-space: nowrap; display: inline-block; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .talle-pill-top.active { background: rgba(212, 186, 146, 0.1); border-color: var(--brand-brown); color: var(--primary); box-shadow: 0 2px 8px rgba(212, 186, 146, 0.2); }
-    .talle-pill-top input { display: none !important; appearance: none !important; }
+    .talle-pill-top { 
+        background: #fff; 
+        border: 1px solid #ddd; 
+        border-radius: 50px !important; /* FORMA DE PÍLDORA */
+        padding: 8px 20px !important; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        color: #555; 
+        cursor: pointer; 
+        transition: 0.3s; 
+        white-space: nowrap; 
+        display: inline-flex !important; 
+        align-items: center !important; 
+        justify-content: center !important; 
+        user-select: none; 
+        margin: 0;
+    }
+    .talle-pill-top input[type="checkbox"] { 
+        display: none !important; /* OCULTAR CHECKBOX AGRESIVAMENTE */
+    }
+    .talle-pill-top.active { 
+        background: var(--brand-brown) !important; 
+        border-color: var(--brand-brown) !important; 
+        color: #111 !important; 
+        box-shadow: 0 4px 10px rgba(212,186,146,0.3) !important; 
+    }
     
     .productos-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px 12px !important; padding: 0 !important; margin-bottom: 30px; }
     .card-info { padding: 12px 10px !important; }
@@ -427,11 +452,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .pills-container { display: flex; flex-wrap: wrap; gap: 10px; }
     .filter-pill { background: #f5f5f5; border: 1px solid #ddd; padding: 10px 18px; border-radius: 50px; font-size: 0.85rem; font-family: 'Montserrat', sans-serif; color: var(--secondary); cursor: pointer; transition: 0.3s; font-weight: 700; text-transform: uppercase; }
     .filter-pill.active { background: var(--primary); color: var(--brand-brown); border-color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-    
-    .mobile-checkbox-label { display: flex; align-items: center; gap: 15px; font-size: 0.9rem; color: #555; }
-    .mobile-checkbox-label input { appearance: none; width: 22px; height: 22px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; margin: 0; }
-    .mobile-checkbox-label input:checked { background: var(--brand-brown); border-color: var(--brand-brown); }
-    .mobile-checkbox-label input:checked::after { content: '\f00c'; font-family: 'Font Awesome 5 Free'; font-weight: 900; color: var(--primary); font-size: 0.7rem; }
     
     .pf-benefits-slider { justify-content: flex-start; width: 200%; animation: moverCarruselBeneficiosMobile 10s infinite; }
     .pf-benefit-item { width: 50%; flex: 0 0 50%; flex-direction: column; text-align: center; gap: 10px; padding: 0 20px; }
