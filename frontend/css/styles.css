@@ -119,7 +119,7 @@ nav {
 .color-circle.active { border: 2px solid #000000; transform: scale(1.2); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 
 /* === LOS TALLES DE "ARRIBA DEL TODO" (SOLO EN CELULAR SE VEN) === */
-.filtros-talles-top { display: none; } /* Oculto en PC */
+.filtros-talles-top { display: none; } /* En PC se ocultan porque usamos la barra lateral */
 
 ul.filter-checkbox-list, ul.mobile-checkbox-list { list-style: none !important; padding: 0 !important; margin: 0 !important; }
 ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !important; margin-bottom: 12px; }
@@ -127,8 +127,8 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .btn-card-add { background: var(--brand-brown); color: var(--primary); border: none; width: 92%; padding: 12px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.3s ease; border-radius: var(--radius-lg); margin-bottom: 5px; box-shadow: 0 4px 15px rgba(212, 186, 146, 0.3); }
 .btn-card-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 186, 146, 0.5); }
 
-/* === CATALOGO Y FILTROS (ESCRITORIO / PC) === */
-.layout-catalogo { display: flex; max-width: 1400px; margin: 40px auto; padding: 0 40px; gap: 50px; align-items: flex-start; }
+/* === CATALOGO Y FILTROS === */
+.layout-catalogo { display: flex; max-width: 1400px; margin: 0 auto 40px auto; padding: 0 40px; gap: 50px; align-items: flex-start; }
 .sidebar-filtros { width: 240px; flex-shrink: 0; position: sticky; top: 100px; background: var(--white); padding: 25px; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); display: block; }
 .filter-group { margin-bottom: 30px; }
 .filter-group h4 { font-size: 1.1rem; color: #111; margin-bottom: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -166,7 +166,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .titulo-catalogo { display: none; margin-top: 0; color: var(--primary); font-weight: 800; font-size: 1.6rem; margin-bottom: 25px; text-align: left; }
 
 /* ========================================================================= */
-/* === MODAL DETALLE PRODUCTO REDISEÑADO (FUERZA FORMATO IDÉNTICO SIEMPRE) === */
+/* === MODAL DETALLE PRODUCTO REDISEÑADO === */
 /* ========================================================================= */
 .product-detail-modal, .checkout-modal, .cart-overlay { 
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -176,7 +176,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .cart-overlay { display: block; opacity: 0; visibility: hidden; transition: var(--anim-speed) ease; }
 .cart-overlay.active { opacity: 1; visibility: visible; }
 
-/* Fondo y sombra del recuadro principal */
 .checkout-box, .detail-box { 
     background: #ffffff !important; 
     border-radius: 24px !important; 
@@ -189,7 +188,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .checkout-box { padding: 40px; gap: 50px; overflow-y: auto; flex-direction: row; }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-/* Contenedor izquierdo: Foto flotante FORZADA A 50% DE ANCHO SIEMPRE */
 .product-detail-modal .detail-img { 
     flex: 0 0 50%; max-width: 50%; 
     display: flex !important; flex-direction: column !important; position: relative !important; 
@@ -206,7 +204,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .modal-arrow.prev-arrow { left: 10px; }
 .modal-arrow.next-arrow { right: 10px; }
 
-/* LA MAGIA: Forzamos TODAS las imágenes a 4/5 para que siempre midan igual */
 .product-detail-modal .detail-img img#det-img-url { 
     width: 100% !important; 
     height: auto !important; 
@@ -238,7 +235,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     opacity: 0.5 !important; border-color: transparent !important; transform: scale(1); 
 }
 
-/* Mitad Derecha de Textos y Botones FORZADA AL OTRO 50% */
 .detail-info { 
     flex: 0 0 50%; max-width: 50%; 
     padding: 40px 40px 40px 10px; overflow-y: auto; display: flex; 
@@ -267,7 +263,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 
 .detail-desc { font-size: 0.95rem; color: #555 !important; line-height: 1.6; margin-bottom: 30px; }
 
-/* Talles en Arena - Botones clickeables */
 .talles-selector {
     display: flex !important; flex-wrap: wrap !important; gap: 8px !important; margin-top: 10px !important; justify-content: flex-start !important;
 }
@@ -398,24 +393,24 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .carousel-btn { display: none; }
     .carousel-dots { bottom: 15px; }
     
-    /* ACÁ ESTÁ EL ARREGLO DE LA VISTA EN CELULAR */
     .layout-catalogo { flex-direction: column; padding: 0 15px; margin: 0 auto 20px auto; gap: 20px; }
     
     .catalogo-top-bar { flex-direction: column; align-items: flex-start !important; gap: 15px; margin-bottom: 20px !important; }
-    .catalogo-controls { display: flex !important; width: 100%; justify-content: space-between; }
+    .catalogo-controls { display: flex !important; width: 100%; justify-content: flex-start; }
     .sort-control { width: 100%; flex-direction: row !important; align-items: center; gap: 10px; }
     .sort-control label { margin: 0; font-size: 0.8rem; }
     .custom-select-wrapper { flex: 1; }
     .custom-select-trigger { padding: 10px 15px; font-size: 0.85rem; }
     
-    /* Mostrar la barra horizontal en celular con mejor diseño */
     .filtros-talles-top { display: flex !important; flex-direction: column; align-items: flex-start !important; gap: 8px !important; padding: 0 15px !important; margin-bottom: 20px !important;}
     .filtros-talles-top > span { font-size: 0.8rem; font-weight: 700; color: #555; }
     .talles-pills-scroll { width: 100%; overflow-x: auto; padding-bottom: 5px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; display: flex; gap: 8px; }
     .talles-pills-scroll::-webkit-scrollbar { display: none; }
     
+    /* PASTILLAS MÁS LINDAS EN CELULAR Y CHECKBOX INVISIBLE */
     .talle-pill-top { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 16px; font-size: 0.8rem; font-weight: 600; color: #444; cursor: pointer; transition: 0.2s; white-space: nowrap; display: inline-block; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     .talle-pill-top.active { background: rgba(212, 186, 146, 0.1); border-color: var(--brand-brown); color: var(--primary); box-shadow: 0 2px 8px rgba(212, 186, 146, 0.2); }
+    .talle-pill-top input { display: none !important; appearance: none !important; }
     
     .productos-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px 12px !important; padding: 0 !important; margin-bottom: 30px; }
     .card-info { padding: 12px 10px !important; }
@@ -455,7 +450,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     
     .main-catalogo { width: 100% !important; flex: none !important; }
     
-    /* ESCONDER LA BARRA LATERAL EN CELULAR */
+    /* ESCONDER LA BARRA LATERAL EN CELULAR Y DEJAR SOLO LAS PASTILLAS DE ARRIBA */
     #sidebar-desktop { display: none !important; }
 }
 
@@ -502,4 +497,3 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 }
 
 @keyframes girarRuedita { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.ruedita-girando { animation: girarRuedita 1.2s linear infinite; display: inline-block; }
