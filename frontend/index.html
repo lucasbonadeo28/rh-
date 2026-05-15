@@ -28,16 +28,16 @@
 
     <div class="top-marquee">
         <div class="marquee-content">
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
         </div>
         <div class="marquee-content" aria-hidden="true">
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
         </div>
     </div>
 
@@ -291,7 +291,7 @@
         <div class="checkout-box" id="paso-2-formulario">
             <div class="checkout-col">
                 <button class="btn-close-modal" onclick="cerrarCheckoutModal()">×</button>
-                <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase;">1. Datos de Envío</h3>
+                <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase; color: #111;">1. Datos de Envío</h3>
                 
                 <div class="form-group"><label>Nombre</label><input type="text" id="chk-nom" maxlength="20" oninput="validarLetras(this)" autocomplete="given-name"></div>
                 <div class="form-group"><label>Apellido</label><input type="text" id="chk-ape" maxlength="20" oninput="validarLetras(this)" autocomplete="family-name"></div>
@@ -303,38 +303,53 @@
 
                 <div class="form-group"><label>Teléfono</label><input type="text" id="chk-tel" value="+54" maxlength="13" oninput="validarTelefono(this)" autocomplete="tel"></div>
                 
-                <div class="cp-block">
-                    <label style="color:var(--primary); font-size: 0.8rem; font-weight: 500; text-transform: uppercase; margin-bottom: 8px; display: block;">Código Postal</label>
+                <div id="msg-envio-gratis" style="display: none; background: #eafaf1; padding: 18px 20px; border-radius: 12px; border-left: 5px solid var(--success); margin-bottom: 15px; margin-top: 10px; box-shadow: 0 4px 10px rgba(39,174,96,0.1);">
+                    <p style="margin: 0 0 5px 0; color: var(--success); font-weight: 800; font-size: 1rem;"><i class="fas fa-truck"></i> ¡Tenés Envío Gratis!</p>
+                    <span style="font-size: 0.85rem; color: #555; font-weight: 500;">Superaste los $80.000. No hace falta calcular el envío.</span>
+                </div>
+
+                <div class="cp-block" id="bloque-calculo-envio" style="margin-top: 5px;">
+                    <label style="color: #555; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; display: block;">Código Postal</label>
                     <div style="display:flex; gap:10px;">
-                        <input type="text" id="chk-cp" placeholder="Ej: 3000" maxlength="4" style="flex:2; background:white;" oninput="validarNumeros(this)" autocomplete="postal-code">
-                        <button type="button" class="btn-secundario" style="flex:1; padding:12px; text-transform: uppercase; font-size: 0.8rem; height: 43px; width: auto;" onclick="calcularEnvio()">Calcular</button>
+                        <input type="text" id="chk-cp" placeholder="Ej: 3000" maxlength="4" style="flex:2; background: #fafafa; border: 1px solid #ddd; border-radius: 12px; padding: 12px 15px;" oninput="validarNumeros(this)" autocomplete="postal-code">
+                        <button type="button" class="btn-secundario" style="flex:1; padding:12px; text-transform: uppercase; font-size: 0.8rem; height: 45px; width: auto;" onclick="calcularEnvio()">Calcular</button>
                     </div>
-                    <small id="txt-costo-envio" style="color: var(--success); font-weight: bold; display:none; margin-top:8px; font-size:0.85rem;"></small>
+                    <small id="txt-costo-envio" style="color: var(--success); font-weight: 800; display:none; margin-top:8px; font-size:0.9rem; padding-left: 5px;"></small>
                 </div>
                 
-                <div class="form-group"><label>Dirección Completa</label><input type="text" id="chk-dir" placeholder="Calle y Altura" autocomplete="street-address"></div>
+                <div class="form-group" style="margin-top: 15px;"><label>Dirección Completa</label><input type="text" id="chk-dir" placeholder="Calle y Altura" autocomplete="street-address"></div>
             </div>
             
             <div class="checkout-col">
-                <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase;">2. Pago y Resumen</h3>
-                <div style="display: flex; flex-direction: column; gap: 5px; margin-bottom:20px;">
-                    <label class="payment-option"><input type="radio" name="metodoPago" value="transferencia" checked onchange="recalcularTotalPaso2()"> <span>🏦 Transferencia <span style="color:var(--success); font-size:0.85rem; margin-left:5px;">(10% OFF)</span></span></label>
-                    <label class="payment-option"><input type="radio" name="metodoPago" value="mercadopago" onchange="recalcularTotalPaso2()"> <img src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/5.19.5/mercadopago/logo__small@2x.png" height="18" alt="Mercado Pago" style="vertical-align: middle;"><span>Mercado Pago</span></label>
+                <h3 style="margin-top:0; font-size:1.2rem; margin-bottom:20px; text-transform: uppercase; color: #111;">2. Pago y Resumen</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom:25px;">
+                    <label class="payment-option">
+                        <input type="radio" name="metodoPago" value="transferencia" checked onchange="recalcularTotalPaso2()"> 
+                        <span>🏦 Transferencia <span style="color:var(--success); font-size:0.85rem; margin-left:5px; font-weight: 800;">(10% OFF)</span></span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="metodoPago" value="mercadopago" onchange="recalcularTotalPaso2()"> 
+                        <img src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/5.19.5/mercadopago/logo__small@2x.png" height="18" alt="Mercado Pago" style="vertical-align: middle;">
+                        <span>Mercado Pago</span>
+                    </label>
                 </div>
                 
-                <div id="resumen-checkout-paso2" style="margin-top:15px; background: #fff; border-top: 1px solid #eee; padding-top:15px;"></div>
-                <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:0.95rem; font-weight:bold; color:#555;"><span>Costo de Envío:</span><span id="checkout-envio-final">$0</span></div>
+                <div id="resumen-checkout-paso2" style="background: #fafafa; border-radius: 12px; border: 1px solid #eaeaea; padding: 20px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);"></div>
                 
-                <h2 style="text-align:right; font-size:1.6rem; margin-top:10px; font-weight: 800;">Total: <span style="color:var(--success)">$<span id="checkout-total-final">0</span></span></h2>
+                <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:1rem; font-weight:bold; color:#555; padding: 0 10px;">
+                    <span>Costo de Envío:</span><span id="checkout-envio-final">$0</span>
+                </div>
+                
+                <h2 style="text-align:right; font-size:1.8rem; margin-top:15px; font-weight: 800; padding: 0 10px;">Total: <span style="color:var(--success)">$<span id="checkout-total-final">0</span></span></h2>
                 
                 <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button id="btn-pagar" class="btn-agregar-derecha" style="flex: 2;" onclick="finalizarCompra()"> Confirmar Pedido</button>
+                    <button id="btn-pagar" class="btn-agregar-derecha" style="flex: 2; height: 55px; font-size: 1.1rem;" onclick="finalizarCompra()"> Confirmar Pedido</button>
                 </div>
 
                 <div style="text-align: center; margin-top: 20px;">
-                    <button id="btn-mostrar-cupon" class="btn-cupon-letras" onclick="toggleInputCupon()"><i class="fas fa-tag"></i> Agregar cupón de descuento</button>
+                    <button id="btn-mostrar-cupon" class="btn-cupon-letras" onclick="toggleInputCupon()" style="background: transparent; border: none; color: var(--secondary); font-weight: 600; cursor: pointer; text-decoration: underline; font-family: 'Montserrat', sans-serif;"><i class="fas fa-tag"></i> Agregar cupón de descuento</button>
                     <div id="caja-input-cupon" style="display: none; justify-content: center; gap: 10px; margin-top: 10px;">
-                        <input type="text" id="input-codigo-cupon" placeholder="Código" style="padding: 10px 15px; border: 1px solid #ccc; border-radius: var(--radius-sm); text-transform: uppercase; outline: none; font-family: 'Montserrat', sans-serif; width: 100%;">
+                        <input type="text" id="input-codigo-cupon" placeholder="Código" style="padding: 12px 15px; border: 1px solid #ccc; border-radius: var(--radius-sm); text-transform: uppercase; outline: none; font-family: 'Montserrat', sans-serif; width: 100%;">
                         <button class="btn-secundario" style="width: auto; padding: 10px 20px;" onclick="aplicarCuponReal()">Aplicar</button>
                     </div>
                     <small id="mensaje-cupon" style="display: block; margin-top: 8px; font-weight: bold; font-size: 0.85rem;"></small>
