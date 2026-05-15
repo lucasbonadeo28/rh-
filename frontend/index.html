@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="./css/styles.css?v=502">
+    <link rel="stylesheet" href="./css/styles.css?v=503">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -28,16 +28,16 @@
 
     <div class="top-marquee">
         <div class="marquee-content">
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
         </div>
         <div class="marquee-content" aria-hidden="true">
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
-            <span>RH(+) &nbsp;&nbsp;|&nbsp;&nbsp; ENVÍO GRATIS A PARTIR DE $80.000 &nbsp;&nbsp;|&nbsp;&nbsp; 10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
+            <span>RH(+)   |   ENVÍO GRATIS A PARTIR DE $80.000   |   10% OFF CON TRANSFERENCIA</span>
         </div>
     </div>
 
@@ -231,7 +231,11 @@
     <div id="modal-detalle-producto" class="product-detail-modal">
         <div class="detail-box">
             <div class="detail-img">
-                <img id="det-img-url" src="" alt="Producto">
+                <div class="modal-img-wrapper">
+                    <img id="det-img-url" src="" alt="Producto">
+                    <button class="modal-arrow prev-arrow" onclick="prevModalImg()"><i class="fas fa-chevron-left"></i></button>
+                    <button class="modal-arrow next-arrow" onclick="nextModalImg()"><i class="fas fa-chevron-right"></i></button>
+                </div>
                 <div id="det-mini-gallery" style="display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;"></div>
                 <button id="btn-fav-modal" class="btn-fav-modal" onclick="toggleFavoritoModal(event)"><i class="fas fa-heart"></i></button>
             </div>
@@ -345,6 +349,6 @@
         </div>
     </div>
 
-    <script src="./js/main.js?v=501"></script>
+    <script src="./js/main.js?v=503"></script>
 </body>
 </html>
