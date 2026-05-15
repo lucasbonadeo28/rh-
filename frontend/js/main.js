@@ -369,9 +369,6 @@ function aplicarFiltrosCatalogo() {
     }
 }
 
-// =========================================================================
-// ACA ESTA LA SOLUCION AL FINAL BOSS (AGRUPAR SIEMPRE BIEN)
-// =========================================================================
 function generarGridHTML(listaRaw) {
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos 
@@ -396,8 +393,6 @@ function generarGridHTML(listaRaw) {
         const claveAgrupacion = codigoModeloSafe.replace(/[^a-zA-Z0-9]/g, '-');
 
         if (!grupos[claveAgrupacion]) {
-            // Buscamos a las prendas hermanas en TODA LA BASE DE DATOS (productosCargados) 
-            // y no solo en las que se están mostrando en la pantalla ahora mismo.
             const todasLasVariantes = productosCargados.filter(prod => {
                 const pCode = (prod.codigo_modelo && String(prod.codigo_modelo).trim() !== '') ? String(prod.codigo_modelo).trim().toUpperCase() : String(prod.nombre || 'SIN NOMBRE').trim().toUpperCase();
                 return pCode.replace(/[^a-zA-Z0-9]/g, '-') === claveAgrupacion;
@@ -705,26 +700,19 @@ function abrirDetalle(id) {
     if (favoritos.includes(parseInt(prodSeleccionado.id))) btnFavModal.classList.add('active'); 
     else btnFavModal.classList.remove('active'); 
 
-    let totalStock = 0;
-    if (prodSeleccionado.inventario_talles) Object.values(prodSeleccionado.inventario_talles).forEach(cant => totalStock += parseInt(cant) || 0);
-    
-    const estaAgotado = totalStock <= 0;
-    const btnComprarModal = document.getElementById('btn-add-modal');
-
-    if (estaAgotado) {
-        btnComprarModal.innerHTML = '<i class="fas fa-times-circle"></i> Producto Agotado'; btnComprarModal.disabled = true; btnComprarModal.style.background = '#eee'; btnComprarModal.style.color = '#999'; btnComprarModal.style.boxShadow = 'none';
-    } else {
-        btnComprarModal.innerHTML = '<i class="fas fa-shopping-bag"></i> Añadir al Carrito'; btnComprarModal.disabled = false; btnComprarModal.style.background = ''; btnComprarModal.style.color = ''; btnComprarModal.style.boxShadow = '';
-    }
-
-    const containerTalles = document.getElementById('det-talles-container'); containerTalles.innerHTML = ''; 
+    // LÓGICA REDISEÑADA PARA OCULTAR EL TÍTULO "SELECCIONAR TALLE" SI ES ÚNICO
+    const containerTalles = document.getElementById('det-talles-container'); 
+    containerTalles.innerHTML = ''; 
+    const tituloTalles = document.getElementById('titulo-talles');
     
     if(prodSeleccionado.inventario_talles) { 
         if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
+            if(tituloTalles) tituloTalles.style.display = 'none';
             const stockUnico = parseInt(prodSeleccionado.inventario_talles['ÚNICO']) || 0;
             if(stockUnico <= 0) { containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--danger); font-weight:700; margin:0;">Agotado</p>`; talleTemporal = null; } 
-            else { containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO'; }
+            else { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO'; }
         } else { 
+            if(tituloTalles) tituloTalles.style.display = 'block';
             let htmlTalles = '';
             Object.entries(prodSeleccionado.inventario_talles).forEach(([talle, stock]) => { 
                 const sinStock = stock <= 0 ? 'sin-stock' : ''; 
@@ -734,8 +722,10 @@ function abrirDetalle(id) {
             containerTalles.innerHTML = htmlTalles;
         } 
     } else {
-        containerTalles.innerHTML = `<p style="font-size:1rem; color:var(--success); font-weight:700; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO';
+        if(tituloTalles) tituloTalles.style.display = 'none';
+        containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`; talleTemporal = 'ÚNICO';
     }
+
     document.getElementById('modal-detalle-producto').style.display = 'flex'; 
 }
 
@@ -914,6 +904,7 @@ function recalcularTotalPaso2() {
 
 function actualizarContadores() { document.getElementById('cart-count').innerText = carrito.reduce((a, b) => a + b.cantidad, 0); document.getElementById('fav-count').innerText = favoritos.length; }
 
+function validarLetrasCompleto(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''); }
 function validarLetras(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s-]/g, ''); }
 function validarNumeros(input) { input.value = input.value.replace(/[^0-9]/g, ''); }
 function validarTelefono(input) { let val = input.value.replace(/[^0-9+]/g, ''); if (!val.startsWith('+54')) val = '+54'; input.value = val; }
@@ -923,18 +914,22 @@ function initBeneficiosSlider() { }
 async function finalizarCompra() { 
     let errorFormulario = false; let mensajeError = "Faltan datos o son incorrectos. Revisá los recuadros rojos.";
     
-    ['chk-nom', 'chk-ape', 'chk-mail', 'chk-tel', 'chk-dir'].forEach(id => { 
-        const el = document.getElementById(id); 
-        if (!el) return; 
-        
-        let invalido = false; 
-        const valor = el.value.trim();
-        
-        if(!valor) invalido = true; 
-        if(id === 'chk-tel' && valor.length !== 13) invalido = true; 
+    const inputNomCompleto = document.getElementById('chk-nom-completo');
+    if (inputNomCompleto) {
+        const valorNom = inputNomCompleto.value.trim();
+        if (!valorNom || valorNom.length < 4 || !valorNom.includes(' ')) {
+            inputNomCompleto.classList.add('input-invalido');
+            errorFormulario = true;
+            mensajeError = "Ingresá tu nombre y apellido completos.";
+        } else {
+            inputNomCompleto.classList.remove('input-invalido');
+        }
+    }
+
+    ['chk-mail', 'chk-tel', 'chk-dir'].forEach(id => { 
+        const el = document.getElementById(id); let invalido = false; const valor = el.value.trim();
+        if(!valor) invalido = true; if(id === 'chk-tel' && valor.length !== 13) invalido = true; 
         if(id === 'chk-mail') { const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if(!regexEmail.test(valor)) { invalido = true; mensajeError = "El email ingresado no es válido."; } }
-        if((id === 'chk-nom' || id === 'chk-ape') && valor.length < 2) invalido = true; 
-        
         if(invalido) { el.classList.add('input-invalido'); errorFormulario = true; } else { el.classList.remove('input-invalido'); } 
     }); 
     
@@ -958,9 +953,13 @@ async function finalizarCompra() {
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; const btn = document.getElementById('btn-pagar');
     btn.innerHTML = '<i class="fas fa-spinner ruedita-girando"></i> PROCESANDO...'; btn.disabled = true; btn.style.opacity = '0.7';
 
+    const partesNombre = inputNomCompleto.value.trim().split(' ');
+    const nombreGuardar = partesNombre[0];
+    const apellidoGuardar = partesNombre.slice(1).join(' ');
+
     const payload = { 
         total: totalFinal, metodo_pago: metodo, costoEnvio: costoEnvio, cupon_usado: cuponAplicado.codigo, 
-        cliente: { nombre: document.getElementById('chk-nom').value, apellido: document.getElementById('chk-ape').value, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
+        cliente: { nombre: nombreGuardar, apellido: apellidoGuardar, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
         productos: carrito.map(p => ({ id: p.id, nombre: p.nombre, talle: p.talle, cantidad: p.cantidad, precio_pagado: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta), precio: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) })) 
     };
 
