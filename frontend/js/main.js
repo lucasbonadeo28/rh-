@@ -18,8 +18,14 @@ let vistaActual = 'home';
 let categoriaActual = 'Todos';
 let ordenActual = 'default';
 let talleTemporal = null; 
+
+// VARIABLES PARA EL NUEVO CARRUSEL DEL MODAL
+let modalImages = [];
+let currentModalImageIndex = 0;
 let imagenSeleccionadaUrl = '';     
-let indexImagenSeleccionada = 1;    
+let indexImagenSeleccionada = 1;
+let modalTouchStartX = 0;
+let modalTouchEndX = 0;    
 
 window.onload = async () => { 
     window.scrollTo(0, 0);
@@ -38,7 +44,6 @@ window.onload = async () => {
     renderizarCarritoSidebar();
     initCustomSelect();
 
-    // Fuerza a que el texto del cupón se ponga en mayúsculas automáticamente mientras el usuario escribe
     const inputCuponElem = document.getElementById('input-codigo-cupon');
     if(inputCuponElem) {
         inputCuponElem.addEventListener('input', function() {
@@ -46,7 +51,6 @@ window.onload = async () => {
         });
     }
 
-    // OPTIMIZACIÓN Y ORDEN DE CARGA:
     await Promise.all([
         fetchBanners(),
         fetchProductos()
@@ -56,7 +60,6 @@ window.onload = async () => {
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
 
-    // EVENTO PARA LAS PASTILLAS DE TALLES "ARRIBA DEL TODO"
     document.querySelectorAll('.chk-talle').forEach(cb => {
         cb.checked = false;
         cb.onchange = function() {
@@ -283,7 +286,6 @@ function cambiarVista(vista, categoria = 'Todos') {
     sessionStorage.setItem('tiendaCat', categoria);
     document.documentElement.setAttribute('data-vista-activa', vista);
     
-    // Limpiamos filtros al cambiar categoría
     document.querySelectorAll('.chk-talle').forEach(cb => {
         cb.checked = false;
         cb.parentElement.classList.remove('active');
@@ -558,16 +560,63 @@ function toggleFavoritoModal(event) {
     else btnFav.classList.remove('active');
 }
 
-function cambiarImagenDetalle(imgElement) {
+// =========================================================================
+// LÓGICA DE CARRUSEL Y SWIPE PARA EL MODAL DE PRODUCTO
+// =========================================================================
+function actualizarImagenModalUI() {
     const imagenPrincipal = document.getElementById('det-img-url');
     imagenPrincipal.style.opacity = '0.3'; 
-    setTimeout(() => { imagenPrincipal.src = imgElement.src; imagenPrincipal.style.opacity = '1'; }, 150); 
+    setTimeout(() => { 
+        imagenPrincipal.src = modalImages[currentModalImageIndex]; 
+        imagenPrincipal.style.opacity = '1'; 
+    }, 150); 
+    
+    imagenSeleccionadaUrl = modalImages[currentModalImageIndex];
+    indexImagenSeleccionada = currentModalImageIndex + 1;
+
     const galeria = document.getElementById('det-mini-gallery');
     if (galeria) {
-        galeria.querySelectorAll('img').forEach(img => img.classList.remove('selected'));
-        imgElement.classList.remove('img-gall-inactive'); imgElement.classList.add('selected'); 
-        galeria.querySelectorAll('img:not(.selected)').forEach(img => img.classList.add('img-gall-inactive'));
+        const imgs = galeria.querySelectorAll('img');
+        imgs.forEach((img, idx) => {
+            if (idx === currentModalImageIndex) {
+                img.classList.add('selected');
+                img.classList.remove('img-gall-inactive');
+            } else {
+                img.classList.remove('selected');
+                img.classList.add('img-gall-inactive');
+            }
+        });
     }
+    actualizarFlechasModal();
+}
+
+function actualizarFlechasModal() {
+    const prevBtn = document.querySelector('.prev-arrow');
+    const nextBtn = document.querySelector('.next-arrow');
+    if(modalImages.length <= 1) {
+        if(prevBtn) prevBtn.style.display = 'none';
+        if(nextBtn) nextBtn.style.display = 'none';
+    } else {
+        if(prevBtn) prevBtn.style.display = 'flex';
+        if(nextBtn) nextBtn.style.display = 'flex';
+    }
+}
+
+function prevModalImg() {
+    if (currentModalImageIndex > 0) { currentModalImageIndex--; } 
+    else { currentModalImageIndex = modalImages.length - 1; }
+    actualizarImagenModalUI();
+}
+
+function nextModalImg() {
+    if (currentModalImageIndex < modalImages.length - 1) { currentModalImageIndex++; } 
+    else { currentModalImageIndex = 0; }
+    actualizarImagenModalUI();
+}
+
+function cambiarImagenDetalle(index) {
+    currentModalImageIndex = index;
+    actualizarImagenModalUI();
 }
 
 function seleccionarTalleDOM(elemento, talle) {
@@ -582,7 +631,6 @@ function abrirDetalle(id) {
 
     talleTemporal = null; 
 
-    // LÓGICA DE AGRUPACIÓN PARA EL MODAL (EL SECRETO DEL FINAL BOSS)
     const codigoModeloSafe = (prodSeleccionado.codigo_modelo && String(prodSeleccionado.codigo_modelo).trim() !== '') ? String(prodSeleccionado.codigo_modelo).trim().toUpperCase() : String(prodSeleccionado.nombre || 'SIN NOMBRE').trim().toUpperCase();
     const claveAgrupacion = codigoModeloSafe.replace(/[^a-zA-Z0-9]/g, '-');
 
@@ -595,7 +643,6 @@ function abrirDetalle(id) {
     const contColores = document.getElementById('det-colores-container');
     const txtColor = document.getElementById('det-color-nombre');
 
-    // SI HAY MÁS DE 1 COLOR CON EL MISMO CÓDIGO, DIBUJAMOS LOS CÍRCULOS
     if (variantes.length > 1) {
         seccionColores.style.display = 'block';
         txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
@@ -608,26 +655,39 @@ function abrirDetalle(id) {
         seccionColores.style.display = 'none';
     }
 
-
-    const arrayFotos = obtenerArrayImagenes(prodSeleccionado.imagen_url);
-    const imagenPrincipal = document.getElementById('det-img-url');
+    modalImages = obtenerArrayImagenes(prodSeleccionado.imagen_url);
+    currentModalImageIndex = 0;
     
-    imagenPrincipal.src = arrayFotos[0]; imagenPrincipal.style.opacity = '1'; 
-    imagenSeleccionadaUrl = arrayFotos[0]; indexImagenSeleccionada = 1;
+    const imagenPrincipal = document.getElementById('det-img-url');
+    imagenPrincipal.src = modalImages[0]; imagenPrincipal.style.opacity = '1'; 
+    imagenSeleccionadaUrl = modalImages[0]; indexImagenSeleccionada = 1;
 
     const galeria = document.getElementById('det-mini-gallery');
     if (galeria) {
-        if (arrayFotos.length > 1) {
+        if (modalImages.length > 1) {
             galeria.innerHTML = ''; 
-            arrayFotos.forEach((src, index) => {
+            modalImages.forEach((src, index) => {
                 const imgGall = document.createElement('img'); imgGall.src = src; imgGall.alt = `Miniatura ${index + 1}`;
                 if (index === 0) imgGall.classList.add('selected'); else imgGall.classList.add('img-gall-inactive'); 
-                imgGall.onclick = function() { cambiarImagenDetalle(this); imagenSeleccionadaUrl = this.src; indexImagenSeleccionada = index + 1; };
+                imgGall.onclick = function() { cambiarImagenDetalle(index); };
                 galeria.appendChild(imgGall);
             });
             galeria.style.display = 'flex';
         } else {
             galeria.style.display = 'none'; galeria.innerHTML = '';
+        }
+    }
+    
+    actualizarFlechasModal();
+
+    // Swipe en celulares para las fotos del modal
+    const modalImgWrapper = document.querySelector('.modal-img-wrapper');
+    if(modalImgWrapper) {
+        modalImgWrapper.ontouchstart = (e) => modalTouchStartX = e.changedTouches[0].screenX;
+        modalImgWrapper.ontouchend = (e) => {
+            modalTouchEndX = e.changedTouches[0].screenX;
+            if (modalTouchStartX - modalTouchEndX > 40 && modalImages.length > 1) nextModalImg();
+            if (modalTouchEndX - modalTouchStartX > 40 && modalImages.length > 1) prevModalImg();
         }
     }
 
