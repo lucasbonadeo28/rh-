@@ -109,7 +109,6 @@ nav {
 .card-info h4 { margin: 0 0 8px 0; font-size: 0.75rem; color: #444; font-weight: 600; text-transform: uppercase; cursor: pointer; line-height: 1.4; min-height: 2.8em; display: flex; align-items: flex-start; justify-content: center; }
 .precios-container { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; margin-bottom: 15px; margin-top: auto !important; }
 
-/* === CORRECCIONES DEFINITIVAS: PRECIOS, COLORES Y TALLES === */
 .p-tarj { margin: 0; color: #000000 !important; font-weight: 800; font-size: 1.05rem; }
 .p-efvo { margin: 0; color: #333 !important; font-weight: 500; font-size: 0.75rem; line-height: 1.2; }
 .p-efvo strong { color: #000000 !important; font-weight: 800; font-size: 0.85rem; }
@@ -171,7 +170,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .titulo-catalogo { display: none; margin-top: 0; color: var(--primary); font-weight: 800; font-size: 1.6rem; margin-bottom: 25px; text-align: left; }
 
 /* ========================================================================= */
-/* === MODAL DETALLE PRODUCTO REDISEÑADO (NUEVA VERSIÓN PREMIUM) ===         */
+/* === MODAL DETALLE PRODUCTO REDISEÑADO (FUERZA FORMATO IDÉNTICO SIEMPRE) === */
 /* ========================================================================= */
 .product-detail-modal, .checkout-modal, .cart-overlay { 
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -182,7 +181,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .cart-overlay.active { opacity: 1; visibility: visible; }
 
 /* Fondo y sombra del recuadro principal */
-.detail-box, .checkout-box { 
+.checkout-box, .detail-box { 
     background: #ffffff !important; 
     border-radius: 24px !important; 
     width: 950px; max-width: 100%; max-height: 90vh; 
@@ -190,24 +189,19 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     box-shadow: 0 25px 50px rgba(0,0,0,0.2) !important; 
     animation: modalIn var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); 
 }
-
-/* Modificamos el padding del checkout general y lo hacemos tipo columna para mobile first, row en desktop */
+.detail-box { flex-direction: row; }
 .checkout-box { padding: 40px; gap: 50px; overflow-y: auto; flex-direction: row; }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-/* Contenedor izquierdo: Foto flotante */
+/* Contenedor izquierdo: Foto flotante FORZADA A 50% DE ANCHO SIEMPRE */
 .product-detail-modal .detail-img { 
-    flex: 1; display: flex !important; flex-direction: column !important; position: relative !important; 
+    flex: 0 0 50%; max-width: 50%; 
+    display: flex !important; flex-direction: column !important; position: relative !important; 
     background: #ffffff; padding: 30px;
 }
 
-/* AGREGADOS PARA LAS FLECHITAS DEL MODAL */
 .modal-img-wrapper {
-    position: relative;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    position: relative; width: 100%; display: flex; justify-content: center; align-items: center;
 }
 .modal-arrow {
     position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem; color: #111; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: 0.3s; z-index: 15;
@@ -216,16 +210,20 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .modal-arrow.prev-arrow { left: 10px; }
 .modal-arrow.next-arrow { right: 10px; }
 
-/* La Imagen principal ahora tiene bordes muy curvos y sombrita */
+/* LA MAGIA: Forzamos TODAS las imágenes a 4/5 para que siempre midan igual */
 .product-detail-modal .detail-img img#det-img-url { 
-    width: 100% !important; height: auto !important; max-height: 60vh !important; 
-    object-fit: cover !important; object-position: center top !important; transition: opacity 0.3s ease; 
+    width: 100% !important; 
+    height: auto !important; 
+    aspect-ratio: 4/5 !important; 
+    max-height: none !important;
+    object-fit: cover !important; 
+    object-position: center top !important; 
+    transition: opacity 0.3s ease; 
     display: block; 
     border-radius: 16px !important;
     box-shadow: 0 8px 20px rgba(0,0,0,0.08); 
 }
 
-/* Rediseño de las miniaturas para que hagan juego */
 .product-detail-modal .detail-img #det-mini-gallery { 
     display: flex !important; gap: 12px; padding: 20px 0 0 0 !important; margin: 0 !important; 
     background: white; overflow-x: auto; justify-content: flex-start; align-items: center; 
@@ -244,9 +242,10 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     opacity: 0.5 !important; border-color: transparent !important; transform: scale(1); 
 }
 
-/* Mitad Derecha de Textos y Botones */
+/* Mitad Derecha de Textos y Botones FORZADA AL OTRO 50% */
 .detail-info { 
-    flex: 1; padding: 40px 40px 40px 10px; overflow-y: auto; display: flex; 
+    flex: 0 0 50%; max-width: 50%; 
+    padding: 40px 40px 40px 10px; overflow-y: auto; display: flex; 
     flex-direction: column; text-align: left; background: #ffffff !important; color: #111 !important; 
 }
 
@@ -274,11 +273,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 
 /* Talles en Arena - Botones clickeables */
 .talles-selector {
-    display: flex !important; 
-    flex-wrap: wrap !important; 
-    gap: 8px !important; 
-    margin-top: 10px !important;
-    justify-content: flex-start !important;
+    display: flex !important; flex-wrap: wrap !important; gap: 8px !important; margin-top: 10px !important; justify-content: flex-start !important;
 }
 .talle-label {
     background-color: #d4ba92 !important; color: #000000 !important; border: none !important; border-radius: 8px !important; padding: 10px 15px !important; cursor: pointer !important; font-weight: 800 !important; text-align: center !important; min-width: 45px !important; flex: 0 0 auto !important; transition: all 0.2s ease;
@@ -390,7 +385,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .nav-center.active { display: flex; }
     .filter-link { display: block; width: 100%; padding: 20px 25px; box-sizing: border-box; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.95rem; font-weight: 600; text-align: center; }
     
-    /* ACORDEÓN MÓVIL: Arreglo Menú "MÁS CATEGORÍAS" */
     .nav-dropdown-wrapper { width: 100%; flex-direction: column; }
     .btn-mas-cat { display: flex !important; justify-content: space-between; align-items: center; width: 100%; padding: 20px 25px; box-sizing: border-box; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.95rem; font-weight: 800; color: var(--brand-brown) !important; cursor: pointer; }
     .nav-dropdown-menu { position: static !important; max-height: 0; overflow: hidden; opacity: 1 !important; visibility: visible !important; transition: max-height 0.3s ease-out !important; background: #fafafa !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; border: none; transform: none !important; display: block !important; width: 100% !important;}
@@ -413,12 +407,10 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .sort-control { gap: 3px; flex: 1; }
     .custom-select-wrapper { width: 100%; }
     
-    /* MODIFICACIÓN: Scroll de talles en celu */
     .filtros-talles-top { padding: 0 15px !important; margin-bottom: 15px !important; flex-direction: column; align-items: flex-start !important; gap: 10px !important;}
     .talles-pills-scroll { width: 100%; overflow-x: auto; padding-bottom: 5px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
     .talles-pills-scroll::-webkit-scrollbar { display: none; }
     
-    /* Arreglo de Tarjetas y Espacios en Celular */
     .productos-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px 12px !important; padding: 0 !important; margin-bottom: 30px; }
     .card-info { padding: 12px 10px !important; }
     .card-info h4 { font-size: 0.7rem !important; margin-bottom: 8px !important; line-height: 1.2 !important; min-height: auto !important; }
@@ -456,14 +448,44 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 }
 
 @media (max-width: 768px) {
-    /* Ajustes específicos del modal rediseñado para celular */
-    .detail-box { flex-direction: column; border-radius: 20px 20px 0 0 !important; width: 100%; max-height: 85vh !important; overflow-y: auto !important; padding: 0; }
+    .detail-box { 
+        flex-direction: column !important; 
+        border-radius: 20px 20px 0 0 !important; 
+        width: 100%; 
+        max-height: 85vh !important; 
+        overflow-y: auto !important; 
+        padding: 0; 
+    }
     .product-detail-modal { align-items: flex-end; padding: 0; }
-    .product-detail-modal .detail-img { padding: 15px; width: 100%; height: auto; min-height: 350px; }
-    .product-detail-modal .detail-img img#det-img-url { max-height: 50vh !important; width: 100%; object-fit: cover; border-radius: 12px !important; }
-    .detail-info { width: 100%; padding: 20px; }
+    
+    /* REMOVEMOS EL FLEX: 50% PARA CELULAR */
+    .product-detail-modal .detail-img { 
+        flex: none; 
+        max-width: 100%; 
+        width: 100%; 
+        padding: 20px; 
+        height: auto; 
+        min-height: auto; 
+    }
+    
+    .product-detail-modal .detail-img img#det-img-url { 
+        width: 100% !important; 
+        height: auto !important; 
+        aspect-ratio: 4/5 !important; 
+        max-height: none !important; 
+        border-radius: 12px !important; 
+    }
+    
+    /* REMOVEMOS EL FLEX: 50% PARA CELULAR */
+    .detail-info { 
+        flex: none; 
+        max-width: 100%; 
+        width: 100%; 
+        padding: 0 20px 20px 20px; 
+    }
+    
     .btn-close-modal { top: 15px; right: 15px; background: rgba(255,255,255,0.95); box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 40px; height: 40px; }
-    .btn-fav-modal { top: 25px; left: 25px; } /* Ajuste del corazón en celu */
+    .btn-fav-modal { top: 25px; left: 25px; } 
     #btn-add-modal { width: 100%; padding: 20px; font-size: 1.1rem; border-radius: 12px; }
 }
 
