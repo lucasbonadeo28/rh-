@@ -728,12 +728,9 @@ function toggleInputCupon() {
     if (caja.style.display === 'none') { caja.style.display = 'flex'; btnMostrar.style.display = 'none'; }
 }
 
-// =========================================================================
-// ACA ESTA LA VALIDACION DEL CUPON VACIO Y FORZADO A MAYUSCULAS
-// =========================================================================
 async function aplicarCuponReal() {
     const inputCodigo = document.getElementById('input-codigo-cupon'); 
-    inputCodigo.value = inputCodigo.value.toUpperCase(); // Forzamos mayúsculas por si acaso
+    inputCodigo.value = inputCodigo.value.toUpperCase(); 
     const codigo = inputCodigo.value.trim(); 
     const msj = document.getElementById('mensaje-cupon');
     
@@ -813,34 +810,30 @@ function recalcularTotalPaso2() {
 
 function actualizarContadores() { document.getElementById('cart-count').innerText = carrito.reduce((a, b) => a + b.cantidad, 0); document.getElementById('fav-count').innerText = favoritos.length; }
 
-// Para nombre completo, permitimos letras y espacios
-function validarLetrasCompleto(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''); }
 function validarLetras(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s-]/g, ''); }
 function validarNumeros(input) { input.value = input.value.replace(/[^0-9]/g, ''); }
 function validarTelefono(input) { let val = input.value.replace(/[^0-9+]/g, ''); if (!val.startsWith('+54')) val = '+54'; input.value = val; }
 
 function initBeneficiosSlider() { }
 
+// =========================================================================
+// ACA ESTA LA VALIDACION QUE BUSCA "chk-nom" y "chk-ape" (Por separado)
+// =========================================================================
 async function finalizarCompra() { 
     let errorFormulario = false; let mensajeError = "Faltan datos o son incorrectos. Revisá los recuadros rojos.";
     
-    const inputNomCompleto = document.getElementById('chk-nom-completo');
-    if (inputNomCompleto) {
-        const valorNom = inputNomCompleto.value.trim();
-        // Validar que haya escrito al menos un nombre y un apellido (básicamente que haya un espacio en el medio)
-        if (!valorNom || valorNom.length < 4 || !valorNom.includes(' ')) {
-            inputNomCompleto.classList.add('input-invalido');
-            errorFormulario = true;
-            mensajeError = "Ingresá tu nombre y apellido completos.";
-        } else {
-            inputNomCompleto.classList.remove('input-invalido');
-        }
-    }
-
-    ['chk-mail', 'chk-tel', 'chk-dir'].forEach(id => { 
-        const el = document.getElementById(id); let invalido = false; const valor = el.value.trim();
-        if(!valor) invalido = true; if(id === 'chk-tel' && valor.length !== 13) invalido = true; 
+    ['chk-nom', 'chk-ape', 'chk-mail', 'chk-tel', 'chk-dir'].forEach(id => { 
+        const el = document.getElementById(id); 
+        if (!el) return; // Si no lo encuentra, lo ignora en vez de romperse
+        
+        let invalido = false; 
+        const valor = el.value.trim();
+        
+        if(!valor) invalido = true; 
+        if(id === 'chk-tel' && valor.length !== 13) invalido = true; 
         if(id === 'chk-mail') { const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if(!regexEmail.test(valor)) { invalido = true; mensajeError = "El email ingresado no es válido."; } }
+        if((id === 'chk-nom' || id === 'chk-ape') && valor.length < 2) invalido = true; 
+        
         if(invalido) { el.classList.add('input-invalido'); errorFormulario = true; } else { el.classList.remove('input-invalido'); } 
     }); 
     
@@ -850,11 +843,13 @@ async function finalizarCompra() {
     if (cuponAplicado && cuponAplicado.descuento > 0) subtotalTemp -= (subtotalTemp * cuponAplicado.descuento) / 100;
 
     if(costoEnvio === 0 && subtotalTemp < 80000) { 
-        document.getElementById('chk-cp').classList.add('input-invalido'); 
+        const elCp = document.getElementById('chk-cp');
+        if(elCp) elCp.classList.add('input-invalido'); 
         errorFormulario = true; 
         mensajeError = "Por favor calculá el costo de envío primero."; 
     } else { 
-        document.getElementById('chk-cp').classList.remove('input-invalido'); 
+        const elCp = document.getElementById('chk-cp');
+        if(elCp) elCp.classList.remove('input-invalido'); 
     }
     
     if(errorFormulario) return mostrarToast(mensajeError, "error"); 
@@ -862,14 +857,9 @@ async function finalizarCompra() {
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; const btn = document.getElementById('btn-pagar');
     btn.innerHTML = '<i class="fas fa-spinner ruedita-girando"></i> PROCESANDO...'; btn.disabled = true; btn.style.opacity = '0.7';
 
-    // Separamos el nombre completo (primera palabra nombre, el resto apellido)
-    const partesNombre = inputNomCompleto.value.trim().split(' ');
-    const nombreGuardar = partesNombre[0];
-    const apellidoGuardar = partesNombre.slice(1).join(' ');
-
     const payload = { 
         total: totalFinal, metodo_pago: metodo, costoEnvio: costoEnvio, cupon_usado: cuponAplicado.codigo, 
-        cliente: { nombre: nombreGuardar, apellido: apellidoGuardar, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
+        cliente: { nombre: document.getElementById('chk-nom').value, apellido: document.getElementById('chk-ape').value, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
         productos: carrito.map(p => ({ id: p.id, nombre: p.nombre, talle: p.talle, cantidad: p.cantidad, precio_pagado: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta), precio: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) })) 
     };
 
