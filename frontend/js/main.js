@@ -312,9 +312,7 @@ function ejecutarBusquedaNav(event) {
         vistaActual = 'catalogo'; categoriaActual = 'Todos'; filtrandoFavoritos = false;
         sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
         document.documentElement.setAttribute('data-vista-activa', 'catalogo');
-        
-        const tituloCat = document.getElementById('bread-cat-nombre');
-        if (tituloCat) { tituloCat.innerText = `Resultados para: "${txt}"`; }
+        document.getElementById('titulo-catalogo').innerText = `Resultados para: "${txt}"`;
         
         const listafiltrada = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
         const grid = document.getElementById('grid-catalogo');
@@ -490,9 +488,7 @@ function mostrarFavoritos() {
     
     sessionStorage.setItem('tiendaVista', 'favoritos');
     document.documentElement.setAttribute('data-vista-activa', 'favoritos');
-    
-    const tituloCat = document.getElementById('bread-cat-nombre');
-    if (tituloCat) { tituloCat.innerText = `Mis Favoritos (${favoritos.length})`; }
+    document.getElementById('titulo-catalogo').innerText = `Mis Favoritos (${favoritos.length})`; 
     
     const listaFavs = productosCargados.filter(p => favoritos.includes(parseInt(p.id))); 
     const grid = document.getElementById('grid-catalogo');
@@ -744,7 +740,14 @@ async function aplicarCuponReal() {
     } catch (err) { mostrarToast("Error al validar el cupón con el servidor", "error"); }
 }
 
-function irAlCheckout() { cerrarCarritoSidebar(); document.getElementById('modal-principal').style.display = 'flex'; document.getElementById('paso-2-formulario').style.display = 'flex'; document.getElementById('pantalla-exito').style.display = 'none'; recalcularTotalPaso2(); }
+function irAlCheckout() { 
+    cerrarCarritoSidebar(); 
+    document.getElementById('modal-principal').style.display = 'flex'; 
+    document.getElementById('paso-2-formulario').style.display = 'flex'; 
+    document.getElementById('pantalla-exito').style.display = 'none'; 
+    recalcularTotalPaso2(); 
+}
+
 function cerrarCheckoutModal() { document.getElementById('modal-principal').style.display = 'none'; }
 
 function calcularEnvio() { 
@@ -753,22 +756,49 @@ function calcularEnvio() {
     costoEnvio = (cp === '3000') ? 2500 : 6500; 
     const txt = document.getElementById('txt-costo-envio'); txt.style.display = 'block'; 
     txt.innerText = (cp === '3000') ? `Envío a Santa Fe Capital: $${costoEnvio}` : `Envío por Correo Argentino: $${costoEnvio}`; 
-    recalcularTotalPaso2(); mostrarToast('Costo de envío actualizado', 'success'); 
+    recalcularTotalPaso2(); 
+    mostrarToast('Costo de envío calculado', 'success'); 
 }
 
+// =========================================================================
+// ACA ESTÁ LA LÓGICA DEL ENVÍO GRATIS Y EL CÁLCULO
+// =========================================================================
 function recalcularTotalPaso2() { 
-    const metodo = document.querySelector('input[name="metodoPago"]:checked').value; let totalPrendas = 0; 
+    const metodo = document.querySelector('input[name="metodoPago"]:checked').value; 
+    let totalPrendas = 0; 
+    
     document.getElementById('resumen-checkout-paso2').innerHTML = carrito.map(p => { 
-        const precio = metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta; totalPrendas += (precio * p.cantidad); 
+        const precio = metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta; 
+        totalPrendas += (precio * p.cantidad); 
         return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom: 5px; font-size:0.9rem; color:#555; font-weight:500;"><span>${p.cantidad}x ${p.nombre}</span><strong style="color:var(--primary)">$${precio * p.cantidad}</strong></div>`; 
     }).join(''); 
+    
     let descuentoMonto = 0;
     if (cuponAplicado && cuponAplicado.descuento > 0) {
         descuentoMonto = (totalPrendas * cuponAplicado.descuento) / 100;
         document.getElementById('resumen-checkout-paso2').innerHTML += `<div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.95rem; color:var(--success); font-weight:bold;"><span><i class="fas fa-tag"></i> Descuento (${cuponAplicado.descuento}%)</span><span>-$${Math.round(descuentoMonto)}</span></div>`;
     }
+    
     const subtotalConDescuento = totalPrendas - descuentoMonto;
-    document.getElementById('checkout-envio-final').innerText = `$${costoEnvio}`; document.getElementById('checkout-total-final').innerText = Math.round(subtotalConDescuento + costoEnvio); 
+    
+    // LÓGICA ENVÍO GRATIS > 80.000
+    const cpBlock = document.getElementById('bloque-calculo-envio');
+    const msgGratis = document.getElementById('msg-envio-gratis');
+    const txtCostoEnvio = document.getElementById('txt-costo-envio');
+    
+    if (subtotalConDescuento >= 80000) {
+        costoEnvio = 0; // Bonificado
+        if(cpBlock) cpBlock.style.display = 'none';
+        if(msgGratis) msgGratis.style.display = 'block';
+        if(txtCostoEnvio) txtCostoEnvio.style.display = 'none';
+        document.getElementById('checkout-envio-final').innerHTML = '<span style="color:var(--success); font-weight:800; text-transform: uppercase;">¡Gratis!</span>';
+    } else {
+        if(cpBlock) cpBlock.style.display = 'block';
+        if(msgGratis) msgGratis.style.display = 'none';
+        document.getElementById('checkout-envio-final').innerText = `$${costoEnvio}`; 
+    }
+    
+    document.getElementById('checkout-total-final').innerText = Math.round(subtotalConDescuento + costoEnvio); 
 }
 
 function actualizarContadores() { document.getElementById('cart-count').innerText = carrito.reduce((a, b) => a + b.cantidad, 0); document.getElementById('fav-count').innerText = favoritos.length; }
@@ -787,7 +817,22 @@ async function finalizarCompra() {
         if((id === 'chk-nom' || id === 'chk-ape') && valor.length < 2) invalido = true; 
         if(invalido) { el.classList.add('input-invalido'); errorFormulario = true; } else { el.classList.remove('input-invalido'); } 
     }); 
-    if(costoEnvio === 0) { document.getElementById('chk-cp').classList.add('input-invalido'); errorFormulario = true; mensajeError = "Por favor calculá el costo de envío primero."; } else { document.getElementById('chk-cp').classList.remove('input-invalido'); }
+    
+    // VALIDACIÓN INTELIGENTE DE ENVÍO
+    const metodoTemp = document.querySelector('input[name="metodoPago"]:checked').value;
+    let subtotalTemp = 0;
+    carrito.forEach(p => subtotalTemp += (metodoTemp === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) * p.cantidad);
+    if (cuponAplicado && cuponAplicado.descuento > 0) subtotalTemp -= (subtotalTemp * cuponAplicado.descuento) / 100;
+
+    // Si el envío es 0 pero no llegaste a los 80k, es porque no apretaste el botón calcular
+    if(costoEnvio === 0 && subtotalTemp < 80000) { 
+        document.getElementById('chk-cp').classList.add('input-invalido'); 
+        errorFormulario = true; 
+        mensajeError = "Por favor calculá el costo de envío primero."; 
+    } else { 
+        document.getElementById('chk-cp').classList.remove('input-invalido'); 
+    }
+    
     if(errorFormulario) return mostrarToast(mensajeError, "error"); 
     
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; const btn = document.getElementById('btn-pagar');
