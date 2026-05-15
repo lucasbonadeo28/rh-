@@ -56,9 +56,15 @@ window.onload = async () => {
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
     const catGuardada = sessionStorage.getItem('tiendaCat') || 'Todos';
 
+    // EVENTO PARA LAS PASTILLAS DE TALLES "ARRIBA DEL TODO"
     document.querySelectorAll('.chk-talle').forEach(cb => {
         cb.checked = false;
         cb.onchange = function() {
+            if(this.checked) {
+                this.parentElement.classList.add('active');
+            } else {
+                this.parentElement.classList.remove('active');
+            }
             aplicarFiltrosCatalogo();
         };
     });
@@ -276,7 +282,12 @@ function cambiarVista(vista, categoria = 'Todos') {
     sessionStorage.setItem('tiendaVista', vista);
     sessionStorage.setItem('tiendaCat', categoria);
     document.documentElement.setAttribute('data-vista-activa', vista);
-    document.querySelectorAll('.filter-checkbox-list input[type="checkbox"]').forEach(cb => cb.checked = false); 
+    
+    // Limpiamos filtros al cambiar categoría
+    document.querySelectorAll('.chk-talle').forEach(cb => {
+        cb.checked = false;
+        cb.parentElement.classList.remove('active');
+    }); 
     
     if (vista === 'home') {
         document.getElementById('grid-home').innerHTML = generarGridHTML(productosNuevos);
@@ -570,6 +581,34 @@ function abrirDetalle(id) {
     if(!prodSeleccionado) return;
 
     talleTemporal = null; 
+
+    // LÓGICA DE AGRUPACIÓN PARA EL MODAL (EL SECRETO DEL FINAL BOSS)
+    const codigoModeloSafe = (prodSeleccionado.codigo_modelo && String(prodSeleccionado.codigo_modelo).trim() !== '') ? String(prodSeleccionado.codigo_modelo).trim().toUpperCase() : String(prodSeleccionado.nombre || 'SIN NOMBRE').trim().toUpperCase();
+    const claveAgrupacion = codigoModeloSafe.replace(/[^a-zA-Z0-9]/g, '-');
+
+    const variantes = productosCargados.filter(p => {
+        const pCode = (p.codigo_modelo && String(p.codigo_modelo).trim() !== '') ? String(p.codigo_modelo).trim().toUpperCase() : String(p.nombre || 'SIN NOMBRE').trim().toUpperCase();
+        return pCode.replace(/[^a-zA-Z0-9]/g, '-') === claveAgrupacion;
+    });
+
+    const seccionColores = document.getElementById('seccion-colores-modal');
+    const contColores = document.getElementById('det-colores-container');
+    const txtColor = document.getElementById('det-color-nombre');
+
+    // SI HAY MÁS DE 1 COLOR CON EL MISMO CÓDIGO, DIBUJAMOS LOS CÍRCULOS
+    if (variantes.length > 1) {
+        seccionColores.style.display = 'block';
+        txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
+        contColores.innerHTML = variantes.map(v => {
+            const isAct = v.id === prodSeleccionado.id ? 'active' : '';
+            const colorVal = v.color_hex || '#d4ba92';
+            return `<div class="color-circle ${isAct}" style="background-color: ${colorVal}; width: 32px; height: 32px; margin-right: 5px;" onclick="abrirDetalle(${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
+        }).join('');
+    } else {
+        seccionColores.style.display = 'none';
+    }
+
+
     const arrayFotos = obtenerArrayImagenes(prodSeleccionado.imagen_url);
     const imagenPrincipal = document.getElementById('det-img-url');
     
@@ -810,30 +849,32 @@ function recalcularTotalPaso2() {
 
 function actualizarContadores() { document.getElementById('cart-count').innerText = carrito.reduce((a, b) => a + b.cantidad, 0); document.getElementById('fav-count').innerText = favoritos.length; }
 
+function validarLetrasCompleto(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, ''); }
 function validarLetras(input) { input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s-]/g, ''); }
 function validarNumeros(input) { input.value = input.value.replace(/[^0-9]/g, ''); }
 function validarTelefono(input) { let val = input.value.replace(/[^0-9+]/g, ''); if (!val.startsWith('+54')) val = '+54'; input.value = val; }
 
 function initBeneficiosSlider() { }
 
-// =========================================================================
-// ACA ESTA LA VALIDACION QUE BUSCA "chk-nom" y "chk-ape" (Por separado)
-// =========================================================================
 async function finalizarCompra() { 
     let errorFormulario = false; let mensajeError = "Faltan datos o son incorrectos. Revisá los recuadros rojos.";
     
-    ['chk-nom', 'chk-ape', 'chk-mail', 'chk-tel', 'chk-dir'].forEach(id => { 
-        const el = document.getElementById(id); 
-        if (!el) return; // Si no lo encuentra, lo ignora en vez de romperse
-        
-        let invalido = false; 
-        const valor = el.value.trim();
-        
-        if(!valor) invalido = true; 
-        if(id === 'chk-tel' && valor.length !== 13) invalido = true; 
+    const inputNomCompleto = document.getElementById('chk-nom-completo');
+    if (inputNomCompleto) {
+        const valorNom = inputNomCompleto.value.trim();
+        if (!valorNom || valorNom.length < 4 || !valorNom.includes(' ')) {
+            inputNomCompleto.classList.add('input-invalido');
+            errorFormulario = true;
+            mensajeError = "Ingresá tu nombre y apellido completos.";
+        } else {
+            inputNomCompleto.classList.remove('input-invalido');
+        }
+    }
+
+    ['chk-mail', 'chk-tel', 'chk-dir'].forEach(id => { 
+        const el = document.getElementById(id); let invalido = false; const valor = el.value.trim();
+        if(!valor) invalido = true; if(id === 'chk-tel' && valor.length !== 13) invalido = true; 
         if(id === 'chk-mail') { const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; if(!regexEmail.test(valor)) { invalido = true; mensajeError = "El email ingresado no es válido."; } }
-        if((id === 'chk-nom' || id === 'chk-ape') && valor.length < 2) invalido = true; 
-        
         if(invalido) { el.classList.add('input-invalido'); errorFormulario = true; } else { el.classList.remove('input-invalido'); } 
     }); 
     
@@ -857,9 +898,13 @@ async function finalizarCompra() {
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; const btn = document.getElementById('btn-pagar');
     btn.innerHTML = '<i class="fas fa-spinner ruedita-girando"></i> PROCESANDO...'; btn.disabled = true; btn.style.opacity = '0.7';
 
+    const partesNombre = inputNomCompleto.value.trim().split(' ');
+    const nombreGuardar = partesNombre[0];
+    const apellidoGuardar = partesNombre.slice(1).join(' ');
+
     const payload = { 
         total: totalFinal, metodo_pago: metodo, costoEnvio: costoEnvio, cupon_usado: cuponAplicado.codigo, 
-        cliente: { nombre: document.getElementById('chk-nom').value, apellido: document.getElementById('chk-ape').value, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
+        cliente: { nombre: nombreGuardar, apellido: apellidoGuardar, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
         productos: carrito.map(p => ({ id: p.id, nombre: p.nombre, talle: p.talle, cantidad: p.cantidad, precio_pagado: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta), precio: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) })) 
     };
 
