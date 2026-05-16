@@ -23,8 +23,16 @@ let modalImages = [];
 let currentModalImageIndex = 0;
 let imagenSeleccionadaUrl = '';     
 let indexImagenSeleccionada = 1;
-let modalTouchStartX = 0;
-let modalTouchEndX = 0;    
+
+// === ORDEN DE TALLES ESTRICTO ===
+const ordenTallesGlobal = ['S', 'M', 'L', 'XL', 'XXL', 'ÚNICO'];
+function sortTalles(a, b) {
+    let ia = ordenTallesGlobal.indexOf(a.toUpperCase());
+    let ib = ordenTallesGlobal.indexOf(b.toUpperCase());
+    if (ia === -1) ia = 99; // Si es un talle raro, lo manda al final
+    if (ib === -1) ib = 99;
+    return ia - ib;
+}
 
 function getColorSeguro(v) {
     if (v.color_hex && v.color_hex !== '#d4ba92') return v.color_hex;
@@ -50,21 +58,15 @@ function getColorSeguro(v) {
             return mapaFront[c];
         }
     }
-    
     return '#d4ba92'; 
 }
 
-// === CERRAR MODALES TOCANDO AFUERA ===
 window.addEventListener('click', function(event) {
     const modalProducto = document.getElementById('modal-detalle-producto');
     const modalCheckout = document.getElementById('modal-principal');
     
-    if (event.target === modalProducto) {
-        cerrarDetalle();
-    }
-    if (event.target === modalCheckout) {
-        cerrarCheckoutModal();
-    }
+    if (event.target === modalProducto) { cerrarDetalle(); }
+    if (event.target === modalCheckout) { cerrarCheckoutModal(); }
 });
 
 window.onload = async () => { 
@@ -91,10 +93,7 @@ window.onload = async () => {
         });
     }
 
-    await Promise.all([
-        fetchBanners(),
-        fetchProductos()
-    ]);
+    await Promise.all([ fetchBanners(), fetchProductos() ]);
     await renderizarCategoriasDinamicas();
 
     const vistaGuardada = sessionStorage.getItem('tiendaVista') || 'home';
@@ -109,7 +108,6 @@ window.onload = async () => {
                 this.parentElement.classList.remove('active');
             }
             aplicarFiltrosCatalogo();
-            // === SCROLL A TOPE AL FILTRAR TALLES ===
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         };
     });
@@ -252,7 +250,7 @@ function renderBanners() {
     track.innerHTML = banners.map(b => `<div class="carousel-item"><img src="${b.imagen_url}" alt="Banner"></div>`).join('');
     dotsContainer.innerHTML = banners.map((b, i) => `<div class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`).join('');
     
-    iniciarAutoplay(); iniciarSwipe(); 
+    iniciarAutoplay(); 
 }
 
 function updateCarousel() {
@@ -271,17 +269,6 @@ function prevSlide() { currentSlide = (currentSlide - 1 + banners.length) % bann
 function goToSlide(index) { currentSlide = index; updateCarousel(); reiniciarAutoplay(); }
 function iniciarAutoplay() { slideInterval = setInterval(nextSlide, 5000); }
 function reiniciarAutoplay() { clearInterval(slideInterval); iniciarAutoplay(); }
-function iniciarSwipe() {
-    const track = document.getElementById('carousel-track');
-    if(!track) return;
-    track.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; clearInterval(slideInterval); }, {passive: true});
-    track.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); iniciarAutoplay(); }, {passive: true});
-}
-function handleSwipe() {
-    const swipeThreshold = 50;
-    if (touchStartX - touchEndX > swipeThreshold) nextSlide();
-    if (touchEndX - touchStartX > swipeThreshold) prevSlide();
-}
 
 function initCustomSelect() {
     const wrapper = document.getElementById('custom-sort-select');
@@ -312,9 +299,6 @@ function closeAllSelects(except = null) {
         if(select !== except) select.classList.remove('open');
     });
 }
-
-function abrirFiltrosMobile() { document.getElementById('filter-sidebar').classList.add('active'); document.getElementById('filter-overlay').classList.add('active'); }
-function cerrarFiltrosMobile() { document.getElementById('filter-sidebar').classList.remove('active'); document.getElementById('filter-overlay').classList.remove('active'); }
 
 function cambiarVista(vista, categoria = 'Todos') {
     document.getElementById('input-buscador-nav').value = '';
@@ -356,7 +340,6 @@ function cambiarVista(vista, categoria = 'Todos') {
     }
     
     if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) toggleMenuMobile();
-    cerrarFiltrosMobile(); 
 }
 
 let timeoutBuscador = null;
@@ -405,10 +388,7 @@ function aplicarFiltrosCatalogo() {
 
         const grid = document.getElementById('grid-catalogo');
         if (grid) grid.innerHTML = generarGridHTML(listaFiltrada);
-    } catch (error) {
-        const grid = document.getElementById('grid-catalogo');
-        if (grid) grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; margin-top:50px; color:var(--secondary);">No hay productos en esta categoría.</p>';
-    }
+    } catch (error) {}
 }
 
 function generarGridHTML(listaRaw) {
@@ -482,7 +462,9 @@ function generarGridHTML(listaRaw) {
         }
 
         let tallesHTML = '';
-        let tallesArray = Array.from(tallesDisponibles);
+        // === MAGIA: TALLES ORDENADOS SIEMPRE EN S, M, L ===
+        let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
+        
         if (tallesArray.length > 0) {
             if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
                 tallesHTML = `<div class="card-talles-container"><span class="talle-badge" style="border-color: var(--success); color: var(--success);">Talle Único</span></div>`;
@@ -572,9 +554,13 @@ function mostrarFavoritos() {
     document.documentElement.setAttribute('data-vista-activa', 'favoritos');
     document.getElementById('titulo-catalogo').innerText = `Mis Favoritos (${favoritos.length})`; 
     
+    // === REFUERZO DE CAJA FAVORITOS VACÍOS ===
     const listaFavs = productosCargados.filter(p => favoritos.includes(parseInt(p.id))); 
     const grid = document.getElementById('grid-catalogo');
-    if (grid) { grid.innerHTML = generarGridHTML(listaFavs); }
+    if (grid) { 
+        // Generar HTML igual que el catalogo normal para que salte el cartel de vacio
+        grid.innerHTML = generarGridHTML(listaFavs); 
+    }
     
     document.querySelectorAll('.cat-link').forEach(a => a.classList.remove('active'));
     if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) {
@@ -766,11 +752,15 @@ function abrirDetalle(id) {
         } else { 
             if(tituloTalles) tituloTalles.style.display = 'block';
             let htmlTalles = '';
-            Object.entries(prodSeleccionado.inventario_talles).forEach(([talle, stock]) => { 
-                const sinStock = stock <= 0 ? 'sin-stock' : ''; 
-                const onclick = stock > 0 ? `onclick="seleccionarTalleDOM(this, '${talle}')"` : `onclick="mostrarToast('Este talle se encuentra agotado', 'error')"`; 
-                htmlTalles += `<div class="talle-label ${sinStock}" ${onclick}>${talle}</div>`; 
-            }); 
+            
+            // === MAGIA: TALLES ORDENADOS S-M-L DENTRO DEL MODAL ===
+            Object.entries(prodSeleccionado.inventario_talles)
+                .sort((a, b) => sortTalles(a[0], b[0]))
+                .forEach(([talle, stock]) => { 
+                    const sinStock = stock <= 0 ? 'sin-stock' : ''; 
+                    const onclick = stock > 0 ? `onclick="seleccionarTalleDOM(this, '${talle}')"` : `onclick="mostrarToast('Este talle se encuentra agotado', 'error')"`; 
+                    htmlTalles += `<div class="talle-label ${sinStock}" ${onclick}>${talle}</div>`; 
+                }); 
             containerTalles.innerHTML = htmlTalles;
         } 
     } else {
@@ -779,7 +769,6 @@ function abrirDetalle(id) {
     }
 
     document.getElementById('modal-detalle-producto').style.display = 'flex'; 
-    // === BLOQUEO DE SCROLL EN EL FONDO ===
     document.body.style.overflow = 'hidden'; 
 }
 
@@ -1005,7 +994,8 @@ async function finalizarCompra() {
         const elCp = document.getElementById('chk-cp');
         if(elCp) elCp.classList.add('input-invalido'); 
         errorFormulario = true; 
-        mensajeError = "Por favor calculá el costo de envío primero."; 
+        // === MENSAJE ACTUALIZADO DE ENVÍO ===
+        mensajeError = "Por favor, completar los campos pendientes."; 
     } else { 
         const elCp = document.getElementById('chk-cp');
         if(elCp) elCp.classList.remove('input-invalido'); 
