@@ -20,10 +20,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     
-    <link rel="stylesheet" href="./css/styles.css?v=505">
+    <link rel="stylesheet" href="./css/styles.css?v=510">
 </head>
 <body>
     <a href="https://wa.me/5493426286435" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+    
+    <button id="btn-back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Volver arriba">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <div id="toast-container" class="toast-container"></div>
 
     <div class="top-marquee">
@@ -51,7 +56,12 @@
         <div class="nav-center" id="nav-menu-celular"></div>
 
         <div class="nav-right">
-            <div class="search-container"><i class="fas fa-search"></i><input type="search" id="input-buscador-nav" placeholder="Buscar..." onkeyup="ejecutarBusquedaNav(event)"></div>
+            <div class="search-container" id="main-search-container">
+                <i class="fas fa-search"></i>
+                <input type="search" id="input-buscador-nav" placeholder="Buscar..." onkeyup="ejecutarBusquedaPredictiva(event)">
+                <div id="search-dropdown" class="search-dropdown"></div>
+            </div>
+            
             <button class="btn-nav-icon" onclick="mostrarFavoritos()" title="Mis Favoritos"><i class="fas fa-heart"></i><span id="fav-count">0</span></button>
             <button class="btn-nav-icon" onclick="abrirCarritoSidebar()" title="Mi Carrito"><i class="fas fa-shopping-bag"></i><span id="cart-count">0</span></button>
         </div>
@@ -368,6 +378,6 @@
         </div>
     </div>
 
-    <script src="./js/main.js?v=505"></script>
+    <script src="./js/main.js?v=510"></script>
 </body>
 </html>
