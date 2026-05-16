@@ -43,34 +43,24 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === FIX DE ESTILOS ===
+    // === FIX DE ESTILOS: SEGURO Y SIN ROMPER EL HTML ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        /* Asegurar que el contenedor inferior rompa las columnas */
-        #bottom-form-wrapper {
-            grid-column: 1 / -1 !important;
-            width: 100% !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-        
+        /* Caja de talles forzada al 100% */
         #talles-builder-box {
             width: 100% !important;
-            max-width: 100% !important;
+            margin: 20px 0 !important;
             display: block !important;
             box-sizing: border-box !important;
             background: #f9f9f9;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 15px;
         }
 
+        /* Botón Guardar blindado */
         #btn-crear-producto {
             width: 100% !important;
-            max-width: 100% !important;
             padding: 18px !important;
             font-size: 1.1rem !important;
             display: block !important;
@@ -134,43 +124,50 @@ window.addEventListener('DOMContentLoaded', () => {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
     }
 
-    // === INYECTAMOS EL BOTÓN VERDE AL LADO DEL TÍTULO ===
+    // === INYECCIÓN SEGURA DEL BOTÓN VERDE Y EL TÍTULO ===
     setTimeout(() => {
         const form = document.getElementById('add-product-form');
-        if (form) {
-            const titulos = form.querySelectorAll('h1, h2, h3, h4');
-            let mainTitle = null;
-            titulos.forEach(t => {
+        if (form && !document.querySelector('.btn-crear-nueva')) {
+            // Ocultamos los títulos viejos para que no se dupliquen
+            document.querySelectorAll('h1, h2, h3, h4').forEach(t => {
                 if (t.innerText.toLowerCase().includes('nueva prenda') || t.innerText.toLowerCase().includes('cargar')) {
-                    mainTitle = t;
+                    t.style.display = 'none';
                 }
             });
 
-            if (mainTitle && !document.querySelector('.btn-crear-nueva')) {
-                const headerWrap = document.createElement('div');
-                headerWrap.style.display = 'flex'; headerWrap.style.justifyContent = 'space-between';
-                headerWrap.style.alignItems = 'center'; headerWrap.style.width = '100%';
-                headerWrap.style.marginBottom = '20px'; headerWrap.style.borderBottom = '1px solid #eee';
-                headerWrap.style.paddingBottom = '15px';
+            // Creamos un contenedor nuevo y seguro arriba del formulario
+            const headerWrap = document.createElement('div');
+            headerWrap.style.display = 'flex'; 
+            headerWrap.style.justifyContent = 'space-between';
+            headerWrap.style.alignItems = 'center'; 
+            headerWrap.style.width = '100%';
+            headerWrap.style.marginBottom = '20px'; 
+            headerWrap.style.borderBottom = '1px solid #eee';
+            headerWrap.style.paddingBottom = '15px';
 
-                mainTitle.parentNode.insertBefore(headerWrap, mainTitle);
-                headerWrap.appendChild(mainTitle);
-                
-                mainTitle.style.margin = '0'; mainTitle.style.borderBottom = 'none'; mainTitle.style.paddingBottom = '0';
+            const tituloForm = document.createElement('h2');
+            tituloForm.innerText = 'Cargar Nueva Prenda';
+            tituloForm.style.margin = '0';
+            tituloForm.style.color = '#111';
+            tituloForm.style.fontSize = '1.5rem';
 
-                const btnNueva = document.createElement('button');
-                btnNueva.type = 'button'; btnNueva.className = 'btn-crear-nueva';
-                btnNueva.innerHTML = '<i class="fas fa-plus"></i> CREAR NUEVA';
-                btnNueva.onclick = () => {
-                    limpiarFormularioAdmin();
-                    showCustomAlert("Formulario vacío y listo para cargar prenda nueva", "success");
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
+            const btnNueva = document.createElement('button');
+            btnNueva.type = 'button'; 
+            btnNueva.className = 'btn-crear-nueva';
+            btnNueva.innerHTML = '<i class="fas fa-plus"></i> CREAR NUEVA';
+            btnNueva.onclick = () => {
+                limpiarFormularioAdmin();
+                showCustomAlert("Formulario vacío y listo para cargar prenda nueva", "success");
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
 
-                headerWrap.appendChild(btnNueva);
-            }
+            headerWrap.appendChild(tituloForm);
+            headerWrap.appendChild(btnNueva);
+            
+            // Lo insertamos justo antes del formulario
+            form.parentNode.insertBefore(headerWrap, form);
         }
-    }, 100);
+    }, 200);
 
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
@@ -299,6 +296,11 @@ function verTab(id) {
     document.getElementById(id).style.display = 'block';
 }
 
+function toggleDetalle(id) { 
+    const el = document.getElementById(id); 
+    el.style.display = el.style.display === 'table-row' ? 'none' : 'table-row'; 
+}
+
 function initTallesBuilder() {
     const inputTalles = document.getElementById('add-talles');
     if(!inputTalles || document.getElementById('talles-builder-box')) return;
@@ -326,19 +328,20 @@ function initTallesBuilder() {
     mainBox.appendChild(container);
     mainBox.appendChild(btnAdd);
 
-    const form = document.getElementById('add-product-form');
     const btnSubmitForm = document.getElementById('btn-crear-producto');
-
-    // === FIX MAGISTRAL: ENVOLVER TALLES Y BOTÓN EN UN CONTENEDOR 100% ===
-    if (form && btnSubmitForm) {
-        btnSubmitForm.parentNode.removeChild(btnSubmitForm); // Lo sacamos de donde estaba atrapado
+    
+    // === FIX SEGURO: Insertar la caja antes del botón negro, y forzar a la caja contenedora a estirarse ===
+    if (btnSubmitForm && btnSubmitForm.parentNode) {
+        btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
         
-        const bottomWrapper = document.createElement('div');
-        bottomWrapper.id = 'bottom-form-wrapper';
-        
-        bottomWrapper.appendChild(mainBox);
-        bottomWrapper.appendChild(btnSubmitForm);
-        form.appendChild(bottomWrapper); // Lo tiramos al final de todo
+        // Forzamos al padre del botón (la columna invisible) a estirarse al 100%
+        if(btnSubmitForm.parentElement && btnSubmitForm.parentElement.tagName !== 'FORM') {
+            btnSubmitForm.parentElement.style.gridColumn = '1 / -1';
+            btnSubmitForm.parentElement.style.width = '100%';
+            btnSubmitForm.parentElement.style.display = 'block';
+        }
+    } else {
+        inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
     }
 
     agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
