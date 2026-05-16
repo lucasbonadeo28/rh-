@@ -43,42 +43,70 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    // === FIX DE ESTILOS ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        #talles-builder-box {
+        /* Asegurar que el contenedor inferior rompa las columnas */
+        #bottom-form-wrapper {
             grid-column: 1 / -1 !important;
             width: 100% !important;
-            max-width: 100% !important;
-            margin: 30px 0 20px 0 !important;
-            display: block !important;
-            clear: both !important;
-            box-sizing: border-box !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
         }
         
+        #talles-builder-box {
+            width: 100% !important;
+            max-width: 100% !important;
+            display: block !important;
+            box-sizing: border-box !important;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
         #btn-crear-producto {
-            grid-column: 1 / -1 !important;
             width: 100% !important;
             max-width: 100% !important;
             padding: 18px !important;
             font-size: 1.1rem !important;
-            margin: 10px 0 0 0 !important; 
             display: block !important;
             background: #111 !important;
             color: #fff !important;
             box-sizing: border-box !important; 
-            position: static !important; 
-            float: none !important;
-            clear: both !important;
-            text-align: center !important;
-            transform: none !important;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
-        #talles-builder-ui { display: flex; flex-wrap: wrap; gap: 15px; justify-content: flex-start; }
+        #talles-builder-ui {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
         
-        .tab-content { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; width: 100% !important; padding-bottom: 15px; }
-        table { min-width: 950px !important; width: 100% !important; border-collapse: collapse; }
-        th, td { vertical-align: middle !important; }
+        .tab-content {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            width: 100% !important;
+            padding-bottom: 15px;
+        }
+        table {
+            min-width: 950px !important; 
+            width: 100% !important;
+            border-collapse: collapse;
+        }
+        th, td {
+            vertical-align: middle !important;
+        }
 
+        /* ESTILOS DEL NUEVO BOTÓN VERDE (CREAR NUEVA) */
         .btn-crear-nueva {
             background-color: #27ae60 !important; color: white !important; border: none !important;
             padding: 10px 20px !important; border-radius: 8px !important; font-weight: 800 !important;
@@ -86,12 +114,14 @@ window.addEventListener('DOMContentLoaded', () => {
             box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2) !important; display: inline-flex !important;
             align-items: center !important; gap: 8px !important; text-transform: uppercase !important;
         }
-        .btn-crear-nueva:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4) !important; }
+        .btn-crear-nueva:hover {
+            transform: translateY(-2px) !important; box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4) !important;
+        }
         
         @media (max-width: 768px) {
             .admin-container { padding: 10px; overflow-x: hidden; }
-            #talles-builder-ui { justify-content: center !important; }
-            .builder-talle-nombre, .builder-talle-cant { width: 70px !important; flex: none !important; }
+            #talles-builder-ui { flex-direction: column; align-items: center; }
+            .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; }
             #btn-add-talle-ui { margin: 15px auto 0 auto !important; display: block; }
             .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
             .swal2-popup { width: 90% !important; }
@@ -104,6 +134,7 @@ window.addEventListener('DOMContentLoaded', () => {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
     }
 
+    // === INYECTAMOS EL BOTÓN VERDE AL LADO DEL TÍTULO ===
     setTimeout(() => {
         const form = document.getElementById('add-product-form');
         if (form) {
@@ -159,12 +190,10 @@ function togglePassword() {
     }
 }
 
-// === CONFIRMACIÓN DE LOGIN (VERIFICAR) ===
 const formLogin = document.getElementById('form-login');
 if(formLogin) {
     formLogin.addEventListener('submit', (e) => {
         e.preventDefault();
-        
         showCustomConfirm('¿Deseás verificar tus datos e ingresar al panel?', async () => {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
@@ -270,11 +299,6 @@ function verTab(id) {
     document.getElementById(id).style.display = 'block';
 }
 
-function toggleDetalle(id) { 
-    const el = document.getElementById(id); 
-    el.style.display = el.style.display === 'table-row' ? 'none' : 'table-row'; 
-}
-
 function initTallesBuilder() {
     const inputTalles = document.getElementById('add-talles');
     if(!inputTalles || document.getElementById('talles-builder-box')) return;
@@ -302,11 +326,19 @@ function initTallesBuilder() {
     mainBox.appendChild(container);
     mainBox.appendChild(btnAdd);
 
+    const form = document.getElementById('add-product-form');
     const btnSubmitForm = document.getElementById('btn-crear-producto');
-    if (btnSubmitForm && btnSubmitForm.parentNode) {
-        btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
-    } else {
-        inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
+
+    // === FIX MAGISTRAL: ENVOLVER TALLES Y BOTÓN EN UN CONTENEDOR 100% ===
+    if (form && btnSubmitForm) {
+        btnSubmitForm.parentNode.removeChild(btnSubmitForm); // Lo sacamos de donde estaba atrapado
+        
+        const bottomWrapper = document.createElement('div');
+        bottomWrapper.id = 'bottom-form-wrapper';
+        
+        bottomWrapper.appendChild(mainBox);
+        bottomWrapper.appendChild(btnSubmitForm);
+        form.appendChild(bottomWrapper); // Lo tiramos al final de todo
     }
 
     agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
@@ -343,7 +375,7 @@ function toggleTalleUnico() {
 }
 
 async function cargarTodo() {
-    initTallesBuilder();
+    if(!document.getElementById('talles-builder-box')) initTallesBuilder();
     cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos?t=` + new Date().getTime(), { cache: 'no-store' }); 
@@ -668,7 +700,6 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
     }
 }
 
-// === CONFIRMACIONES AL CREAR/ACTUALIZAR ===
 async function crearOActualizarProducto(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
