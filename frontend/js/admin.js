@@ -43,10 +43,8 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === FIX DEFINITIVO: CHALECO ANTIBALAS PARA EL BOTÓN Y LA CAJA ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        /* Caja de talles prolija al 100% */
         #talles-builder-box {
             grid-column: 1 / -1 !important;
             width: 100% !important;
@@ -57,47 +55,38 @@ window.addEventListener('DOMContentLoaded', () => {
             box-sizing: border-box !important;
         }
         
-        /* Botón blindado para que NO se desborde a la derecha */
         #btn-crear-producto {
             grid-column: 1 / -1 !important;
             width: 100% !important;
             max-width: 100% !important;
             padding: 18px !important;
             font-size: 1.1rem !important;
-            margin: 10px 0 0 0 !important; /* Margen horizontal en 0 */
+            margin: 10px 0 0 0 !important; 
             display: block !important;
             background: #111 !important;
             color: #fff !important;
-            box-sizing: border-box !important; /* Evita que el padding sume ancho */
-            position: static !important; /* Le saca cualquier flotación extraña */
+            box-sizing: border-box !important; 
+            position: static !important; 
             float: none !important;
             clear: both !important;
             text-align: center !important;
             transform: none !important;
         }
 
-        #talles-builder-ui {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: flex-start;
-        }
+        #talles-builder-ui { display: flex; flex-wrap: wrap; gap: 15px; justify-content: flex-start; }
         
-        /* Arreglo para que la tabla sea deslizable y no se aplaste en PC/Celu */
-        .tab-content {
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-            width: 100% !important;
-            padding-bottom: 15px;
+        .tab-content { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; width: 100% !important; padding-bottom: 15px; }
+        table { min-width: 950px !important; width: 100% !important; border-collapse: collapse; }
+        th, td { vertical-align: middle !important; }
+
+        .btn-crear-nueva {
+            background-color: #27ae60 !important; color: white !important; border: none !important;
+            padding: 10px 20px !important; border-radius: 8px !important; font-weight: 800 !important;
+            font-size: 0.85rem !important; cursor: pointer !important; transition: all 0.3s ease !important;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2) !important; display: inline-flex !important;
+            align-items: center !important; gap: 8px !important; text-transform: uppercase !important;
         }
-        table {
-            min-width: 950px !important; 
-            width: 100% !important;
-            border-collapse: collapse;
-        }
-        th, td {
-            vertical-align: middle !important;
-        }
+        .btn-crear-nueva:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4) !important; }
         
         @media (max-width: 768px) {
             .admin-container { padding: 10px; overflow-x: hidden; }
@@ -115,6 +104,43 @@ window.addEventListener('DOMContentLoaded', () => {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
     }
 
+    setTimeout(() => {
+        const form = document.getElementById('add-product-form');
+        if (form) {
+            const titulos = form.querySelectorAll('h1, h2, h3, h4');
+            let mainTitle = null;
+            titulos.forEach(t => {
+                if (t.innerText.toLowerCase().includes('nueva prenda') || t.innerText.toLowerCase().includes('cargar')) {
+                    mainTitle = t;
+                }
+            });
+
+            if (mainTitle && !document.querySelector('.btn-crear-nueva')) {
+                const headerWrap = document.createElement('div');
+                headerWrap.style.display = 'flex'; headerWrap.style.justifyContent = 'space-between';
+                headerWrap.style.alignItems = 'center'; headerWrap.style.width = '100%';
+                headerWrap.style.marginBottom = '20px'; headerWrap.style.borderBottom = '1px solid #eee';
+                headerWrap.style.paddingBottom = '15px';
+
+                mainTitle.parentNode.insertBefore(headerWrap, mainTitle);
+                headerWrap.appendChild(mainTitle);
+                
+                mainTitle.style.margin = '0'; mainTitle.style.borderBottom = 'none'; mainTitle.style.paddingBottom = '0';
+
+                const btnNueva = document.createElement('button');
+                btnNueva.type = 'button'; btnNueva.className = 'btn-crear-nueva';
+                btnNueva.innerHTML = '<i class="fas fa-plus"></i> CREAR NUEVA';
+                btnNueva.onclick = () => {
+                    limpiarFormularioAdmin();
+                    showCustomAlert("Formulario vacío y listo para cargar prenda nueva", "success");
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+
+                headerWrap.appendChild(btnNueva);
+            }
+        }
+    }, 100);
+
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
         const panelDashboard = document.getElementById('panel-dashboard');
@@ -127,48 +153,48 @@ function togglePassword() {
     const passInput = document.getElementById('login-password');
     const eyeIcon = document.getElementById('toggle-eye');
     if (passInput.type === 'password') {
-        passInput.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
+        passInput.type = 'text'; eyeIcon.classList.remove('fa-eye'); eyeIcon.classList.add('fa-eye-slash');
     } else {
-        passInput.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
+        passInput.type = 'password'; eyeIcon.classList.remove('fa-eye-slash'); eyeIcon.classList.add('fa-eye');
     }
 }
 
+// === CONFIRMACIÓN DE LOGIN (VERIFICAR) ===
 const formLogin = document.getElementById('form-login');
 if(formLogin) {
-    formLogin.addEventListener('submit', async (e) => {
+    formLogin.addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const errorMsg = document.getElementById('login-error');
-        const btn = document.getElementById('btn-submit-login');
+        
+        showCustomConfirm('¿Deseás verificar tus datos e ingresar al panel?', async () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorMsg = document.getElementById('login-error');
+            const btn = document.getElementById('btn-submit-login');
 
-        btn.innerText = 'Verificando...'; btn.disabled = true; errorMsg.style.display = 'none';
+            btn.innerText = 'Verificando...'; btn.disabled = true; errorMsg.style.display = 'none';
 
-        try {
-            const res = await fetch('/api/admin/login', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            if (res.ok && data.success) { 
-                sessionStorage.setItem('adminLogueado', 'true');
-                document.getElementById('login-wrapper').style.display = 'none';
-                document.getElementById('panel-dashboard').style.display = 'block';
-                cargarTodo();
-            } else {
-                errorMsg.innerText = data.message || 'Credenciales incorrectas';
+            try {
+                const res = await fetch('/api/admin/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) { 
+                    sessionStorage.setItem('adminLogueado', 'true');
+                    document.getElementById('login-wrapper').style.display = 'none';
+                    document.getElementById('panel-dashboard').style.display = 'block';
+                    cargarTodo();
+                } else {
+                    errorMsg.innerText = data.message || 'Credenciales incorrectas';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.innerText = 'Error de conexión.';
                 errorMsg.style.display = 'block';
+            } finally {
+                btn.innerText = 'Ingresar'; btn.disabled = false;
             }
-        } catch (error) {
-            errorMsg.innerText = 'Error de conexión.';
-            errorMsg.style.display = 'block';
-        } finally {
-            btn.innerText = 'Ingresar'; btn.disabled = false;
-        }
+        }, "Sí, ingresar");
     });
 }
 
@@ -277,7 +303,6 @@ function initTallesBuilder() {
     mainBox.appendChild(btnAdd);
 
     const btnSubmitForm = document.getElementById('btn-crear-producto');
-    // === FIX DOM: Inyecta la caja justo antes del botón original para no romper el contenedor ===
     if (btnSubmitForm && btnSubmitForm.parentNode) {
         btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
     } else {
@@ -643,6 +668,7 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
     }
 }
 
+// === CONFIRMACIONES AL CREAR/ACTUALIZAR ===
 async function crearOActualizarProducto(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
@@ -697,11 +723,13 @@ async function crearOActualizarProducto(e) {
     };
 
     if (idProductoEditando !== null) {
-        showCustomConfirm('¿Seguro que querés guardar los cambios de esta prenda?', async () => {
+        showCustomConfirm('¿Seguro que querés guardar los cambios (Actualizar) de esta prenda?', async () => {
             await ejecutarGuardadoFinal(payload, base64Images, btn);
-        }, "Guardar Cambios");
+        }, "Sí, actualizar");
     } else {
-        await ejecutarGuardadoFinal(payload, base64Images, btn);
+        showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', async () => {
+            await ejecutarGuardadoFinal(payload, base64Images, btn);
+        }, "Sí, publicar");
     }
 }
 
