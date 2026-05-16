@@ -43,40 +43,60 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === INYECCIÓN CSS PARA ARREGLAR DISEÑO DE CELULAR (BOTONES ABAJO, TODO CENTRADO Y HORIZONTAL) ===
+    // === ESTILOS FORZADOS A PRUEBA DE BALAS ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        /* Obligar al botón de guardar a ir abajo de todo ocupando el 100% */
+        /* Forzar que los elementos vayan al fondo y ocupen 100% */
+        #talles-builder-box {
+            grid-column: 1 / -1 !important;
+            width: 100% !important;
+            margin-top: 30px !important;
+            margin-bottom: 15px !important;
+            display: block !important;
+        }
         #btn-crear-producto {
             grid-column: 1 / -1 !important;
             width: 100% !important;
-            margin-top: 20px !important;
+            padding: 20px !important;
+            font-size: 1.15rem !important;
             display: block !important;
+            background: #111 !important;
+            color: #fff !important;
+        }
+        /* Centrar interior de talles */
+        #talles-builder-ui {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 15px !important;
+            width: 100% !important;
+        }
+        #talles-builder-ui > div {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
+            width: 100% !important;
+            max-width: 350px !important;
         }
         
+        /* Arreglo tabla horizontal OBLIGATORIO */
+        .td-talles-horizontal {
+            white-space: nowrap !important;
+            overflow-x: auto !important;
+            max-width: 250px !important;
+        }
+        .td-talles-horizontal::-webkit-scrollbar { height: 4px; }
+        .td-talles-horizontal::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        
+        .td-botones-horizontal {
+            white-space: nowrap !important;
+        }
+
         @media (max-width: 768px) {
-            .admin-container { padding: 10px; }
-            #talles-builder-box { padding: 15px 10px; margin-top: 15px; }
-            
-            /* Centrar todo dentro del creador de talles */
-            #talles-builder-ui { justify-content: center !important; }
-            #talles-builder-ui > div { 
-                flex-wrap: nowrap !important; 
-                justify-content: center !important;
-            }
-            .builder-talle-nombre, .builder-talle-cant { 
-                width: 70px !important; /* Ancho fijo para que no se estiren */
-                flex: none !important; 
-            }
-            #btn-add-talle-ui { margin: 15px auto 0 auto !important; display: block; }
-            
+            .admin-container { padding: 15px; }
+            .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; }
+            #btn-add-talle-ui { margin: 0 auto !important; display: block; }
             .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
-            
-            table { display: block; overflow-x: auto; white-space: nowrap; }
-            .swal2-popup { width: 90% !important; }
-            
-            /* Quitar limites para scroll horizontal en la tabla si es necesario */
-            .talles-celda { max-width: 100% !important; }
         }
     `;
     document.head.appendChild(adminStyles);
@@ -215,79 +235,51 @@ function verTab(id) {
     document.getElementById(id).style.display = 'block';
 }
 
-function toggleDetalle(id) { 
-    const el = document.getElementById(id); 
-    el.style.display = el.style.display === 'table-row' ? 'none' : 'table-row'; 
-}
-
 function initTallesBuilder() {
     const inputTalles = document.getElementById('add-talles');
     if(!inputTalles || document.getElementById('talles-builder-box')) return;
-
     inputTalles.style.display = 'none'; 
 
     const mainBox = document.createElement('div');
     mainBox.id = 'talles-builder-box';
-    mainBox.style.gridColumn = '1 / -1'; 
-    mainBox.style.width = '100%';
-    mainBox.style.display = 'block';
-    mainBox.style.clear = 'both';
-    mainBox.style.background = '#f9f9f9';
-    mainBox.style.border = '1px solid #ddd';
-    mainBox.style.borderRadius = '8px';
-    mainBox.style.padding = '15px';
-    mainBox.style.marginTop = '25px';
-    mainBox.style.marginBottom = '25px';
-    mainBox.style.boxSizing = 'border-box';
-
-    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase; text-align:center;">Stock por Talles</h4>';
+    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:1rem; color:#111; text-transform:uppercase; text-align:center; font-weight:800;">Stock por Talles</h4>';
 
     const container = document.createElement('div');
     container.id = 'talles-builder-ui';
-    container.style.display = 'flex';
-    container.style.flexWrap = 'wrap';
-    container.style.gap = '10px';
-    container.style.justifyContent = 'center';
-
+    
     const btnAdd = document.createElement('button');
     btnAdd.id = 'btn-add-talle-ui';
     btnAdd.type = 'button';
     btnAdd.className = 'btn-secundario';
     btnAdd.innerHTML = '<i class="fas fa-plus"></i> Añadir Talle';
-    btnAdd.style.padding = '10px 15px';
-    btnAdd.style.fontSize = '0.85rem';
-    btnAdd.style.width = 'auto';
-    btnAdd.style.marginTop = '15px';
-    btnAdd.style.display = 'block';
-    btnAdd.style.margin = '15px auto 0 auto';
+    btnAdd.style.padding = '12px 20px';
+    btnAdd.style.fontSize = '0.9rem';
     btnAdd.onclick = () => agregarTalleUI('', 0);
 
     mainBox.appendChild(container);
     mainBox.appendChild(btnAdd);
 
+    const form = document.getElementById('add-product-form');
     const btnSubmitForm = document.getElementById('btn-crear-producto');
-    if (btnSubmitForm && btnSubmitForm.parentNode) {
-        btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
-    } else {
-        inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
+    
+    // MAGIA DE ORDEN: Lo forzamos a ser los ÚLTIMOS elementos del formulario
+    if (form && btnSubmitForm) {
+        form.appendChild(mainBox);
+        form.appendChild(btnSubmitForm);
     }
 
-    agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
+    agregarTalleUI('L', 0); agregarTalleUI('M', 0); agregarTalleUI('S', 0);
 }
 
 function agregarTalleUI(nombre = '', cantidad = 0) {
     const container = document.getElementById('talles-builder-ui');
     if(!container) return;
     const div = document.createElement('div');
-    div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.gap = '10px';
-    div.style.background = '#ffffff'; div.style.padding = '10px'; div.style.borderRadius = '6px';
-    div.style.border = '1px solid #eee'; div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
-
     div.innerHTML = `
-        <input type="text" placeholder="Talle (Ej: M)" value="${nombre}" class="builder-talle-nombre" style="width: 80px; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 8px; text-align: center; font-weight: bold; outline:none;">
-        <span style="font-weight: 800; color:#aaa;">:</span>
-        <input type="number" placeholder="Cant." value="${cantidad}" class="builder-talle-cant" min="0" style="width: 80px; border: 1px solid #ccc; border-radius: 4px; padding: 8px; text-align: center; font-weight: bold; outline:none;">
-        <button type="button" style="background:transparent; border:none; color: #e74c3c; cursor: pointer; font-size:1.1rem; padding:5px 10px;" onclick="this.parentNode.remove()" title="Eliminar talle"><i class="fas fa-trash-alt"></i></button>
+        <input type="text" placeholder="Ej: M" value="${nombre}" class="builder-talle-nombre" style="width: 80px; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 10px; text-align: center; font-weight: bold; outline:none;">
+        <span style="font-weight: 800; color:#aaa; margin: 0 5px;">:</span>
+        <input type="number" placeholder="Cant." value="${cantidad}" class="builder-talle-cant" min="0" style="width: 80px; border: 1px solid #ccc; border-radius: 4px; padding: 10px; text-align: center; font-weight: bold; outline:none;">
+        <button type="button" style="background:transparent; border:none; color: #e74c3c; cursor: pointer; font-size:1.3rem; padding:5px 10px; margin-left:5px;" onclick="this.parentNode.remove()" title="Eliminar talle"><i class="fas fa-trash-alt"></i></button>
     `;
     container.appendChild(div);
 }
@@ -359,9 +351,9 @@ function renderStock() {
                 const cant = parseInt(inventario[t]) || 0;
                 totalStockPrenda += cant;
                 tallesHtml += `
-                <div style="display:inline-flex; align-items:center; gap:4px; background:#f5f5f5; padding:4px 8px; border-radius:6px; border:1px solid #ddd; margin-bottom:4px; margin-right:4px;">
-                    <span style="font-size:0.8rem; font-weight:800; color:#444;">${t}:</span>
-                    <input type="number" class="talle-input-fila-${p.id}" data-talle="${t}" value="${cant}" min="0" style="width:45px; padding:3px; text-align:center; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:#111;">
+                <div style="display:inline-flex; align-items:center; gap:4px; background:#f5f5f5; padding:6px 10px; border-radius:6px; border:1px solid #ddd; margin-right:5px;">
+                    <span style="font-size:0.85rem; font-weight:800; color:#111;">${t}:</span>
+                    <input type="number" class="talle-input-fila-${p.id}" data-talle="${t}" value="${cant}" min="0" style="width:50px; padding:4px; text-align:center; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:#111;">
                 </div>`;
             });
             if (claves.length === 0) tallesHtml = `<span style="color:red; font-size:0.8rem; font-weight:bold;">Sin talles cargados</span>`;
@@ -378,7 +370,7 @@ function renderStock() {
             mainImg += (mainImg.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
         }
 
-        // === ARREGLO HORIZONTAL PARA TABLAS (FLEX-WRAP: NOWRAP) ===
+        // REGLA APLICADA: td-talles-horizontal y td-botones-horizontal
         return `
         <tr>
             <td><img src="${mainImg}" style="width:60px;height:60px;object-fit:cover; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></td>
@@ -392,18 +384,18 @@ function renderStock() {
             <td><input type="number" id="efvo-${p.id}" value="${p.precio_efectivo}" style="width:90px; padding:5px;"></td>
             <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
             
-            <td>
-                <div class="talles-celda" style="display: flex; flex-wrap: nowrap; gap: 4px; max-width: 240px; overflow-x: auto; padding-bottom: 4px;">
+            <td class="td-talles-horizontal">
+                <div style="display: flex; flex-wrap: nowrap; align-items: center; min-width: max-content;">
                     ${tallesHtml}
                 </div>
                 <small style="color:${totalStockPrenda > 0 ? '#27ae60' : '#e74c3c'}; font-weight:bold; display:block; margin-top:6px;">Stock Total: ${totalStockPrenda}</small>
             </td>
 
-            <td style="text-align: center;">
-                <div style="display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px;">
-                    <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Stock Rápido"><i class="fas fa-check"></i></button>
-                    <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="editarProducto(${p.id})" title="Editar Detalles Completos"><i class="fas fa-pencil-alt"></i></button>
-                    <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="borrarP(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+            <td class="td-botones-horizontal">
+                <div style="display: flex; flex-wrap: nowrap; gap: 8px;">
+                    <button style="background: #27ae60; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Stock Rápido"><i class="fas fa-check"></i></button>
+                    <button style="background: #f39c12; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="editarProducto(${p.id})" title="Editar Detalles Completos"><i class="fas fa-pencil-alt"></i></button>
+                    <button style="background: #ff6b6b; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="borrarP(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
                 </div>
             </td>
         </tr>`;
@@ -469,20 +461,21 @@ async function guardarEdicionFila(id, event) {
     }
 }
 
+// === LECTURA MEJORADA AL EDITAR ===
 function editarProducto(id) {
     const producto = pTotales.find(p => p.id === id);
     if (!producto) return;
     idProductoEditando = id;
     
-    document.getElementById('add-nombre').value = producto.nombre || '';
-    document.getElementById('add-categoria').value = producto.categoria || '';
-    document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || producto.tarjeta || '';
-    document.getElementById('add-precio-efvo').value = producto.precio_efectivo || producto.efectivo || '';
-    document.getElementById('add-descripcion').value = producto.descripcion || '';
-    
-    document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
-    document.getElementById('add-color-hex').value = producto.color_hex || '#d4ba92';
-    document.getElementById('add-color-nombre').value = producto.color_nombre || '';
+    // Rellena campos si existen
+    if(document.getElementById('add-nombre')) document.getElementById('add-nombre').value = producto.nombre || '';
+    if(document.getElementById('add-categoria')) document.getElementById('add-categoria').value = producto.categoria || '';
+    if(document.getElementById('add-precio-tarj')) document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || producto.tarjeta || '';
+    if(document.getElementById('add-precio-efvo')) document.getElementById('add-precio-efvo').value = producto.precio_efectivo || producto.efectivo || '';
+    if(document.getElementById('add-descripcion')) document.getElementById('add-descripcion').value = producto.descripcion || '';
+    if(document.getElementById('add-codigo-modelo')) document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
+    if(document.getElementById('add-color-hex')) document.getElementById('add-color-hex').value = producto.color_hex || '#d4ba92';
+    if(document.getElementById('add-color-nombre')) document.getElementById('add-color-nombre').value = producto.color_nombre || '';
 
     const chkUnico = document.getElementById('chk-unico');
     const inputStockUnico = document.getElementById('add-stock-unico');
@@ -491,18 +484,18 @@ function editarProducto(id) {
     if(containerTalles) containerTalles.innerHTML = '';
 
     if (producto.inventario_talles && producto.inventario_talles['ÚNICO'] !== undefined) {
-        chkUnico.checked = true;
+        if(chkUnico) chkUnico.checked = true;
         toggleTalleUnico();
-        inputStockUnico.value = producto.inventario_talles['ÚNICO'];
+        if(inputStockUnico) inputStockUnico.value = producto.inventario_talles['ÚNICO'];
     } else {
-        chkUnico.checked = false;
+        if(chkUnico) chkUnico.checked = false;
         toggleTalleUnico();
         if (producto.inventario_talles) {
             Object.entries(producto.inventario_talles).forEach(([t, c]) => agregarTalleUI(t, c));
         } else {
             agregarTalleUI('S', 0);
         }
-        inputStockUnico.value = '';
+        if(inputStockUnico) inputStockUnico.value = '';
     }
 
     const imgInput = document.getElementById('add-img');
@@ -513,20 +506,21 @@ function editarProducto(id) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     verTab('tab-inventario');
     const btn = document.getElementById('btn-crear-producto');
-    btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
-    btn.style.background = '#f39c12';
+    if(btn) {
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
+        btn.style.background = '#f39c12';
+    }
 }
 
 function limpiarFormularioAdmin() {
-    document.getElementById('add-nombre').value = '';
-    document.getElementById('add-categoria').value = '';
-    document.getElementById('add-precio-tarj').value = '';
-    document.getElementById('add-precio-efvo').value = '';
-    document.getElementById('add-descripcion').value = '';
-    
-    document.getElementById('add-codigo-modelo').value = '';
-    document.getElementById('add-color-hex').value = '#d4ba92';
-    document.getElementById('add-color-nombre').value = '';
+    if(document.getElementById('add-nombre')) document.getElementById('add-nombre').value = '';
+    if(document.getElementById('add-categoria')) document.getElementById('add-categoria').value = '';
+    if(document.getElementById('add-precio-tarj')) document.getElementById('add-precio-tarj').value = '';
+    if(document.getElementById('add-precio-efvo')) document.getElementById('add-precio-efvo').value = '';
+    if(document.getElementById('add-descripcion')) document.getElementById('add-descripcion').value = '';
+    if(document.getElementById('add-codigo-modelo')) document.getElementById('add-codigo-modelo').value = '';
+    if(document.getElementById('add-color-hex')) document.getElementById('add-color-hex').value = '#d4ba92';
+    if(document.getElementById('add-color-nombre')) document.getElementById('add-color-nombre').value = '';
 
     const chkUnico = document.getElementById('chk-unico');
     if(chkUnico) { chkUnico.checked = false; toggleTalleUnico(); }
@@ -534,7 +528,7 @@ function limpiarFormularioAdmin() {
     const containerTalles = document.getElementById('talles-builder-ui');
     if(containerTalles) {
         containerTalles.innerHTML = '';
-        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
+        agregarTalleUI('L', 0); agregarTalleUI('M', 0); agregarTalleUI('S', 0);
     }
     
     const imgInput = document.getElementById('add-img');
@@ -544,8 +538,10 @@ function limpiarFormularioAdmin() {
 
     idProductoEditando = null;
     const btn = document.getElementById('btn-crear-producto');
-    btn.innerHTML = '<i class="fas fa-plus"></i> Guardar Publicación';
-    btn.style.background = '#111';
+    if(btn) {
+        btn.innerHTML = '<i class="fas fa-plus"></i> Guardar Publicación';
+        btn.style.background = '#111';
+    }
 }
 
 function borrarP(id) { 
@@ -595,8 +591,9 @@ const procesarImg = (file) => {
     });
 };
 
+// === ACTUALIZACIÓN OBLIGATORIA DE IMAGEN ===
 async function ejecutarGuardadoFinal(payload, base64Images, btn) {
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...'; 
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'; 
     btn.disabled = true;
 
     try {
@@ -612,8 +609,9 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
         });
 
         if(res.ok) { 
-            showCustomAlert(idProductoEditando ? "¡Producto actualizado!" : "¡Producto creado!", "success", false); 
+            showCustomAlert(idProductoEditando ? "¡Prenda actualizada!" : "¡Prenda creada!", "success", false); 
             limpiarFormularioAdmin(); 
+            // Forzamos al navegador a olvidar la foto vieja
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
@@ -633,17 +631,17 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
 async function crearOActualizarProducto(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
-    const nombre = document.getElementById('add-nombre').value;
-    const categoria = document.getElementById('add-categoria').value;
-    const tarj = document.getElementById('add-precio-tarj').value;
-    const efvo = document.getElementById('add-precio-efvo').value;
-    const desc = document.getElementById('add-descripcion').value;
-    const esUnico = document.getElementById('chk-unico').checked;
-    const imgInput = document.getElementById('add-img');
     
-    const codigoModelo = document.getElementById('add-codigo-modelo').value.trim().toUpperCase();
-    const colorHex = document.getElementById('add-color-hex').value;
-    const colorNombre = document.getElementById('add-color-nombre').value.trim();
+    const nombre = document.getElementById('add-nombre') ? document.getElementById('add-nombre').value.trim() : '';
+    const categoria = document.getElementById('add-categoria') ? document.getElementById('add-categoria').value : '';
+    const tarj = document.getElementById('add-precio-tarj') ? document.getElementById('add-precio-tarj').value : '';
+    const efvo = document.getElementById('add-precio-efvo') ? document.getElementById('add-precio-efvo').value : '';
+    const desc = document.getElementById('add-descripcion') ? document.getElementById('add-descripcion').value.trim() : '';
+    const codigoModelo = document.getElementById('add-codigo-modelo') ? document.getElementById('add-codigo-modelo').value.trim().toUpperCase() : '';
+    const colorHex = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : '#d4ba92';
+    const colorNombre = document.getElementById('add-color-nombre') ? document.getElementById('add-color-nombre').value.trim() : '';
+    const chkUnico = document.getElementById('chk-unico');
+    const esUnico = chkUnico ? chkUnico.checked : false;
 
     if (!nombre || !categoria || !tarj || !efvo) { 
         return showCustomAlert("Por favor completa los campos obligatorios.", "error", false); 
@@ -651,7 +649,8 @@ async function crearOActualizarProducto(e) {
 
     let inventarioFinal = {};
     if (esUnico) {
-        const stockU = parseInt(document.getElementById('add-stock-unico').value) || 0;
+        const inputStockU = document.getElementById('add-stock-unico');
+        const stockU = inputStockU ? (parseInt(inputStockU.value) || 0) : 0;
         inventarioFinal['ÚNICO'] = stockU;
     } else {
         const nombresT = document.querySelectorAll('.builder-talle-nombre');
@@ -663,8 +662,9 @@ async function crearOActualizarProducto(e) {
         }
     }
 
+    const imgInput = document.getElementById('add-img');
     const base64Images = []; 
-    if (imgInput.files && imgInput.files.length > 0) { 
+    if (imgInput && imgInput.files && imgInput.files.length > 0) { 
         const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
         for (let file of filesToProcess) { base64Images.push(await procesarImg(file)); } 
     }
@@ -681,6 +681,7 @@ async function crearOActualizarProducto(e) {
         color_nombre: colorNombre
     };
 
+    // CONFIRMACIÓN DE EDICIÓN
     if (idProductoEditando !== null) {
         showCustomConfirm('¿Seguro que querés guardar los cambios de esta prenda?', async () => {
             await ejecutarGuardadoFinal(payload, base64Images, btn);
@@ -702,6 +703,7 @@ async function cargarCategorias() {
 
 function actualizarSelectCategorias() {
     const select = document.getElementById('add-categoria');
+    if(!select) return;
     if(categoriasGlobal.length === 0) select.innerHTML = '<option value="" disabled selected>No hay categorías</option>';
     else select.innerHTML = '<option value="" disabled selected>Categorías...</option>' + categoriasGlobal.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
 }
@@ -710,6 +712,7 @@ function renderCategorias() {
     const inicio = (cPagina - 1) * cPorPagina;
     const items = categoriasGlobal.slice(inicio, inicio + cPorPagina);
     const tbody = document.getElementById('body-categorias');
+    if(!tbody) return;
     if(categoriasGlobal.length === 0) tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:gray; padding:20px;">Aún no hay categorías creadas.</td></tr>';
     else tbody.innerHTML = items.map(c => `<tr><td>#${c.id}</td><td style="font-weight:bold; text-transform:capitalize;">${c.nombre}</td><td style="text-align: center;"><button class="btn-secundario" onclick="eliminarCategoria(${c.id})"><i class="fas fa-trash-alt"></i> Borrar</button></td></tr>`).join('');
     
@@ -745,6 +748,7 @@ function eliminarCategoria(id) {
 function renderPedidos() {
     const inicio = (vPagina - 1) * vPorPagina; const items = vTotales.slice(inicio, inicio + vPorPagina);
     const tbodyVentas = document.getElementById('body-pedidos');
+    if(!tbodyVentas) return;
 
     if(vTotales.length === 0) {
         tbodyVentas.innerHTML = '<tr><td colspan="6" style="text-align:center; color:gray;">Aún no hay pedidos registrados.</td></tr>';
@@ -765,9 +769,9 @@ function renderPedidos() {
         }).join('');
     }
     
-    document.getElementById('pagi-info-pedidos').innerText = `Página ${vPagina}`; 
-    document.getElementById('pagi-anterior-pedidos').disabled = vPagina === 1; 
-    document.getElementById('pagi-siguiente-pedidos').disabled = inicio + vPorPagina >= vTotales.length;
+    if(document.getElementById('pagi-info-pedidos')) document.getElementById('pagi-info-pedidos').innerText = `Página ${vPagina}`; 
+    if(document.getElementById('pagi-anterior-pedidos')) document.getElementById('pagi-anterior-pedidos').disabled = vPagina === 1; 
+    if(document.getElementById('pagi-siguiente-pedidos')) document.getElementById('pagi-siguiente-pedidos').disabled = inicio + vPorPagina >= vTotales.length;
 }
 
 function completarPedido(id) {
@@ -806,11 +810,12 @@ function generarEstadisticasMensuales() {
     });
 
     const tbodyStats = document.getElementById('body-meses');
-    tbodyStats.innerHTML = Object.values(statsAgrupadas).sort((a,b) => b.mesAno.localeCompare(a.mesAno)).map(m => `<tr><td><b>${m.mesNombre}</b></td><td>${m.cantidad} pedidos</td><td style="color:#27ae60; font-weight:bold; font-size:1.1rem;">$${m.total.toLocaleString('es-AR')}</td></tr>`).join('');
+    if(tbodyStats) tbodyStats.innerHTML = Object.values(statsAgrupadas).sort((a,b) => b.mesAno.localeCompare(a.mesAno)).map(m => `<tr><td><b>${m.mesNombre}</b></td><td>${m.cantidad} pedidos</td><td style="color:#27ae60; font-weight:bold; font-size:1.1rem;">$${m.total.toLocaleString('es-AR')}</td></tr>`).join('');
 }
 
 async function cargarBanners() {
     const tbody = document.getElementById('body-banners');
+    if(!tbody) return;
     try {
         const res = await fetchSeguro(`${API}/banners`);
         if(res.ok) {
@@ -850,6 +855,7 @@ function eliminarBanner(id) {
 
 async function cargarCupones() {
     const tbody = document.getElementById('body-cupones');
+    if(!tbody) return;
     try {
         const res = await fetchSeguro(`${API}/cupones`);
         if(res.ok) {
