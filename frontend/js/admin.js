@@ -43,60 +43,60 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === ESTILOS FORZADOS A PRUEBA DE BALAS ===
+    // === FIX DEFINITIVO DE LA TABLA (SCROLL HORIZONTAL SIN APLASTAR) ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        /* Forzar que los elementos vayan al fondo y ocupen 100% */
+        /* Forzar diseño limpio del formulario abajo */
         #talles-builder-box {
             grid-column: 1 / -1 !important;
             width: 100% !important;
             margin-top: 30px !important;
-            margin-bottom: 15px !important;
+            margin-bottom: 20px !important;
             display: block !important;
+            clear: both !important;
         }
         #btn-crear-producto {
             grid-column: 1 / -1 !important;
             width: 100% !important;
-            padding: 20px !important;
-            font-size: 1.15rem !important;
+            padding: 18px !important;
+            font-size: 1.1rem !important;
+            margin-top: 10px !important;
             display: block !important;
             background: #111 !important;
             color: #fff !important;
         }
-        /* Centrar interior de talles */
         #talles-builder-ui {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            gap: 15px !important;
-            width: 100% !important;
-        }
-        #talles-builder-ui > div {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            justify-content: center !important;
-            width: 100% !important;
-            max-width: 350px !important;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: flex-start;
         }
         
-        /* Arreglo tabla horizontal OBLIGATORIO */
-        .td-talles-horizontal {
-            white-space: nowrap !important;
+        /* === MAGIA PARA LA TABLA EN CELULAR === */
+        /* Hacemos que el contenedor de la tabla tenga scroll horizontal */
+        .tab-content {
             overflow-x: auto !important;
-            max-width: 250px !important;
+            -webkit-overflow-scrolling: touch !important;
+            width: 100% !important;
+            padding-bottom: 15px;
         }
-        .td-talles-horizontal::-webkit-scrollbar { height: 4px; }
-        .td-talles-horizontal::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        /* Obligamos a la tabla a ser ancha, así no se aplasta nunca */
+        table {
+            min-width: 950px !important; 
+            width: 100% !important;
+            border-collapse: collapse;
+        }
+        th, td {
+            vertical-align: middle !important;
+        }
         
-        .td-botones-horizontal {
-            white-space: nowrap !important;
-        }
-
         @media (max-width: 768px) {
-            .admin-container { padding: 15px; }
-            .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; }
-            #btn-add-talle-ui { margin: 0 auto !important; display: block; }
+            .admin-container { padding: 10px; overflow-x: hidden; }
+            #talles-builder-ui { justify-content: center !important; }
+            .builder-talle-nombre, .builder-talle-cant { width: 70px !important; flex: none !important; }
+            #btn-add-talle-ui { margin: 15px auto 0 auto !important; display: block; }
             .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
+            .swal2-popup { width: 90% !important; }
         }
     `;
     document.head.appendChild(adminStyles);
@@ -235,14 +235,32 @@ function verTab(id) {
     document.getElementById(id).style.display = 'block';
 }
 
+function toggleDetalle(id) { 
+    const el = document.getElementById(id); 
+    el.style.display = el.style.display === 'table-row' ? 'none' : 'table-row'; 
+}
+
 function initTallesBuilder() {
     const inputTalles = document.getElementById('add-talles');
     if(!inputTalles || document.getElementById('talles-builder-box')) return;
+
     inputTalles.style.display = 'none'; 
 
     const mainBox = document.createElement('div');
     mainBox.id = 'talles-builder-box';
-    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:1rem; color:#111; text-transform:uppercase; text-align:center; font-weight:800;">Stock por Talles</h4>';
+    mainBox.style.gridColumn = '1 / -1'; 
+    mainBox.style.width = '100%';
+    mainBox.style.display = 'block';
+    mainBox.style.clear = 'both';
+    mainBox.style.background = '#f9f9f9';
+    mainBox.style.border = '1px solid #ddd';
+    mainBox.style.borderRadius = '8px';
+    mainBox.style.padding = '15px';
+    mainBox.style.marginTop = '25px';
+    mainBox.style.marginBottom = '25px';
+    mainBox.style.boxSizing = 'border-box';
+
+    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase; text-align:center;">Stock por Talles</h4>';
 
     const container = document.createElement('div');
     container.id = 'talles-builder-ui';
@@ -252,34 +270,38 @@ function initTallesBuilder() {
     btnAdd.type = 'button';
     btnAdd.className = 'btn-secundario';
     btnAdd.innerHTML = '<i class="fas fa-plus"></i> Añadir Talle';
-    btnAdd.style.padding = '12px 20px';
-    btnAdd.style.fontSize = '0.9rem';
+    btnAdd.style.padding = '10px 15px';
+    btnAdd.style.fontSize = '0.85rem';
+    btnAdd.style.width = 'auto';
+    btnAdd.style.marginTop = '15px';
     btnAdd.onclick = () => agregarTalleUI('', 0);
 
     mainBox.appendChild(container);
     mainBox.appendChild(btnAdd);
 
-    const form = document.getElementById('add-product-form');
     const btnSubmitForm = document.getElementById('btn-crear-producto');
-    
-    // MAGIA DE ORDEN: Lo forzamos a ser los ÚLTIMOS elementos del formulario
-    if (form && btnSubmitForm) {
-        form.appendChild(mainBox);
-        form.appendChild(btnSubmitForm);
+    if (btnSubmitForm && btnSubmitForm.parentNode) {
+        btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
+    } else {
+        inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
     }
 
-    agregarTalleUI('L', 0); agregarTalleUI('M', 0); agregarTalleUI('S', 0);
+    agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
 }
 
 function agregarTalleUI(nombre = '', cantidad = 0) {
     const container = document.getElementById('talles-builder-ui');
     if(!container) return;
     const div = document.createElement('div');
+    div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.gap = '10px';
+    div.style.background = '#ffffff'; div.style.padding = '10px'; div.style.borderRadius = '6px';
+    div.style.border = '1px solid #eee'; div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+
     div.innerHTML = `
-        <input type="text" placeholder="Ej: M" value="${nombre}" class="builder-talle-nombre" style="width: 80px; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 10px; text-align: center; font-weight: bold; outline:none;">
-        <span style="font-weight: 800; color:#aaa; margin: 0 5px;">:</span>
-        <input type="number" placeholder="Cant." value="${cantidad}" class="builder-talle-cant" min="0" style="width: 80px; border: 1px solid #ccc; border-radius: 4px; padding: 10px; text-align: center; font-weight: bold; outline:none;">
-        <button type="button" style="background:transparent; border:none; color: #e74c3c; cursor: pointer; font-size:1.3rem; padding:5px 10px; margin-left:5px;" onclick="this.parentNode.remove()" title="Eliminar talle"><i class="fas fa-trash-alt"></i></button>
+        <input type="text" placeholder="Talle (Ej: M)" value="${nombre}" class="builder-talle-nombre" style="width: 80px; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 8px; text-align: center; font-weight: bold; outline:none;">
+        <span style="font-weight: 800; color:#aaa;">:</span>
+        <input type="number" placeholder="Cant." value="${cantidad}" class="builder-talle-cant" min="0" style="width: 80px; border: 1px solid #ccc; border-radius: 4px; padding: 8px; text-align: center; font-weight: bold; outline:none;">
+        <button type="button" style="background:transparent; border:none; color: #e74c3c; cursor: pointer; font-size:1.1rem; padding:5px 10px;" onclick="this.parentNode.remove()" title="Eliminar talle"><i class="fas fa-trash-alt"></i></button>
     `;
     container.appendChild(div);
 }
@@ -351,7 +373,7 @@ function renderStock() {
                 const cant = parseInt(inventario[t]) || 0;
                 totalStockPrenda += cant;
                 tallesHtml += `
-                <div style="display:inline-flex; align-items:center; gap:4px; background:#f5f5f5; padding:6px 10px; border-radius:6px; border:1px solid #ddd; margin-right:5px;">
+                <div style="display:inline-flex; align-items:center; gap:4px; background:#f5f5f5; padding:6px 10px; border-radius:6px; border:1px solid #ddd; margin-right:5px; margin-bottom: 5px;">
                     <span style="font-size:0.85rem; font-weight:800; color:#111;">${t}:</span>
                     <input type="number" class="talle-input-fila-${p.id}" data-talle="${t}" value="${cant}" min="0" style="width:50px; padding:4px; text-align:center; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:#111;">
                 </div>`;
@@ -370,7 +392,6 @@ function renderStock() {
             mainImg += (mainImg.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
         }
 
-        // REGLA APLICADA: td-talles-horizontal y td-botones-horizontal
         return `
         <tr>
             <td><img src="${mainImg}" style="width:60px;height:60px;object-fit:cover; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></td>
@@ -384,15 +405,15 @@ function renderStock() {
             <td><input type="number" id="efvo-${p.id}" value="${p.precio_efectivo}" style="width:90px; padding:5px;"></td>
             <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
             
-            <td class="td-talles-horizontal">
-                <div style="display: flex; flex-wrap: nowrap; align-items: center; min-width: max-content;">
+            <td>
+                <div class="talles-celda" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 250px;">
                     ${tallesHtml}
                 </div>
                 <small style="color:${totalStockPrenda > 0 ? '#27ae60' : '#e74c3c'}; font-weight:bold; display:block; margin-top:6px;">Stock Total: ${totalStockPrenda}</small>
             </td>
 
-            <td class="td-botones-horizontal">
-                <div style="display: flex; flex-wrap: nowrap; gap: 8px;">
+            <td style="text-align: center;">
+                <div style="display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px;">
                     <button style="background: #27ae60; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Stock Rápido"><i class="fas fa-check"></i></button>
                     <button style="background: #f39c12; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="editarProducto(${p.id})" title="Editar Detalles Completos"><i class="fas fa-pencil-alt"></i></button>
                     <button style="background: #ff6b6b; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="borrarP(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
@@ -461,13 +482,11 @@ async function guardarEdicionFila(id, event) {
     }
 }
 
-// === LECTURA MEJORADA AL EDITAR ===
 function editarProducto(id) {
     const producto = pTotales.find(p => p.id === id);
     if (!producto) return;
     idProductoEditando = id;
     
-    // Rellena campos si existen
     if(document.getElementById('add-nombre')) document.getElementById('add-nombre').value = producto.nombre || '';
     if(document.getElementById('add-categoria')) document.getElementById('add-categoria').value = producto.categoria || '';
     if(document.getElementById('add-precio-tarj')) document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || producto.tarjeta || '';
@@ -591,7 +610,6 @@ const procesarImg = (file) => {
     });
 };
 
-// === ACTUALIZACIÓN OBLIGATORIA DE IMAGEN ===
 async function ejecutarGuardadoFinal(payload, base64Images, btn) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'; 
     btn.disabled = true;
@@ -611,7 +629,6 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
         if(res.ok) { 
             showCustomAlert(idProductoEditando ? "¡Prenda actualizada!" : "¡Prenda creada!", "success", false); 
             limpiarFormularioAdmin(); 
-            // Forzamos al navegador a olvidar la foto vieja
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
@@ -681,7 +698,6 @@ async function crearOActualizarProducto(e) {
         color_nombre: colorNombre
     };
 
-    // CONFIRMACIÓN DE EDICIÓN
     if (idProductoEditando !== null) {
         showCustomConfirm('¿Seguro que querés guardar los cambios de esta prenda?', async () => {
             await ejecutarGuardadoFinal(payload, base64Images, btn);
