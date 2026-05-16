@@ -43,28 +43,39 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === FIX DEFINITIVO DE LA TABLA (SCROLL HORIZONTAL SIN APLASTAR) ===
+    // === FIX DEFINITIVO: CHALECO ANTIBALAS PARA EL BOTÓN Y LA CAJA ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        /* Forzar diseño limpio del formulario abajo */
+        /* Caja de talles prolija al 100% */
         #talles-builder-box {
             grid-column: 1 / -1 !important;
             width: 100% !important;
-            margin-top: 30px !important;
-            margin-bottom: 20px !important;
+            max-width: 100% !important;
+            margin: 30px 0 20px 0 !important;
             display: block !important;
             clear: both !important;
+            box-sizing: border-box !important;
         }
+        
+        /* Botón blindado para que NO se desborde a la derecha */
         #btn-crear-producto {
             grid-column: 1 / -1 !important;
             width: 100% !important;
+            max-width: 100% !important;
             padding: 18px !important;
             font-size: 1.1rem !important;
-            margin-top: 10px !important;
+            margin: 10px 0 0 0 !important; /* Margen horizontal en 0 */
             display: block !important;
             background: #111 !important;
             color: #fff !important;
+            box-sizing: border-box !important; /* Evita que el padding sume ancho */
+            position: static !important; /* Le saca cualquier flotación extraña */
+            float: none !important;
+            clear: both !important;
+            text-align: center !important;
+            transform: none !important;
         }
+
         #talles-builder-ui {
             display: flex;
             flex-wrap: wrap;
@@ -72,15 +83,13 @@ window.addEventListener('DOMContentLoaded', () => {
             justify-content: flex-start;
         }
         
-        /* === MAGIA PARA LA TABLA EN CELULAR === */
-        /* Hacemos que el contenedor de la tabla tenga scroll horizontal */
+        /* Arreglo para que la tabla sea deslizable y no se aplaste en PC/Celu */
         .tab-content {
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch !important;
             width: 100% !important;
             padding-bottom: 15px;
         }
-        /* Obligamos a la tabla a ser ancha, así no se aplasta nunca */
         table {
             min-width: 950px !important; 
             width: 100% !important;
@@ -248,19 +257,7 @@ function initTallesBuilder() {
 
     const mainBox = document.createElement('div');
     mainBox.id = 'talles-builder-box';
-    mainBox.style.gridColumn = '1 / -1'; 
-    mainBox.style.width = '100%';
-    mainBox.style.display = 'block';
-    mainBox.style.clear = 'both';
-    mainBox.style.background = '#f9f9f9';
-    mainBox.style.border = '1px solid #ddd';
-    mainBox.style.borderRadius = '8px';
-    mainBox.style.padding = '15px';
-    mainBox.style.marginTop = '25px';
-    mainBox.style.marginBottom = '25px';
-    mainBox.style.boxSizing = 'border-box';
-
-    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase; text-align:center;">Stock por Talles</h4>';
+    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase; text-align:center; font-weight:800;">Stock por Talles</h4>';
 
     const container = document.createElement('div');
     container.id = 'talles-builder-ui';
@@ -280,6 +277,7 @@ function initTallesBuilder() {
     mainBox.appendChild(btnAdd);
 
     const btnSubmitForm = document.getElementById('btn-crear-producto');
+    // === FIX DOM: Inyecta la caja justo antes del botón original para no romper el contenedor ===
     if (btnSubmitForm && btnSubmitForm.parentNode) {
         btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
     } else {
@@ -406,7 +404,7 @@ function renderStock() {
             <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
             
             <td>
-                <div class="talles-celda" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 250px;">
+                <div class="talles-celda" style="display: flex; flex-wrap: nowrap; gap: 4px; max-width: 250px;">
                     ${tallesHtml}
                 </div>
                 <small style="color:${totalStockPrenda > 0 ? '#27ae60' : '#e74c3c'}; font-weight:bold; display:block; margin-top:6px;">Stock Total: ${totalStockPrenda}</small>
