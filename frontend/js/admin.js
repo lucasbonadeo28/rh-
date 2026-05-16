@@ -17,7 +17,6 @@ let cPagina = 1;
 const cPorPagina = 10;
 let idProductoEditando = null;
 
-// === DICCIONARIO INTELIGENTE DE COLORES ===
 const mapaColores = {
     'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
     'negro': '#000000', 'blanco': '#ffffff', 'gris': '#808080', 
@@ -35,7 +34,6 @@ const mapaColores = {
 
 const colorDefectoHex = '#d4ba92'; 
 
-// === FUNCIÓN QUE DETECTA Y CAMBIA EL COLOR AL ESCRIBIR ===
 function detectarColor(texto) {
     const hex = document.getElementById('add-color-hex');
     const colorLower = texto.toLowerCase().trim();
@@ -45,7 +43,21 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // CONECTAMOS LA FUNCIÓN AL INPUT PARA QUE FUNCIONE EN TIEMPO REAL
+    // === INYECCIÓN CSS PARA ARREGLAR EL ADMIN EN CELULAR ===
+    const adminStyles = document.createElement('style');
+    adminStyles.innerHTML = `
+        @media (max-width: 768px) {
+            .admin-container { padding: 10px; }
+            #talles-builder-box { padding: 15px 10px; margin-top: 15px; }
+            .builder-talle-nombre, .builder-talle-cant { width: 100% !important; flex: 1; }
+            #talles-builder-ui > div { flex-wrap: wrap; }
+            .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
+            table { display: block; overflow-x: auto; white-space: nowrap; }
+            .swal2-popup { width: 90% !important; }
+        }
+    `;
+    document.head.appendChild(adminStyles);
+
     const inputColorNombre = document.getElementById('add-color-nombre');
     if (inputColorNombre) {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
@@ -100,7 +112,7 @@ if(formLogin) {
                 errorMsg.style.display = 'block';
             }
         } catch (error) {
-            errorMsg.innerText = 'Error de conexión. ¿Está prendido el servidor?';
+            errorMsg.innerText = 'Error de conexión.';
             errorMsg.style.display = 'block';
         } finally {
             btn.innerText = 'Ingresar'; btn.disabled = false;
@@ -428,6 +440,7 @@ async function guardarEdicionFila(id, event) {
     }
 }
 
+// === FIX 3: RELLENAR TODOS LOS CAMPOS AL EDITAR ===
 function editarProducto(id) {
     const producto = pTotales.find(p => p.id === id);
     if (!producto) return;
@@ -554,6 +567,43 @@ const procesarImg = (file) => {
     });
 };
 
+// === FIX 4: CONFIRMACIÓN Y MANEJO DE FOTO AL EDITAR ===
+async function ejecutarGuardadoFinal(payload, base64Images, btn) {
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...'; 
+    btn.disabled = true;
+
+    try {
+        let url = `${API}/productos`; let metodo = 'POST';
+        if (idProductoEditando !== null) { url = `${API}/productos/${idProductoEditando}`; metodo = 'PUT'; }
+
+        if (base64Images.length > 0) payload.imagen_url = JSON.stringify(base64Images);
+
+        const res = await fetchSeguro(url, { 
+            method: metodo, 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(payload) 
+        });
+
+        if(res.ok) { 
+            showCustomAlert(idProductoEditando ? "¡Producto actualizado!" : "¡Producto creado!", "success", false); 
+            limpiarFormularioAdmin(); 
+            // === FIX 5: ROMPER CACHÉ AL ACTUALIZAR LA LISTA ===
+            const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
+            pTotales = await resI.json(); 
+            pFiltrados = [...pTotales]; 
+            renderStock(); 
+        } else { 
+            showCustomAlert("Error al guardar.", "error", false); 
+            btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-plus"></i> Guardar Publicación'; 
+            btn.disabled = false; 
+        }
+    } catch(e) { 
+        showCustomAlert("Error de conexión.", "error", false); 
+        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-plus"></i> Guardar Publicación'; 
+        btn.disabled = false; 
+    }
+}
+
 async function crearOActualizarProducto(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
@@ -587,55 +637,30 @@ async function crearOActualizarProducto(e) {
         }
     }
 
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...'; 
-    btn.disabled = true;
+    const base64Images = []; 
+    if (imgInput.files && imgInput.files.length > 0) { 
+        const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
+        for (let file of filesToProcess) { base64Images.push(await procesarImg(file)); } 
+    }
+    
+    const payload = { 
+        nombre, 
+        categoria, 
+        tarjeta: tarj, 
+        efectivo: efvo, 
+        descripcion: desc, 
+        inventario_talles: inventarioFinal,
+        codigo_modelo: codigoModelo,
+        color_hex: colorHex,
+        color_nombre: colorNombre
+    };
 
-    try {
-        const base64Images = []; 
-        if (imgInput.files && imgInput.files.length > 0) { 
-            const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
-            for (let file of filesToProcess) { base64Images.push(await procesarImg(file)); } 
-        }
-        
-        let url = `${API}/productos`; let metodo = 'POST';
-        if (idProductoEditando !== null) { url = `${API}/productos/${idProductoEditando}`; metodo = 'PUT'; }
-
-        const payload = { 
-            nombre, 
-            categoria, 
-            tarjeta: tarj, 
-            efectivo: efvo, 
-            descripcion: desc, 
-            inventario_talles: inventarioFinal,
-            codigo_modelo: codigoModelo,
-            color_hex: colorHex,
-            color_nombre: colorNombre
-        };
-        
-        if (base64Images.length > 0) payload.imagen_url = JSON.stringify(base64Images);
-
-        const res = await fetchSeguro(url, { 
-            method: metodo, 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(payload) 
-        });
-
-        if(res.ok) { 
-            showCustomAlert(idProductoEditando ? "¡Producto actualizado!" : "¡Producto creado!", "success", false); 
-            limpiarFormularioAdmin(); 
-            const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store'}); 
-            pTotales = await resI.json(); 
-            pFiltrados = [...pTotales]; 
-            renderStock(); 
-        } else { 
-            showCustomAlert("Error al guardar.", "error", false); 
-            btn.innerHTML = '<i class="fas fa-plus"></i> Guardar Publicación'; 
-            btn.disabled = false; 
-        }
-    } catch(e) { 
-        showCustomAlert("Error de conexión.", "error", false); 
-        btn.innerHTML = '<i class="fas fa-plus"></i> Guardar Publicación'; 
-        btn.disabled = false; 
+    if (idProductoEditando !== null) {
+        showCustomConfirm('¿Seguro que querés guardar los cambios de esta prenda?', async () => {
+            await ejecutarGuardadoFinal(payload, base64Images, btn);
+        }, "Guardar Cambios");
+    } else {
+        await ejecutarGuardadoFinal(payload, base64Images, btn);
     }
 }
 

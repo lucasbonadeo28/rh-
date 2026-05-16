@@ -24,7 +24,6 @@ let currentModalImageIndex = 0;
 let imagenSeleccionadaUrl = '';     
 let indexImagenSeleccionada = 1;
 
-// === REGLA MATEMÁTICA ESTRICTA PARA TALLES ===
 const ordenTallesGlobal = ['S', 'M', 'L', 'XL', 'XXL', 'ÚNICO'];
 function sortTalles(a, b) {
     let ia = ordenTallesGlobal.indexOf(a.toUpperCase());
@@ -61,7 +60,6 @@ function getColorSeguro(v) {
     return '#d4ba92'; 
 }
 
-// === CERRAR MODALES TOCANDO AFUERA + DROPDOWN BUSCADOR ===
 window.addEventListener('click', function(event) {
     const modalProducto = document.getElementById('modal-detalle-producto');
     const modalCheckout = document.getElementById('modal-principal');
@@ -77,7 +75,6 @@ window.addEventListener('click', function(event) {
     }
 });
 
-// === MOSTRAR BOTÓN VOLVER ARRIBA ===
 window.addEventListener('scroll', () => {
     const btnTop = document.getElementById('btn-back-to-top');
     if (btnTop) {
@@ -94,7 +91,8 @@ window.onload = async () => {
 
     try { 
         const favData = JSON.parse(localStorage.getItem('favsLucTienda'));
-        favoritos = Array.isArray(favData) ? favData.map(id => parseInt(id)) : []; 
+        // FIX: Limpiamos los favoritos para que no haya errores (NaN o nulos)
+        favoritos = Array.isArray(favData) ? favData.map(id => parseInt(id)).filter(id => !isNaN(id)) : []; 
     } catch(e) { favoritos = []; }
     
     try { 
@@ -364,7 +362,6 @@ function cambiarVista(vista, categoria = 'Todos') {
     if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) toggleMenuMobile();
 }
 
-// === BUSCADOR PREDICTIVO ===
 let timeoutPredictivo = null;
 
 function ejecutarBusquedaPredictiva(event) {
@@ -449,7 +446,6 @@ function forzarBusquedaCompleta(txt) {
     if (grid) grid.innerHTML = generarGridHTML(listafiltrada);
 }
 
-// Para compatibilidad con enter viejo
 function ejecutarBusquedaNav(event) {
     ejecutarBusquedaPredictiva(event);
 }
@@ -486,6 +482,7 @@ function aplicarFiltrosCatalogo() {
 }
 
 function generarGridHTML(listaRaw) {
+    // === FIX FAVORITOS: SI ESTÁ VACÍO, MUESTRA EL CARTEL Y FRENA ===
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos ? "No tenés productos en favoritos." : "No hay productos en esta categoría.";
         let icono = filtrandoFavoritos ? "fa-heart" : "fa-box-open";
@@ -499,6 +496,7 @@ function generarGridHTML(listaRaw) {
         </div>`;
     }
 
+    // === LÓGICA DE FAVORITOS (SOLO LOS ELEGIDOS, NO LA TIENDA ENTERA) ===
     if (filtrandoFavoritos) {
         return listaRaw.map(vDefault => {
             let stockTotalPrenda = 0;
@@ -523,7 +521,6 @@ function generarGridHTML(listaRaw) {
             let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
             if (tallesArray.length > 0) {
                 if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                    // === ARREGLO ESTÉTICO: Talle único igual al resto (sin verde) ===
                     tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
                 } else {
                     tallesHTML = `<div class="card-talles-container">` + 
@@ -532,9 +529,7 @@ function generarGridHTML(listaRaw) {
                 }
             }
 
-            const colorVal = getColorSeguro(vDefault);
-            const circulosHTML = `<div class="colores-container" style="justify-content: center;"><div class="color-circle active" style="background-color: ${colorVal}; pointer-events: none;" title="${vDefault.color_nombre || vDefault.nombre}"></div></div>`;
-
+            // SIN circulitos de otros colores porque es 100% individual
             return `
             <div class="card" id="card-fav-${vDefault.id}">
                 <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="abrirDetalle(${vDefault.id})">
@@ -543,8 +538,7 @@ function generarGridHTML(listaRaw) {
                     <img loading="lazy" src="${imgUrl}">
                 </div>
                 <div class="card-info">
-                    ${circulosHTML}
-                    <h4 onclick="abrirDetalle(${vDefault.id})">${nombre}</h4>
+                    <h4 onclick="abrirDetalle(${vDefault.id})" style="margin-top: 10px;">${nombre}</h4>
                     <div class="precios-container" onclick="abrirDetalle(${vDefault.id})">
                         <p class="p-tarj">$${pTarj}</p>
                         <p class="p-efvo"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
@@ -558,6 +552,7 @@ function generarGridHTML(listaRaw) {
         }).join('');
     }
 
+    // === LÓGICA DEL CATÁLOGO NORMAL AGRUPADO POR MODELO ===
     const grupos = {};
     const listaAgrupada = [];
 
@@ -619,7 +614,6 @@ function generarGridHTML(listaRaw) {
         
         if (tallesArray.length > 0) {
             if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                // === ARREGLO ESTÉTICO: Talle único igual al resto (sin verde) ===
                 tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
             } else {
                 tallesHTML = `<div class="card-talles-container">` + 
@@ -712,6 +706,7 @@ function mostrarFavoritos() {
     const breadCat = document.getElementById('bread-cat-nombre');
     if(breadCat) breadCat.innerText = `Mis Favoritos (${favoritos.length})`;
     
+    // === REFUERZO DE LA LÓGICA (SOLO LOS FAVS) ===
     const listaFavs = productosCargados.filter(p => favoritos.includes(parseInt(p.id))); 
     const grid = document.getElementById('grid-catalogo');
     if (grid) { 
