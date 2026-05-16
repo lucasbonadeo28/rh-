@@ -24,12 +24,12 @@ let currentModalImageIndex = 0;
 let imagenSeleccionadaUrl = '';     
 let indexImagenSeleccionada = 1;
 
-// === ORDEN DE TALLES ESTRICTO ===
+// === REGLA MATEMÁTICA ESTRICTA PARA TALLES ===
 const ordenTallesGlobal = ['S', 'M', 'L', 'XL', 'XXL', 'ÚNICO'];
 function sortTalles(a, b) {
     let ia = ordenTallesGlobal.indexOf(a.toUpperCase());
     let ib = ordenTallesGlobal.indexOf(b.toUpperCase());
-    if (ia === -1) ia = 99; // Si es un talle raro, lo manda al final
+    if (ia === -1) ia = 99; 
     if (ib === -1) ib = 99;
     return ia - ib;
 }
@@ -322,7 +322,9 @@ function cambiarVista(vista, categoria = 'Todos') {
         document.querySelectorAll('.nav-center .filter-link, .nav-center .drop-link').forEach(l => l.classList.remove('active'));
     } 
     else if (vista === 'catalogo') {
-        if(window.innerWidth <= 992) { document.getElementById('bread-cat-nombre').innerText = categoria === 'Todos' ? 'Productos' : categoria; }
+        const breadCat = document.getElementById('bread-cat-nombre');
+        if(breadCat) breadCat.innerText = categoria === 'Todos' ? 'Productos' : categoria;
+        
         const catLower = categoria.toLowerCase();
 
         document.querySelectorAll('.nav-center .filter-link, .nav-center .drop-link').forEach(l => {
@@ -352,7 +354,12 @@ function ejecutarBusquedaNav(event) {
         vistaActual = 'catalogo'; categoriaActual = 'Todos'; filtrandoFavoritos = false;
         sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
         document.documentElement.setAttribute('data-vista-activa', 'catalogo');
-        document.getElementById('titulo-catalogo').innerText = `Resultados para: "${txt}"`;
+        
+        const tituloCat = document.getElementById('titulo-catalogo');
+        if(tituloCat) tituloCat.innerText = `Resultados para: "${txt}"`;
+        
+        const breadCat = document.getElementById('bread-cat-nombre');
+        if(breadCat) breadCat.innerText = `Resultados para: "${txt}"`;
         
         const listafiltrada = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
         const grid = document.getElementById('grid-catalogo');
@@ -405,6 +412,66 @@ function generarGridHTML(listaRaw) {
         </div>`;
     }
 
+    // === LÓGICA DE FAVORITOS 100% INDIVIDUAL (NO AGRUPA) ===
+    if (filtrandoFavoritos) {
+        return listaRaw.map(vDefault => {
+            let stockTotalPrenda = 0;
+            let tallesDisponibles = new Set();
+            if (vDefault.inventario_talles && typeof vDefault.inventario_talles === 'object') {
+                Object.entries(vDefault.inventario_talles).forEach(([talle, cant]) => {
+                    if (parseInt(cant) > 0) {
+                        stockTotalPrenda += parseInt(cant);
+                        tallesDisponibles.add(talle);
+                    }
+                });
+            }
+            const productoAgotado = stockTotalPrenda <= 0;
+            const esFav = 'active'; 
+            const nombre = vDefault.nombre || 'Producto sin nombre';
+            const pTarj = vDefault.precio_tarjeta || vDefault.tarjeta || 0;
+            const pEfvo = vDefault.precio_efectivo || vDefault.efectivo || 0;
+            const arrayFotos = obtenerArrayImagenes(vDefault.imagen_url);
+            const imgUrl = arrayFotos[0];
+
+            let tallesHTML = '';
+            let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
+            if (tallesArray.length > 0) {
+                if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
+                    tallesHTML = `<div class="card-talles-container"><span class="talle-badge" style="border-color: var(--success); color: var(--success);">Talle Único</span></div>`;
+                } else {
+                    tallesHTML = `<div class="card-talles-container">` + 
+                                 tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
+                                 `</div>`;
+                }
+            }
+
+            const colorVal = getColorSeguro(vDefault);
+            const circulosHTML = `<div class="colores-container" style="justify-content: center;"><div class="color-circle active" style="background-color: ${colorVal}; pointer-events: none;" title="${vDefault.color_nombre || vDefault.nombre}"></div></div>`;
+
+            return `
+            <div class="card" id="card-fav-${vDefault.id}">
+                <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="abrirDetalle(${vDefault.id})">
+                    <button class="btn-fav ${esFav}" onclick="toggleFavorito(${vDefault.id}, event)" title="Quitar de favoritos"><i class="fas fa-heart"></i></button>
+                    ${productoAgotado ? '<div class="badge-agotado">SIN STOCK</div>' : ''}
+                    <img loading="lazy" src="${imgUrl}">
+                </div>
+                <div class="card-info">
+                    ${circulosHTML}
+                    <h4 onclick="abrirDetalle(${vDefault.id})">${nombre}</h4>
+                    <div class="precios-container" onclick="abrirDetalle(${vDefault.id})">
+                        <p class="p-tarj">$${pTarj}</p>
+                        <p class="p-efvo"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
+                    </div>
+                    ${tallesHTML}
+                    <button class="btn-card-add ${productoAgotado ? 'disabled' : ''}" ${productoAgotado ? 'disabled' : `onclick="abrirDetalle(${vDefault.id})"`}>
+                        ${productoAgotado ? 'AGOTADO' : 'AGREGAR AL CARRITO'}
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // === LÓGICA DEL CATÁLOGO NORMAL AGRUPADO POR MODELO ===
     const grupos = {};
     const listaAgrupada = [];
 
@@ -462,7 +529,6 @@ function generarGridHTML(listaRaw) {
         }
 
         let tallesHTML = '';
-        // === MAGIA: TALLES ORDENADOS SIEMPRE EN S, M, L ===
         let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
         
         if (tallesArray.length > 0) {
@@ -552,13 +618,16 @@ function mostrarFavoritos() {
     
     sessionStorage.setItem('tiendaVista', 'favoritos');
     document.documentElement.setAttribute('data-vista-activa', 'favoritos');
-    document.getElementById('titulo-catalogo').innerText = `Mis Favoritos (${favoritos.length})`; 
     
-    // === REFUERZO DE CAJA FAVORITOS VACÍOS ===
+    const tituloCat = document.getElementById('titulo-catalogo');
+    if(tituloCat) tituloCat.innerText = `Mis Favoritos (${favoritos.length})`; 
+    
+    const breadCat = document.getElementById('bread-cat-nombre');
+    if(breadCat) breadCat.innerText = `Mis Favoritos (${favoritos.length})`;
+    
     const listaFavs = productosCargados.filter(p => favoritos.includes(parseInt(p.id))); 
     const grid = document.getElementById('grid-catalogo');
     if (grid) { 
-        // Generar HTML igual que el catalogo normal para que salte el cartel de vacio
         grid.innerHTML = generarGridHTML(listaFavs); 
     }
     
@@ -753,7 +822,6 @@ function abrirDetalle(id) {
             if(tituloTalles) tituloTalles.style.display = 'block';
             let htmlTalles = '';
             
-            // === MAGIA: TALLES ORDENADOS S-M-L DENTRO DEL MODAL ===
             Object.entries(prodSeleccionado.inventario_talles)
                 .sort((a, b) => sortTalles(a[0], b[0]))
                 .forEach(([talle, stock]) => { 
@@ -994,7 +1062,6 @@ async function finalizarCompra() {
         const elCp = document.getElementById('chk-cp');
         if(elCp) elCp.classList.add('input-invalido'); 
         errorFormulario = true; 
-        // === MENSAJE ACTUALIZADO DE ENVÍO ===
         mensajeError = "Por favor, completar los campos pendientes."; 
     } else { 
         const elCp = document.getElementById('chk-cp');

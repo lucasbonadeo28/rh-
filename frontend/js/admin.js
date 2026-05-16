@@ -35,7 +35,22 @@ const mapaColores = {
 
 const colorDefectoHex = '#d4ba92'; 
 
+// === FUNCIÓN QUE DETECTA Y CAMBIA EL COLOR AL ESCRIBIR ===
+function detectarColor(texto) {
+    const hex = document.getElementById('add-color-hex');
+    const colorLower = texto.toLowerCase().trim();
+    if(mapaColores[colorLower]) {
+        hex.value = mapaColores[colorLower];
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+    // CONECTAMOS LA FUNCIÓN AL INPUT PARA QUE FUNCIONE EN TIEMPO REAL
+    const inputColorNombre = document.getElementById('add-color-nombre');
+    if (inputColorNombre) {
+        inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
+    }
+
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
         const panelDashboard = document.getElementById('panel-dashboard');
@@ -67,14 +82,11 @@ if(formLogin) {
         const errorMsg = document.getElementById('login-error');
         const btn = document.getElementById('btn-submit-login');
 
-        btn.innerText = 'Verificando...'; 
-        btn.disabled = true; 
-        errorMsg.style.display = 'none';
+        btn.innerText = 'Verificando...'; btn.disabled = true; errorMsg.style.display = 'none';
 
         try {
             const res = await fetch('/api/admin/login', {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
             const data = await res.json();
@@ -91,8 +103,7 @@ if(formLogin) {
             errorMsg.innerText = 'Error de conexión. ¿Está prendido el servidor?';
             errorMsg.style.display = 'block';
         } finally {
-            btn.innerText = 'Ingresar'; 
-            btn.disabled = false;
+            btn.innerText = 'Ingresar'; btn.disabled = false;
         }
     });
 }
@@ -108,9 +119,7 @@ function cerrarSesionLocal() {
 }
 
 window.onload = () => { 
-    if (sessionStorage.getItem('adminLogueado') === 'true') { 
-        cargarTodo(); 
-    }
+    if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
 };
 
 function showCustomAlert(msg, type = 'error', reload = false) {
@@ -118,24 +127,15 @@ function showCustomAlert(msg, type = 'error', reload = false) {
     const modal = document.getElementById('custom-alert-modal');
     const icon = document.getElementById('custom-alert-icon');
     document.getElementById('custom-alert-text').innerText = msg;
-    
-    if(type === 'success') {
-        icon.innerHTML = '<i class="fas fa-check-circle" style="color:#27ae60;"></i>';
-    } else {
-        icon.innerHTML = '<i class="fas fa-times-circle" style="color:#e74c3c;"></i>';
-    }
-    
-    modal.style.display = 'flex'; 
-    setTimeout(() => modal.classList.add('active'), 10); 
+    if(type === 'success') icon.innerHTML = '<i class="fas fa-check-circle" style="color:#27ae60;"></i>';
+    else icon.innerHTML = '<i class="fas fa-times-circle" style="color:#e74c3c;"></i>';
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
 }
 
 function cerrarCustomAlert() {
     const modal = document.getElementById('custom-alert-modal');
     modal.classList.remove('active');
-    setTimeout(() => { 
-        modal.style.display = 'none'; 
-        if(reloadAfterAlert) location.reload(); 
-    }, 200);
+    setTimeout(() => { modal.style.display = 'none'; if(reloadAfterAlert) location.reload(); }, 200);
 }
 
 function showCustomConfirm(msg, callback, btnText = "Sí") {
@@ -143,22 +143,17 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
     document.getElementById('custom-confirm-text').innerText = msg;
     document.getElementById('btn-confirmar-accion').innerText = btnText;
     accionConfirmada = callback;
-    modal.style.display = 'flex'; 
-    setTimeout(() => modal.classList.add('active'), 10);
+    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
 }
 
 function cerrarCustomConfirm() {
     const modal = document.getElementById('custom-confirm-modal');
     modal.classList.remove('active');
-    setTimeout(() => { 
-        modal.style.display = 'none'; 
-        accionConfirmada = null; 
-    }, 200);
+    setTimeout(() => { modal.style.display = 'none'; accionConfirmada = null; }, 200);
 }
 
 document.getElementById('btn-confirmar-accion')?.addEventListener('click', () => {
-    if (accionConfirmada) accionConfirmada(); 
-    cerrarCustomConfirm();
+    if (accionConfirmada) accionConfirmada(); cerrarCustomConfirm();
 });
 
 function mostrarNombreArchivo(input, labelId, textoDefault) {
@@ -167,14 +162,12 @@ function mostrarNombreArchivo(input, labelId, textoDefault) {
         label.innerText = input.files.length === 1 ? input.files[0].name : `${input.files.length} fotos elegidas`;
         label.classList.add('selected'); 
     } else {
-        label.innerText = textoDefault; 
-        label.classList.remove('selected'); 
+        label.innerText = textoDefault; label.classList.remove('selected'); 
     }
 }
 
 async function fetchSeguro(url, opciones = {}) {
-    const res = await fetch(url, opciones); 
-    return res;
+    const res = await fetch(url, opciones); return res;
 }
 
 function verTab(id) { 
@@ -200,13 +193,10 @@ function initTallesBuilder() {
 
     const mainBox = document.createElement('div');
     mainBox.id = 'talles-builder-box';
-    
-    // === ESTILOS PARA QUE OCUPE EL 100% Y EMPUJE EL BOTON ===
     mainBox.style.gridColumn = '1 / -1'; 
     mainBox.style.width = '100%';
     mainBox.style.display = 'block';
     mainBox.style.clear = 'both';
-    
     mainBox.style.background = '#f9f9f9';
     mainBox.style.border = '1px solid #ddd';
     mainBox.style.borderRadius = '8px';
@@ -244,24 +234,16 @@ function initTallesBuilder() {
         inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
     }
 
-    agregarTalleUI('S', 0); 
-    agregarTalleUI('M', 0); 
-    agregarTalleUI('L', 0);
+    agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
 }
 
 function agregarTalleUI(nombre = '', cantidad = 0) {
     const container = document.getElementById('talles-builder-ui');
     if(!container) return;
-    
     const div = document.createElement('div');
-    div.style.display = 'flex'; 
-    div.style.alignItems = 'center'; 
-    div.style.gap = '10px';
-    div.style.background = '#ffffff'; 
-    div.style.padding = '10px'; 
-    div.style.borderRadius = '6px';
-    div.style.border = '1px solid #eee'; 
-    div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+    div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.gap = '10px';
+    div.style.background = '#ffffff'; div.style.padding = '10px'; div.style.borderRadius = '6px';
+    div.style.border = '1px solid #eee'; div.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
 
     div.innerHTML = `
         <input type="text" placeholder="Talle (Ej: M)" value="${nombre}" class="builder-talle-nombre" style="width: 80px; text-transform: uppercase; border: 1px solid #ccc; border-radius: 4px; padding: 8px; text-align: center; font-weight: bold; outline:none;">
@@ -287,9 +269,7 @@ function toggleTalleUnico() {
 
 async function cargarTodo() {
     initTallesBuilder();
-    cargarBanners(); 
-    cargarCupones(); 
-    cargarCategorias();
+    cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos?t=` + new Date().getTime(), { cache: 'no-store' }); 
         pTotales = await resI.json(); 
@@ -325,7 +305,7 @@ function renderStock() {
         const colorCircleHTML = `<span class="product-color-indicator" style="background-color: ${colorHexFinal}; display:inline-block; width:14px; height:14px; border-radius:50%; border:1px solid #ccc; vertical-align:middle; margin-right:6px;"></span>`;
 
         let totalStockPrenda = 0;
-        let tallesHtml = ""; // Para guardar las pastillas visuales de la fila
+        let tallesHtml = "";
         let inventario = p.inventario_talles || {};
 
         if (inventario['ÚNICO'] !== undefined) {
@@ -393,7 +373,6 @@ function renderStock() {
     document.getElementById('pagi-siguiente').disabled = inicio + pPorPagina >= pFiltrados.length;
 }
 
-// === ESTA ES LA FUNCIÓN DEL BOTÓN VERDE QUE ME HABÍA COMIDO ===
 async function guardarEdicionFila(id, event) {
     const efvo = document.getElementById(`efvo-${id}`).value;
     const tarj = document.getElementById(`tarj-${id}`).value;
@@ -401,11 +380,9 @@ async function guardarEdicionFila(id, event) {
     let inventarioFinal = {};
     const inputUnico = document.getElementById(`talle-unico-${id}`);
     
-    // Si tiene input de "Único", leemos ese valor
     if (inputUnico) {
         inventarioFinal['ÚNICO'] = parseInt(inputUnico.value) || 0;
     } else {
-        // Si no, leemos todas las pastillitas chiquitas generadas en la tabla
         const inputsTalles = document.querySelectorAll(`.talle-input-fila-${id}`);
         inputsTalles.forEach(input => {
             const cant = parseInt(input.value) || 0;
@@ -435,7 +412,6 @@ async function guardarEdicionFila(id, event) {
 
         if (res.ok) { 
             showCustomAlert("¡Stock y precios guardados!", "success", false); 
-            // Recargamos el stock visible
             const resI = await fetchSeguro(`${API}/productos?t=` + new Date().getTime(), { cache: 'no-store' }); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
@@ -463,6 +439,10 @@ function editarProducto(id) {
     document.getElementById('add-precio-efvo').value = producto.precio_efectivo || producto.efectivo || '';
     document.getElementById('add-descripcion').value = producto.descripcion || '';
     
+    document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
+    document.getElementById('add-color-hex').value = producto.color_hex || '#d4ba92';
+    document.getElementById('add-color-nombre').value = producto.color_nombre || '';
+
     const chkUnico = document.getElementById('chk-unico');
     const inputStockUnico = document.getElementById('add-stock-unico');
     const containerTalles = document.getElementById('talles-builder-ui');
@@ -503,6 +483,10 @@ function limpiarFormularioAdmin() {
     document.getElementById('add-precio-efvo').value = '';
     document.getElementById('add-descripcion').value = '';
     
+    document.getElementById('add-codigo-modelo').value = '';
+    document.getElementById('add-color-hex').value = '#d4ba92';
+    document.getElementById('add-color-nombre').value = '';
+
     const chkUnico = document.getElementById('chk-unico');
     if(chkUnico) { chkUnico.checked = false; toggleTalleUnico(); }
     
@@ -580,6 +564,10 @@ async function crearOActualizarProducto(e) {
     const desc = document.getElementById('add-descripcion').value;
     const esUnico = document.getElementById('chk-unico').checked;
     const imgInput = document.getElementById('add-img');
+    
+    const codigoModelo = document.getElementById('add-codigo-modelo').value.trim().toUpperCase();
+    const colorHex = document.getElementById('add-color-hex').value;
+    const colorNombre = document.getElementById('add-color-nombre').value.trim();
 
     if (!nombre || !categoria || !tarj || !efvo) { 
         return showCustomAlert("Por favor completa los campos obligatorios.", "error", false); 
@@ -618,7 +606,10 @@ async function crearOActualizarProducto(e) {
             tarjeta: tarj, 
             efectivo: efvo, 
             descripcion: desc, 
-            inventario_talles: inventarioFinal 
+            inventario_talles: inventarioFinal,
+            codigo_modelo: codigoModelo,
+            color_hex: colorHex,
+            color_nombre: colorNombre
         };
         
         if (base64Images.length > 0) payload.imagen_url = JSON.stringify(base64Images);
@@ -632,7 +623,6 @@ async function crearOActualizarProducto(e) {
         if(res.ok) { 
             showCustomAlert(idProductoEditando ? "¡Producto actualizado!" : "¡Producto creado!", "success", false); 
             limpiarFormularioAdmin(); 
-            // ACA VOLVEMOS A FORZAR CACHÉ PARA VER LA FOTO NUEVA
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store'}); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
