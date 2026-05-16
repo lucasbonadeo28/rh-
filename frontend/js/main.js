@@ -61,12 +61,32 @@ function getColorSeguro(v) {
     return '#d4ba92'; 
 }
 
+// === CERRAR MODALES TOCANDO AFUERA + DROPDOWN BUSCADOR ===
 window.addEventListener('click', function(event) {
     const modalProducto = document.getElementById('modal-detalle-producto');
     const modalCheckout = document.getElementById('modal-principal');
     
     if (event.target === modalProducto) { cerrarDetalle(); }
     if (event.target === modalCheckout) { cerrarCheckoutModal(); }
+
+    const dropdown = document.getElementById('search-dropdown');
+    const container = document.getElementById('main-search-container');
+    if (dropdown && container && !container.contains(event.target)) {
+        dropdown.classList.remove('active');
+        container.classList.remove('active-search');
+    }
+});
+
+// === MOSTRAR BOTÓN VOLVER ARRIBA ===
+window.addEventListener('scroll', () => {
+    const btnTop = document.getElementById('btn-back-to-top');
+    if (btnTop) {
+        if (window.scrollY > 300) {
+            btnTop.classList.add('show');
+        } else {
+            btnTop.classList.remove('show');
+        }
+    }
 });
 
 window.onload = async () => { 
@@ -344,27 +364,94 @@ function cambiarVista(vista, categoria = 'Todos') {
     if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) toggleMenuMobile();
 }
 
-let timeoutBuscador = null;
-function ejecutarBusquedaNav(event) {
-    clearTimeout(timeoutBuscador);
-    timeoutBuscador = setTimeout(() => {
-        const txt = event.target.value.toLowerCase().trim();
-        if (txt === "") { cambiarVista('catalogo', 'Todos'); return; }
-        window.scrollTo(0, 0);
-        vistaActual = 'catalogo'; categoriaActual = 'Todos'; filtrandoFavoritos = false;
-        sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
-        document.documentElement.setAttribute('data-vista-activa', 'catalogo');
+// === BUSCADOR PREDICTIVO ===
+let timeoutPredictivo = null;
+
+function ejecutarBusquedaPredictiva(event) {
+    clearTimeout(timeoutPredictivo);
+    const dropdown = document.getElementById('search-dropdown');
+    const container = document.getElementById('main-search-container');
+    const txt = event.target.value.toLowerCase().trim();
+    
+    if (event.key === 'Enter') {
+        dropdown.classList.remove('active');
+        container.classList.remove('active-search');
+        if (txt !== "") {
+            forzarBusquedaCompleta(txt);
+        }
+        return;
+    }
+
+    if (txt.length < 2) {
+        dropdown.classList.remove('active');
+        container.classList.remove('active-search');
+        return;
+    }
+
+    timeoutPredictivo = setTimeout(() => {
+        const filtrados = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
         
-        const tituloCat = document.getElementById('titulo-catalogo');
-        if(tituloCat) tituloCat.innerText = `Resultados para: "${txt}"`;
-        
-        const breadCat = document.getElementById('bread-cat-nombre');
-        if(breadCat) breadCat.innerText = `Resultados para: "${txt}"`;
-        
-        const listafiltrada = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
-        const grid = document.getElementById('grid-catalogo');
-        if (grid) grid.innerHTML = generarGridHTML(listafiltrada);
+        const unicos = [];
+        const codigosVistos = new Set();
+        filtrados.forEach(p => {
+            const code = p.codigo_modelo || p.nombre;
+            if(!codigosVistos.has(code)) {
+                codigosVistos.add(code);
+                unicos.push(p);
+            }
+        });
+
+        container.classList.add('active-search');
+
+        if (unicos.length === 0) {
+            dropdown.innerHTML = '<div style="padding:15px; text-align:center; color:#888; font-size:0.85rem; font-weight: 600;">No encontramos ese producto.</div>';
+        } else {
+            dropdown.innerHTML = unicos.slice(0, 5).map(p => {
+                const img = obtenerArrayImagenes(p.imagen_url)[0];
+                return `
+                <div class="search-item" onclick="abrirDetalleDesdeBusqueda(${p.id})">
+                    <img src="${img}">
+                    <div class="search-item-info">
+                        <span class="search-item-title">${p.nombre}</span>
+                        <span class="search-item-price">$${p.precio_efectivo}</span>
+                    </div>
+                </div>`;
+            }).join('') + (unicos.length > 5 ? `<div style="text-align:center; padding:10px;"><button class="btn-secundario" style="padding:10px 15px; font-size:0.75rem; width:100%;" onclick="forzarBusquedaCompleta('${txt}')">Ver todos los resultados</button></div>` : '');
+        }
+        dropdown.classList.add('active');
     }, 300);
+}
+
+function abrirDetalleDesdeBusqueda(id) {
+    document.getElementById('search-dropdown').classList.remove('active');
+    document.getElementById('main-search-container').classList.remove('active-search');
+    document.getElementById('input-buscador-nav').value = '';
+    abrirDetalle(id);
+}
+
+function forzarBusquedaCompleta(txt) {
+    document.getElementById('search-dropdown').classList.remove('active');
+    document.getElementById('main-search-container').classList.remove('active-search');
+    
+    window.scrollTo(0, 0);
+    vistaActual = 'catalogo'; categoriaActual = 'Todos'; filtrandoFavoritos = false;
+    sessionStorage.setItem('tiendaVista', 'catalogo'); sessionStorage.setItem('tiendaCat', 'Todos');
+    document.documentElement.setAttribute('data-vista-activa', 'catalogo');
+    
+    const tituloCat = document.getElementById('titulo-catalogo');
+    if(tituloCat) tituloCat.innerText = `Resultados para: "${txt}"`;
+    
+    const breadCat = document.getElementById('bread-cat-nombre');
+    if(breadCat) breadCat.innerText = `Resultados para: "${txt}"`;
+    
+    const listafiltrada = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
+    const grid = document.getElementById('grid-catalogo');
+    if (grid) grid.innerHTML = generarGridHTML(listafiltrada);
+}
+
+// Para compatibilidad con enter viejo
+function ejecutarBusquedaNav(event) {
+    ejecutarBusquedaPredictiva(event);
 }
 
 function aplicarFiltrosCatalogo() {
@@ -412,7 +499,6 @@ function generarGridHTML(listaRaw) {
         </div>`;
     }
 
-    // === LÓGICA DE FAVORITOS 100% INDIVIDUAL (NO AGRUPA) ===
     if (filtrandoFavoritos) {
         return listaRaw.map(vDefault => {
             let stockTotalPrenda = 0;
@@ -437,7 +523,8 @@ function generarGridHTML(listaRaw) {
             let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
             if (tallesArray.length > 0) {
                 if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                    tallesHTML = `<div class="card-talles-container"><span class="talle-badge" style="border-color: var(--success); color: var(--success);">Talle Único</span></div>`;
+                    // === ARREGLO ESTÉTICO: Talle único igual al resto (sin verde) ===
+                    tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
                 } else {
                     tallesHTML = `<div class="card-talles-container">` + 
                                  tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
@@ -471,7 +558,6 @@ function generarGridHTML(listaRaw) {
         }).join('');
     }
 
-    // === LÓGICA DEL CATÁLOGO NORMAL AGRUPADO POR MODELO ===
     const grupos = {};
     const listaAgrupada = [];
 
@@ -533,7 +619,8 @@ function generarGridHTML(listaRaw) {
         
         if (tallesArray.length > 0) {
             if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                tallesHTML = `<div class="card-talles-container"><span class="talle-badge" style="border-color: var(--success); color: var(--success);">Talle Único</span></div>`;
+                // === ARREGLO ESTÉTICO: Talle único igual al resto (sin verde) ===
+                tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
             } else {
                 tallesHTML = `<div class="card-talles-container">` + 
                              tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
