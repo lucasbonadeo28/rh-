@@ -16,6 +16,12 @@
 
 * { box-sizing: border-box; }
 
+/* === BARRAS DE SCROLL COLOR ARENA === */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--brand-brown); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #b89c72; }
+
 body {
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0; background-color: #fafafa;
@@ -39,9 +45,9 @@ html[data-vista-activa="favoritos"] .main-catalogo { padding-top: 20px !importan
 .marquee-content span { color: var(--primary) !important; font-weight: 700; }
 @keyframes marqueeLoop { 0% { transform: translate3d(-100%, 0, 0); } 100% { transform: translate3d(0, 0, 0); } }
 
-/* === NAVEGACION === */
+/* === NAVEGACION (Fondo opaco y sólido para mejor rendimiento y 0 lag) === */
 nav {
-    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.98); 
     padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; 
     height: 75px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
@@ -167,12 +173,17 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .btn-filtrar-mobile { display: none; }
 .titulo-catalogo { display: none; margin-top: 0; color: var(--primary); font-weight: 800; font-size: 1.6rem; margin-bottom: 25px; text-align: left; }
 
+/* === CUADRADITOS DE TALLES EN LAS TARJETAS === */
+.card-talles-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 12px; min-height: 22px; }
+.talle-badge { background: #fff; border: 1px solid #ddd; padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; color: #555; text-transform: uppercase; }
+
 /* ========================================================================= */
-/* === MODAL DETALLE PRODUCTO === */
+/* === MODALES === */
 /* ========================================================================= */
 .product-detail-modal, .checkout-modal, .cart-overlay { 
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); 
+    /* LAG FIX: Eliminamos el backdrop-filter pesado en dispositivos */
+    background: rgba(0,0,0,0.85); 
     z-index: 2500; justify-content: center; align-items: center; padding: 20px; 
 }
 .cart-overlay { display: block; opacity: 0; visibility: hidden; transition: var(--anim-speed) ease; }
@@ -200,7 +211,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     position: relative; width: 100%; display: flex; justify-content: center; align-items: center;
 }
 .modal-arrow {
-    position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.85); backdrop-filter: blur(4px); border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem; color: #111; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: 0.3s; z-index: 15;
+    position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.85); border: none; width: 38px; height: 38px; border-radius: 50%; font-size: 1.1rem; color: #111; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: 0.3s; z-index: 15;
 }
 .modal-arrow:hover { background: #fff; transform: translateY(-50%) scale(1.1); color: var(--brand-brown); }
 .modal-arrow.prev-arrow { left: 10px; }
@@ -243,12 +254,12 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     flex-direction: column; text-align: left; background: #ffffff !important; color: #111 !important; 
 }
 
-.btn-close-modal { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.5rem; cursor: pointer; color: var(--secondary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; }
+.btn-close-modal { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 38px; height: 38px; font-size: 1.5rem; cursor: pointer; color: var(--secondary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 20; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; }
 .btn-close-modal:hover { color: var(--danger); transform: rotate(90deg) scale(1.1); background: #fff; }
 
 .btn-fav-modal { 
     position: absolute; top: 40px; left: 40px;
-    background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: none; border-radius: 50%; 
+    background: rgba(255,255,255,0.95); border: none; border-radius: 50%; 
     width: 45px; height: 45px; font-size: 1.3rem; color: #999; cursor: pointer; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 20; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; 
 }
@@ -365,7 +376,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .btn-menu-mobile { display: none; background: transparent; border: none; font-size: 1.3rem; color: var(--primary); cursor: pointer; padding: 5px; }
 
 /* ======================================================= */
-/* RESPONSIVE CELULARES (ARREGLO DE ESPACIOS Y MENÚ "MÁS") */
+/* RESPONSIVE CELULARES */
 /* ======================================================= */
 @media (max-width: 992px) {
     :root { --radius-md: 12px; }
@@ -374,7 +385,8 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .nav-logo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; margin: 0; padding: 0; }
     .nav-logo:hover { transform: translate(-50%, -50%) scale(1.05); }
     
-    .nav-center { display: none; position: absolute; top: 65px; left: 0; width: 100%; height: auto !important; background: rgba(255,255,255,0.98); backdrop-filter: blur(15px); flex-direction: column; align-items: stretch; padding: 0; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border-top: 1px solid #eee; max-height: calc(100vh - 65px); overflow-y: auto; z-index: 2000; transform: none; }
+    /* SIN BLUR para mejor rendimiento */
+    .nav-center { display: none; position: absolute; top: 65px; left: 0; width: 100%; height: auto !important; background: rgba(255,255,255,0.98); flex-direction: column; align-items: stretch; padding: 0; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border-top: 1px solid #eee; max-height: calc(100vh - 65px); overflow-y: auto; z-index: 2000; transform: none; }
     .nav-center.active { display: flex; }
     .filter-link { display: block; width: 100%; padding: 20px 25px; box-sizing: border-box; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.95rem; font-weight: 600; text-align: center; }
     
@@ -404,38 +416,18 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .custom-select-wrapper { flex: 1; }
     .custom-select-trigger { padding: 10px 15px; font-size: 0.85rem; }
     
-    /* === TALLES DE ARRIBA DEL TODO EN CELULAR (PÍLDORAS) === */
     .filtros-talles-top { display: flex !important; flex-direction: column; align-items: flex-start !important; gap: 10px !important; padding: 0 15px !important; margin-bottom: 20px !important;}
     .filtros-talles-top > span { font-size: 0.85rem; font-weight: 800; color: #111; text-transform: uppercase; }
     .talles-pills-scroll { width: 100%; overflow-x: auto; padding-bottom: 8px; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; display: flex; gap: 8px; align-items: center; }
     .talles-pills-scroll::-webkit-scrollbar { display: none; }
     
     .talle-pill-top { 
-        background: #fff; 
-        border: 1px solid #ddd; 
-        border-radius: 50px !important; /* FORMA DE PÍLDORA */
-        padding: 8px 20px !important; 
-        font-size: 0.85rem; 
-        font-weight: 700; 
-        color: #555; 
-        cursor: pointer; 
-        transition: 0.3s; 
-        white-space: nowrap; 
-        display: inline-flex !important; 
-        align-items: center !important; 
-        justify-content: center !important; 
-        user-select: none; 
-        margin: 0;
+        background: #fff; border: 1px solid #ddd; border-radius: 50px !important; padding: 8px 20px !important; 
+        font-size: 0.85rem; font-weight: 700; color: #555; cursor: pointer; transition: 0.3s; 
+        white-space: nowrap; display: inline-flex !important; align-items: center !important; justify-content: center !important; user-select: none; margin: 0;
     }
-    .talle-pill-top input[type="checkbox"] { 
-        display: none !important; /* OCULTAR CHECKBOX AGRESIVAMENTE */
-    }
-    .talle-pill-top.active { 
-        background: var(--brand-brown) !important; 
-        border-color: var(--brand-brown) !important; 
-        color: #111 !important; 
-        box-shadow: 0 4px 10px rgba(212,186,146,0.3) !important; 
-    }
+    .talle-pill-top input[type="checkbox"] { display: none !important; appearance: none !important; }
+    .talle-pill-top.active { background: var(--brand-brown) !important; border-color: var(--brand-brown) !important; color: #111 !important; box-shadow: 0 4px 10px rgba(212,186,146,0.3) !important; }
     
     .productos-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 15px 12px !important; padding: 0 !important; margin-bottom: 30px; }
     .card-info { padding: 12px 10px !important; }
@@ -447,7 +439,7 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     
     .filter-sidebar { position: fixed; top: 0; left: -100%; width: 85%; max-width: 400px; height: 100vh; background: var(--white); z-index: 2600; box-shadow: 15px 0 40px rgba(0,0,0,0.15); display: flex; flex-direction: column; transition: left var(--anim-speed) cubic-bezier(0.25, 0.8, 0.25, 1); overflow-y: auto; }
     .filter-sidebar.active { left: 0; }
-    .filter-sidebar-header { padding: 25px; border-bottom: 1px solid var(--border); display: flex; align-items: center; position: sticky; top: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); z-index: 10; }
+    .filter-sidebar-header { padding: 25px; border-bottom: 1px solid var(--border); display: flex; align-items: center; position: sticky; top: 0; background: rgba(255,255,255,0.95); z-index: 10; }
     .filter-sidebar-header button { background: transparent; border: none; font-size: 1.2rem; color: var(--primary); cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 10px; padding: 0; }
     .pills-container { display: flex; flex-wrap: wrap; gap: 10px; }
     .filter-pill { background: #f5f5f5; border: 1px solid #ddd; padding: 10px 18px; border-radius: 50px; font-size: 0.85rem; font-family: 'Montserrat', sans-serif; color: var(--secondary); cursor: pointer; transition: 0.3s; font-weight: 700; text-transform: uppercase; }
@@ -470,7 +462,6 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     
     .main-catalogo { width: 100% !important; flex: none !important; }
     
-    /* ESCONDER LA BARRA LATERAL EN CELULAR Y DEJAR SOLO LAS PASTILLAS DE ARRIBA */
     #sidebar-desktop { display: none !important; }
 }
 
