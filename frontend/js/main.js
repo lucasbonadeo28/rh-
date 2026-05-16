@@ -26,11 +26,9 @@ let indexImagenSeleccionada = 1;
 let modalTouchStartX = 0;
 let modalTouchEndX = 0;    
 
-// === LECTOR INTELIGENTE DE COLORES (VERSIÓN MEJORADA ANTI-TILDES) ===
 function getColorSeguro(v) {
     if (v.color_hex && v.color_hex !== '#d4ba92') return v.color_hex;
     
-    // Unimos todos los textos y le quitamos los acentos (para que "marrón" y "marron" se lean igual)
     const textRaw = ((v.color_nombre || '') + ' ' + (v.nombre || '') + ' ' + (v.descripcion || '')).toLowerCase();
     const text = textRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -47,7 +45,6 @@ function getColorSeguro(v) {
     };
 
     for (let c in mapaFront) {
-        // Busca la palabra ignorando si está pegada a guiones o puntos
         const regex = new RegExp('(^|[^a-z])' + c + '([^a-z]|$)', 'i');
         if (regex.test(text)) {
             return mapaFront[c];
@@ -112,6 +109,8 @@ window.onload = async () => {
                 this.parentElement.classList.remove('active');
             }
             aplicarFiltrosCatalogo();
+            // === SCROLL A TOPE AL FILTRAR TALLES ===
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
         };
     });
 
@@ -414,9 +413,7 @@ function aplicarFiltrosCatalogo() {
 
 function generarGridHTML(listaRaw) {
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
-        let msj = filtrandoFavoritos 
-            ? "No tenés productos en favoritos." 
-            : "No hay productos en esta categoría.";
+        let msj = filtrandoFavoritos ? "No tenés productos en favoritos." : "No hay productos en esta categoría.";
         let icono = filtrandoFavoritos ? "fa-heart" : "fa-box-open";
         let colorIcono = filtrandoFavoritos ? "var(--brand-brown)" : "#ccc";
         
@@ -454,9 +451,19 @@ function generarGridHTML(listaRaw) {
         const vDefault = item.variantes[0]; 
         
         let stockTotalPrenda = 0;
-        if (vDefault.inventario_talles && typeof vDefault.inventario_talles === 'object') {
-            Object.values(vDefault.inventario_talles).forEach(cant => stockTotalPrenda += (parseInt(cant) || 0));
-        }
+        let tallesDisponibles = new Set();
+
+        item.variantes.forEach(v => {
+            if (v.inventario_talles && typeof v.inventario_talles === 'object') {
+                Object.entries(v.inventario_talles).forEach(([talle, cant]) => {
+                    if (parseInt(cant) > 0) {
+                        stockTotalPrenda += parseInt(cant);
+                        tallesDisponibles.add(talle);
+                    }
+                });
+            }
+        });
+
         const productoAgotado = stockTotalPrenda <= 0;
         const esFav = favoritos.includes(parseInt(vDefault.id)) ? 'active' : '';
         const nombre = vDefault.nombre || 'Producto sin nombre';
@@ -474,6 +481,18 @@ function generarGridHTML(listaRaw) {
             }).join('') + `</div>`;
         }
 
+        let tallesHTML = '';
+        let tallesArray = Array.from(tallesDisponibles);
+        if (tallesArray.length > 0) {
+            if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
+                tallesHTML = `<div class="card-talles-container"><span class="talle-badge" style="border-color: var(--success); color: var(--success);">Talle Único</span></div>`;
+            } else {
+                tallesHTML = `<div class="card-talles-container">` + 
+                             tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
+                             `</div>`;
+            }
+        }
+
         return `
         <div class="card" id="card-${item.clave}">
             <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="document.getElementById('btn-${item.clave}').click()">
@@ -488,6 +507,7 @@ function generarGridHTML(listaRaw) {
                     <p class="p-tarj" id="ptarj-${item.clave}">$${pTarj}</p>
                     <p class="p-efvo" id="pefvo-${item.clave}"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
                 </div>
+                ${tallesHTML}
                 <button id="btn-${item.clave}" class="btn-card-add ${productoAgotado ? 'disabled' : ''}" ${productoAgotado ? 'disabled' : `onclick="abrirDetalle(${vDefault.id})"`} data-id="${vDefault.id}">
                     ${productoAgotado ? 'AGOTADO' : 'AGREGAR AL CARRITO'}
                 </button>
@@ -724,16 +744,6 @@ function abrirDetalle(id) {
     
     actualizarFlechasModal();
 
-    const modalImgWrapper = document.querySelector('.modal-img-wrapper');
-    if(modalImgWrapper) {
-        modalImgWrapper.ontouchstart = (e) => modalTouchStartX = e.changedTouches[0].screenX;
-        modalImgWrapper.ontouchend = (e) => {
-            modalTouchEndX = e.changedTouches[0].screenX;
-            if (modalTouchStartX - modalTouchEndX > 40 && modalImages.length > 1) nextModalImg();
-            if (modalTouchEndX - modalTouchStartX > 40 && modalImages.length > 1) prevModalImg();
-        }
-    }
-
     document.getElementById('det-titulo').innerText = prodSeleccionado.nombre || 'Producto'; 
     document.getElementById('det-precio-tarj').innerText = `$${prodSeleccionado.precio_tarjeta || prodSeleccionado.tarjeta || 0} Tarjeta`; 
     document.getElementById('det-precio-efvo').innerText = `$${prodSeleccionado.precio_efectivo || prodSeleccionado.efectivo || 0} Transf.`; 
@@ -769,9 +779,14 @@ function abrirDetalle(id) {
     }
 
     document.getElementById('modal-detalle-producto').style.display = 'flex'; 
+    // === BLOQUEO DE SCROLL EN EL FONDO ===
+    document.body.style.overflow = 'hidden'; 
 }
 
-function cerrarDetalle() { document.getElementById('modal-detalle-producto').style.display = 'none'; }
+function cerrarDetalle() { 
+    document.getElementById('modal-detalle-producto').style.display = 'none'; 
+    document.body.style.overflow = ''; 
+}
 
 function agregarDesdeDetalle() { 
     let talleElegido = "Único"; 
@@ -803,7 +818,9 @@ function abrirCarritoSidebar() {
     document.getElementById('cart-sidebar').classList.add('active'); document.getElementById('cart-overlay').classList.add('active'); 
     renderizarCarritoSidebar(); 
 }
-function cerrarCarritoSidebar() { document.getElementById('cart-sidebar').classList.remove('active'); document.getElementById('cart-overlay').classList.remove('active'); }
+function cerrarCarritoSidebar() { 
+    document.getElementById('cart-sidebar').classList.remove('active'); document.getElementById('cart-overlay').classList.remove('active'); 
+}
 
 function renderizarCarritoSidebar() { 
     const lista = document.getElementById('lista-carrito-sidebar'); let subtotal = 0; 
@@ -892,10 +909,14 @@ function irAlCheckout() {
     document.getElementById('modal-principal').style.display = 'flex'; 
     document.getElementById('paso-2-formulario').style.display = 'flex'; 
     document.getElementById('pantalla-exito').style.display = 'none'; 
+    document.body.style.overflow = 'hidden'; 
     recalcularTotalPaso2(); 
 }
 
-function cerrarCheckoutModal() { document.getElementById('modal-principal').style.display = 'none'; }
+function cerrarCheckoutModal() { 
+    document.getElementById('modal-principal').style.display = 'none'; 
+    document.body.style.overflow = ''; 
+}
 
 function calcularEnvio() { 
     const cp = document.getElementById('chk-cp').value; 
