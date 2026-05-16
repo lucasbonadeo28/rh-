@@ -31,12 +31,13 @@
 html, body {
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0; 
-    background-color: #ffffff; /* Evita que el fondo transparente se vea feo */
+    background-color: #fafafa; /* Fondo sólido constante */
     color: var(--primary); display: flex; flex-direction: column; min-height: 100vh;
     -webkit-font-smoothing: antialiased;
-    overscroll-behavior-y: none; /* Bloquea el rebote gomoso del scroll */
+    overscroll-behavior: none; /* Bloquea el rebote gomoso */
 }
-.main-wrapper { flex: 1; min-height: 80vh; background-color: #fafafa; } /* Fondo del contenido principal */
+
+.main-wrapper { flex: 1; min-height: 80vh; }
 
 /* === MAGIA PARA VISTAS === */
 #vista-home, #vista-catalogo { display: none; animation: fadeIn 0.5s ease-in-out; }
