@@ -27,14 +27,16 @@
 .talles-pills-scroll::-webkit-scrollbar { display: none; }
 #det-mini-gallery, .talles-pills-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
-body {
+/* === FIX DEL EFECTO "CORTE DE ARRIBA" AL SCROLLEAR EN CELU === */
+html, body {
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-    margin: 0; background-color: #fafafa;
+    margin: 0; 
+    background-color: #ffffff; /* Evita que el fondo transparente se vea feo */
     color: var(--primary); display: flex; flex-direction: column; min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none; /* Bloquea el rebote gomoso del scroll */
 }
-
-.main-wrapper { flex: 1; min-height: 80vh; }
+.main-wrapper { flex: 1; min-height: 80vh; background-color: #fafafa; } /* Fondo del contenido principal */
 
 /* === MAGIA PARA VISTAS === */
 #vista-home, #vista-catalogo { display: none; animation: fadeIn 0.5s ease-in-out; }
@@ -67,12 +69,22 @@ nav {
 .btn-nav-icon:hover { color: var(--brand-brown); background-color: rgba(212, 186, 146, 0.1); transform: translateY(-2px); }
 #fav-count, #cart-count { position: absolute; top: 0px; right: -2px; background: var(--danger) !important; color: white !important; font-size: 0.65rem !important; font-weight: 700 !important; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3); }
 
-.search-container { position: relative; width: 40px; height: 40px; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; border-radius: 50px; background: transparent; overflow: hidden; }
-.search-container:hover, .search-container:focus-within { width: 220px; background: rgba(0,0,0,0.03); }
+/* === BUSCADOR PREDICTIVO === */
+.search-container { position: relative; width: 40px; height: 40px; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; border-radius: 50px; background: transparent; overflow: visible; }
+.search-container.active-search, .search-container:focus-within { width: 220px; background: rgba(0,0,0,0.03); }
 .search-container i { position: absolute; left: 0; width: 40px; text-align: center; color: var(--secondary); font-size: 1.2rem; pointer-events: none; transition: 0.3s; z-index: 2; }
-.search-container:hover i, .search-container:focus-within i { color: var(--brand-brown); }
-.search-container input { width: 100%; height: 100%; border: none; background: transparent; padding: 0 15px 0 40px; font-size: 0.85rem; font-family: 'Montserrat', sans-serif; outline: none; opacity: 0; cursor: pointer; transition: 0.3s; }
-.search-container:hover input, .search-container:focus-within input { opacity: 1; cursor: text; }
+.search-container.active-search i, .search-container:focus-within i { color: var(--brand-brown); }
+.search-container input { width: 100%; height: 100%; border: none; background: transparent; padding: 0 15px 0 40px; font-size: 0.85rem; font-family: 'Montserrat', sans-serif; outline: none; opacity: 0; cursor: pointer; transition: 0.3s; border-radius: 50px; }
+.search-container.active-search input, .search-container:focus-within input { opacity: 1; cursor: text; }
+
+.search-dropdown { position: absolute; top: calc(100% + 5px); right: 0; width: 320px; background: #fff; border: 1px solid #eee; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 2000; max-height: 400px; overflow-y: auto; display: none; flex-direction: column; padding: 8px; }
+.search-dropdown.active { display: flex; }
+.search-item { display: flex; align-items: center; gap: 12px; padding: 8px; text-decoration: none; color: var(--primary); border-radius: 8px; transition: 0.2s; cursor: pointer; }
+.search-item:hover { background: #f9f9f9; }
+.search-item img { width: 45px; height: 55px; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.search-item-info { display: flex; flex-direction: column; justify-content: center; }
+.search-item-title { font-size: 0.8rem; font-weight: 700; line-height: 1.2; text-transform: uppercase; margin-bottom: 3px; }
+.search-item-price { font-size: 0.85rem; font-weight: 800; color: var(--success); }
 
 .nav-dropdown-wrapper { position: relative; display: flex; align-items: center; height: 100%; }
 .btn-mas-cat { cursor: pointer; display: flex !important; align-items: center; gap: 5px; }
@@ -80,6 +92,11 @@ nav {
 .nav-dropdown-wrapper:hover .nav-dropdown-menu { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
 .drop-link { padding: 12px 20px; color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; text-align: center; cursor: pointer; transition: 0.2s; text-decoration: none; }
 .drop-link:hover, .drop-link.active { color: var(--brand-brown); background-color: rgba(212, 186, 146, 0.05); }
+
+/* === BOTÓN VOLVER ARRIBA === */
+#btn-back-to-top { position: fixed; bottom: 100px; right: 30px; background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; z-index: 99; box-shadow: 0 4px 10px rgba(0,0,0,0.2); opacity: 0; visibility: hidden; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+#btn-back-to-top.show { opacity: 1; visibility: visible; }
+#btn-back-to-top:hover { background: var(--brand-brown); transform: translateY(-3px); }
 
 /* === CARRUSEL === */
 .hero-carousel { position: relative; width: 100%; max-width: 1400px; margin: 20px auto; overflow: hidden; background: #fafafa; border-radius: 20px; transform: translateZ(0); will-change: transform; }
@@ -399,10 +416,14 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .nav-dropdown-menu .drop-link { display: block; width: 100%; padding: 18px 25px !important; border-bottom: 1px solid rgba(0,0,0,0.03) !important; color: var(--secondary) !important; text-align: center !important; }
     .nav-dropdown-menu .drop-link.active { color: var(--brand-brown) !important; font-weight: 800; }
 
+    /* BÚSQUEDA PREDICTIVA MOBILE */
     .search-container { width: 38px; height: 38px; }
     .search-container:hover { width: 38px; background: transparent; }
-    .search-container:focus-within { width: calc(100vw - 30px); position: absolute; right: 15px; top: 13px; height: 45px; background: var(--white); box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1050; border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .search-container.active-search, .search-container:focus-within { width: calc(100vw - 30px); position: absolute; right: 15px; top: 13px; height: 45px; background: var(--white); box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1050; border: 1px solid var(--border); border-radius: var(--radius-md); }
+    .search-dropdown { width: 100%; right: 0; position: fixed; top: 65px; border-radius: 0 0 12px 12px; }
     
+    #btn-back-to-top { bottom: 90px; right: 20px; width: 40px; height: 40px; font-size: 1rem; }
+
     .top-marquee { font-size: 0.6rem; padding: 8px 0; height: auto; }
     .titulo-seccion-home, .titulo-catalogo { font-size: 1.5rem; margin-bottom: 25px; }
     .container-home { padding: 0 15px; margin: 30px auto 0; }
