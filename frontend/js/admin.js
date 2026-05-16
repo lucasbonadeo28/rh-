@@ -43,17 +43,40 @@ function detectarColor(texto) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === INYECCIÓN CSS PARA ARREGLAR EL ADMIN EN CELULAR ===
+    // === INYECCIÓN CSS PARA ARREGLAR DISEÑO DE CELULAR (BOTONES ABAJO, TODO CENTRADO Y HORIZONTAL) ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
+        /* Obligar al botón de guardar a ir abajo de todo ocupando el 100% */
+        #btn-crear-producto {
+            grid-column: 1 / -1 !important;
+            width: 100% !important;
+            margin-top: 20px !important;
+            display: block !important;
+        }
+        
         @media (max-width: 768px) {
             .admin-container { padding: 10px; }
             #talles-builder-box { padding: 15px 10px; margin-top: 15px; }
-            .builder-talle-nombre, .builder-talle-cant { width: 100% !important; flex: 1; }
-            #talles-builder-ui > div { flex-wrap: wrap; }
+            
+            /* Centrar todo dentro del creador de talles */
+            #talles-builder-ui { justify-content: center !important; }
+            #talles-builder-ui > div { 
+                flex-wrap: nowrap !important; 
+                justify-content: center !important;
+            }
+            .builder-talle-nombre, .builder-talle-cant { 
+                width: 70px !important; /* Ancho fijo para que no se estiren */
+                flex: none !important; 
+            }
+            #btn-add-talle-ui { margin: 15px auto 0 auto !important; display: block; }
+            
             .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
+            
             table { display: block; overflow-x: auto; white-space: nowrap; }
             .swal2-popup { width: 90% !important; }
+            
+            /* Quitar limites para scroll horizontal en la tabla si es necesario */
+            .talles-celda { max-width: 100% !important; }
         }
     `;
     document.head.appendChild(adminStyles);
@@ -217,13 +240,14 @@ function initTallesBuilder() {
     mainBox.style.marginBottom = '25px';
     mainBox.style.boxSizing = 'border-box';
 
-    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase;">Stock por Talles</h4>';
+    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase; text-align:center;">Stock por Talles</h4>';
 
     const container = document.createElement('div');
     container.id = 'talles-builder-ui';
     container.style.display = 'flex';
     container.style.flexWrap = 'wrap';
     container.style.gap = '10px';
+    container.style.justifyContent = 'center';
 
     const btnAdd = document.createElement('button');
     btnAdd.id = 'btn-add-talle-ui';
@@ -234,6 +258,8 @@ function initTallesBuilder() {
     btnAdd.style.fontSize = '0.85rem';
     btnAdd.style.width = 'auto';
     btnAdd.style.marginTop = '15px';
+    btnAdd.style.display = 'block';
+    btnAdd.style.margin = '15px auto 0 auto';
     btnAdd.onclick = () => agregarTalleUI('', 0);
 
     mainBox.appendChild(container);
@@ -352,6 +378,7 @@ function renderStock() {
             mainImg += (mainImg.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
         }
 
+        // === ARREGLO HORIZONTAL PARA TABLAS (FLEX-WRAP: NOWRAP) ===
         return `
         <tr>
             <td><img src="${mainImg}" style="width:60px;height:60px;object-fit:cover; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></td>
@@ -366,16 +393,18 @@ function renderStock() {
             <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
             
             <td>
-                <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 240px;">
+                <div class="talles-celda" style="display: flex; flex-wrap: nowrap; gap: 4px; max-width: 240px; overflow-x: auto; padding-bottom: 4px;">
                     ${tallesHtml}
                 </div>
                 <small style="color:${totalStockPrenda > 0 ? '#27ae60' : '#e74c3c'}; font-weight:bold; display:block; margin-top:6px;">Stock Total: ${totalStockPrenda}</small>
             </td>
 
             <td style="text-align: center;">
-                <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Stock Rápido"><i class="fas fa-check"></i></button>
-                <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="editarProducto(${p.id})" title="Editar Detalles Completos"><i class="fas fa-pencil-alt"></i></button>
-                <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="borrarP(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                <div style="display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px;">
+                    <button style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Stock Rápido"><i class="fas fa-check"></i></button>
+                    <button style="background: #f39c12; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="editarProducto(${p.id})" title="Editar Detalles Completos"><i class="fas fa-pencil-alt"></i></button>
+                    <button style="background: #ff6b6b; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="borrarP(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                </div>
             </td>
         </tr>`;
     }).join('');
@@ -440,7 +469,6 @@ async function guardarEdicionFila(id, event) {
     }
 }
 
-// === FIX 3: RELLENAR TODOS LOS CAMPOS AL EDITAR ===
 function editarProducto(id) {
     const producto = pTotales.find(p => p.id === id);
     if (!producto) return;
@@ -567,7 +595,6 @@ const procesarImg = (file) => {
     });
 };
 
-// === FIX 4: CONFIRMACIÓN Y MANEJO DE FOTO AL EDITAR ===
 async function ejecutarGuardadoFinal(payload, base64Images, btn) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...'; 
     btn.disabled = true;
@@ -587,7 +614,6 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
         if(res.ok) { 
             showCustomAlert(idProductoEditando ? "¡Producto actualizado!" : "¡Producto creado!", "success", false); 
             limpiarFormularioAdmin(); 
-            // === FIX 5: ROMPER CACHÉ AL ACTUALIZAR LA LISTA ===
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
