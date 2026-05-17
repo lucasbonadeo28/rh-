@@ -11,8 +11,14 @@ let cuponAplicado = { codigo: null, descuento: 0 };
 let banners = [];
 let currentSlide = 0;
 let slideInterval;
+
+// Variables para el táctil del carrusel
 let touchStartX = 0;
 let touchEndX = 0;
+
+// Variables para el táctil de las fotos de los productos
+let modalTouchStartX = 0;
+let modalTouchEndX = 0;
 
 let vistaActual = 'home';
 let categoriaActual = 'Todos';
@@ -60,6 +66,7 @@ function getColorSeguro(v) {
     return '#d4ba92'; 
 }
 
+// === CERRAR MODALES TOCANDO AFUERA + DROPDOWN BUSCADOR ===
 window.addEventListener('click', function(event) {
     const modalProducto = document.getElementById('modal-detalle-producto');
     const modalCheckout = document.getElementById('modal-principal');
@@ -75,6 +82,7 @@ window.addEventListener('click', function(event) {
     }
 });
 
+// === MOSTRAR BOTÓN VOLVER ARRIBA ===
 window.addEventListener('scroll', () => {
     const btnTop = document.getElementById('btn-back-to-top');
     if (btnTop) {
@@ -89,9 +97,37 @@ window.addEventListener('scroll', () => {
 window.onload = async () => { 
     window.scrollTo(0, 0);
 
+    // === HABILITAMOS EL TÁCTIL (SWIPE) PARA EL CARRUSEL PRINCIPAL ===
+    const carruselBanner = document.querySelector('.hero-carousel');
+    if(carruselBanner) {
+        carruselBanner.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        carruselBanner.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX < touchStartX - 40) nextSlide(); // Desliza a la izquierda
+            if (touchEndX > touchStartX + 40) prevSlide(); // Desliza a la derecha
+            reiniciarAutoplay();
+        }, {passive: true});
+    }
+
+    // === HABILITAMOS EL TÁCTIL (SWIPE) PARA LAS FOTOS DE LOS PRODUCTOS ===
+    const fotoModal = document.querySelector('.modal-img-wrapper');
+    if(fotoModal) {
+        fotoModal.addEventListener('touchstart', e => {
+            modalTouchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+        fotoModal.addEventListener('touchend', e => {
+            modalTouchEndX = e.changedTouches[0].screenX;
+            if(modalImages.length > 1) { // Solo si tiene más de 1 foto
+                if (modalTouchEndX < modalTouchStartX - 40) nextModalImg(); // Pasa a la siguiente
+                if (modalTouchEndX > modalTouchStartX + 40) prevModalImg(); // Vuelve a la anterior
+            }
+        }, {passive: true});
+    }
+
     try { 
         const favData = JSON.parse(localStorage.getItem('favsLucTienda'));
-        // FIX: Limpiamos los favoritos para que no haya errores (NaN o nulos)
         favoritos = Array.isArray(favData) ? favData.map(id => parseInt(id)).filter(id => !isNaN(id)) : []; 
     } catch(e) { favoritos = []; }
     
@@ -482,7 +518,6 @@ function aplicarFiltrosCatalogo() {
 }
 
 function generarGridHTML(listaRaw) {
-    // === FIX FAVORITOS: SI ESTÁ VACÍO, MUESTRA EL CARTEL Y FRENA ===
     if(!listaRaw || !Array.isArray(listaRaw) || listaRaw.length === 0) {
         let msj = filtrandoFavoritos ? "No tenés productos en favoritos." : "No hay productos en esta categoría.";
         let icono = filtrandoFavoritos ? "fa-heart" : "fa-box-open";
@@ -496,7 +531,6 @@ function generarGridHTML(listaRaw) {
         </div>`;
     }
 
-    // === LÓGICA DE FAVORITOS (SOLO LOS ELEGIDOS, NO LA TIENDA ENTERA) ===
     if (filtrandoFavoritos) {
         return listaRaw.map(vDefault => {
             let stockTotalPrenda = 0;
@@ -529,7 +563,9 @@ function generarGridHTML(listaRaw) {
                 }
             }
 
-            // SIN circulitos de otros colores porque es 100% individual
+            const colorVal = getColorSeguro(vDefault);
+            const circulosHTML = `<div class="colores-container" style="justify-content: center;"><div class="color-circle active" style="background-color: ${colorVal}; pointer-events: none;" title="${vDefault.color_nombre || vDefault.nombre}"></div></div>`;
+
             return `
             <div class="card" id="card-fav-${vDefault.id}">
                 <div class="img-wrapper ${productoAgotado ? 'agotado' : ''}" onclick="abrirDetalle(${vDefault.id})">
@@ -552,7 +588,6 @@ function generarGridHTML(listaRaw) {
         }).join('');
     }
 
-    // === LÓGICA DEL CATÁLOGO NORMAL AGRUPADO POR MODELO ===
     const grupos = {};
     const listaAgrupada = [];
 
@@ -706,7 +741,6 @@ function mostrarFavoritos() {
     const breadCat = document.getElementById('bread-cat-nombre');
     if(breadCat) breadCat.innerText = `Mis Favoritos (${favoritos.length})`;
     
-    // === REFUERZO DE LA LÓGICA (SOLO LOS FAVS) ===
     const listaFavs = productosCargados.filter(p => favoritos.includes(parseInt(p.id))); 
     const grid = document.getElementById('grid-catalogo');
     if (grid) { 
