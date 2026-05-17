@@ -9,9 +9,7 @@ let vTotales = [];
 let vPagina = 1; 
 const vPorPagina = 10;
 let ventasDataGlobal = []; 
-let reloadAfterAlert = false; 
 
-let accionConfirmada = null;
 let categoriasGlobal = [];
 let cPagina = 1;
 const cPorPagina = 10;
@@ -42,79 +40,108 @@ function detectarColor(texto) {
     }
 }
 
+// === SISTEMA DE CARTELES FLOTANTES (TOAST) AUTÓNOMO ===
+function mostrarToastAdmin(mensaje, tipo = 'success') {
+    let container = document.getElementById('toast-container-admin');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container-admin';
+        container.style.cssText = 'position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.style.cssText = `background: ${tipo === 'success' ? 'rgba(39, 174, 96, 0.95)' : 'rgba(231, 76, 60, 0.95)'}; color: white; padding: 16px 30px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; box-shadow: 0 15px 40px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 12px; font-family: 'Montserrat', sans-serif; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 0; transform: translateY(40px) scale(0.9);`;
+    toast.innerHTML = tipo === 'success' ? `<i class="fas fa-check-circle"></i> ${mensaje}` : `<i class="fas fa-exclamation-circle"></i> ${mensaje}`;
+    container.appendChild(toast);
+    
+    setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0) scale(1)'; }, 10);
+    setTimeout(() => { 
+        toast.style.opacity = '0'; toast.style.transform = 'translateY(20px) scale(0.9)';
+        setTimeout(() => { if (container.contains(toast)) container.removeChild(toast); }, 400);
+    }, 3000); 
+}
+
+function showCustomAlert(msg, type = 'error', reload = false) {
+    mostrarToastAdmin(msg, type);
+    if(reload) setTimeout(() => location.reload(), 1500);
+}
+
+// === SISTEMA DE CONFIRMACIÓN MODAL AUTÓNOMO ===
+function showCustomConfirm(msg, callback, btnText = "Sí") {
+    let modal = document.getElementById('dinamic-confirm-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'dinamic-confirm-modal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; display: none; justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.3s; font-family: "Montserrat", sans-serif;';
+        modal.innerHTML = `
+            <div style="background: #fff; padding: 30px; border-radius: 16px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.3s;" id="dinamic-confirm-box">
+                <i class="fas fa-question-circle" style="font-size: 3.5rem; color: #f39c12; margin-bottom: 15px;"></i>
+                <h3 style="margin: 0 0 20px 0; color: #111; font-size: 1.1rem; line-height: 1.4;" id="dinamic-confirm-text"></h3>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="dinamic-btn-cancel" style="background: #f5f5f5; border: 1px solid #ddd; color: #555; padding: 12px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.3s;">Cancelar</button>
+                    <button id="dinamic-btn-confirm" style="background: #27ae60; border: none; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; transition: 0.3s;"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        document.getElementById('dinamic-btn-cancel').onclick = () => {
+            modal.style.opacity = '0';
+            document.getElementById('dinamic-confirm-box').style.transform = 'scale(0.9)';
+            setTimeout(() => modal.style.display = 'none', 300);
+        };
+    }
+    
+    document.getElementById('dinamic-confirm-text').innerText = msg;
+    const btnConf = document.getElementById('dinamic-btn-confirm');
+    btnConf.innerText = btnText;
+    
+    const newBtnConf = btnConf.cloneNode(true);
+    btnConf.parentNode.replaceChild(newBtnConf, btnConf);
+    
+    newBtnConf.onclick = () => {
+        modal.style.opacity = '0';
+        document.getElementById('dinamic-confirm-box').style.transform = 'scale(0.9)';
+        setTimeout(() => { modal.style.display = 'none'; callback(); }, 300);
+    };
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        document.getElementById('dinamic-confirm-box').style.transform = 'scale(1)';
+    }, 10);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-    // === FIX DE ESTILOS: SEGURO Y SIN ROMPER EL HTML ===
+    // === FIX DE ESTILOS CSS ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        /* Caja de talles forzada al 100% */
+        #bottom-form-wrapper {
+            grid-column: 1 / -1 !important; width: 100% !important; max-width: 100% !important;
+            display: flex; flex-direction: column; align-items: center; margin-top: 20px;
+        }
         #talles-builder-box {
-            width: 100% !important;
-            margin: 20px 0 !important;
-            display: block !important;
-            box-sizing: border-box !important;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
+            width: 100% !important; max-width: 100% !important; display: block !important;
+            box-sizing: border-box !important; background: #f9f9f9; border: 1px solid #ddd;
+            border-radius: 8px; padding: 20px; margin-bottom: 15px;
         }
-
-        /* Botón Guardar blindado */
         #btn-crear-producto {
-            width: 100% !important;
-            padding: 18px !important;
-            font-size: 1.1rem !important;
-            display: block !important;
-            background: #111 !important;
-            color: #fff !important;
-            box-sizing: border-box !important; 
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
+            width: 100% !important; max-width: 100% !important; padding: 18px !important;
+            font-size: 1.1rem !important; display: block !important; background: #111 !important;
+            color: #fff !important; box-sizing: border-box !important; border: none;
+            border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase;
         }
+        #talles-builder-ui { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        .tab-content { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; width: 100% !important; padding-bottom: 15px; }
+        table { min-width: 950px !important; width: 100% !important; border-collapse: collapse; }
+        th, td { vertical-align: middle !important; }
 
-        #talles-builder-ui {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-        
-        .tab-content {
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-            width: 100% !important;
-            padding-bottom: 15px;
-        }
-        table {
-            min-width: 950px !important; 
-            width: 100% !important;
-            border-collapse: collapse;
-        }
-        th, td {
-            vertical-align: middle !important;
-        }
-
-        /* ESTILOS DEL NUEVO BOTÓN VERDE (CREAR NUEVA) */
-        .btn-crear-nueva {
-            background-color: #27ae60 !important; color: white !important; border: none !important;
-            padding: 10px 20px !important; border-radius: 8px !important; font-weight: 800 !important;
-            font-size: 0.85rem !important; cursor: pointer !important; transition: all 0.3s ease !important;
-            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2) !important; display: inline-flex !important;
-            align-items: center !important; gap: 8px !important; text-transform: uppercase !important;
-        }
-        .btn-crear-nueva:hover {
-            transform: translateY(-2px) !important; box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4) !important;
-        }
-        
         @media (max-width: 768px) {
             .admin-container { padding: 10px; overflow-x: hidden; }
             #talles-builder-ui { flex-direction: column; align-items: center; }
             .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; }
             #btn-add-talle-ui { margin: 15px auto 0 auto !important; display: block; }
             .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
-            .swal2-popup { width: 90% !important; }
         }
     `;
     document.head.appendChild(adminStyles);
@@ -124,48 +151,32 @@ window.addEventListener('DOMContentLoaded', () => {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
     }
 
-    // === INYECCIÓN SEGURA DEL BOTÓN VERDE Y EL TÍTULO ===
+    // === INYECCIÓN DEL BOTÓN "NUEVA PRENDA" ARRIBA A LA DERECHA ===
     setTimeout(() => {
         const form = document.getElementById('add-product-form');
-        if (form && !document.querySelector('.btn-crear-nueva')) {
-            // Ocultamos los títulos viejos para que no se dupliquen
-            document.querySelectorAll('h1, h2, h3, h4').forEach(t => {
-                if (t.innerText.toLowerCase().includes('nueva prenda') || t.innerText.toLowerCase().includes('cargar')) {
-                    t.style.display = 'none';
-                }
-            });
-
-            // Creamos un contenedor nuevo y seguro arriba del formulario
-            const headerWrap = document.createElement('div');
-            headerWrap.style.display = 'flex'; 
-            headerWrap.style.justifyContent = 'space-between';
-            headerWrap.style.alignItems = 'center'; 
-            headerWrap.style.width = '100%';
-            headerWrap.style.marginBottom = '20px'; 
-            headerWrap.style.borderBottom = '1px solid #eee';
-            headerWrap.style.paddingBottom = '15px';
-
-            const tituloForm = document.createElement('h2');
-            tituloForm.innerText = 'Cargar Nueva Prenda';
-            tituloForm.style.margin = '0';
-            tituloForm.style.color = '#111';
-            tituloForm.style.fontSize = '1.5rem';
-
+        if (form && !document.getElementById('btn-crear-nueva-flotante')) {
+            const btnContainer = document.createElement('div');
+            // Lo tiramos a la derecha al 100%
+            btnContainer.style.cssText = 'width: 100%; display: flex; justify-content: flex-end; margin-bottom: 20px;';
+            
             const btnNueva = document.createElement('button');
-            btnNueva.type = 'button'; 
-            btnNueva.className = 'btn-crear-nueva';
-            btnNueva.innerHTML = '<i class="fas fa-plus"></i> CREAR NUEVA';
+            btnNueva.id = 'btn-crear-nueva-flotante';
+            btnNueva.type = 'button';
+            btnNueva.innerHTML = '<i class="fas fa-plus"></i> NUEVA PRENDA';
+            btnNueva.style.cssText = 'background-color: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; transition: transform 0.3s;';
+            
+            btnNueva.onmouseover = () => btnNueva.style.transform = 'translateY(-2px)';
+            btnNueva.onmouseout = () => btnNueva.style.transform = 'translateY(0)';
+            
             btnNueva.onclick = () => {
                 limpiarFormularioAdmin();
-                showCustomAlert("Formulario vacío y listo para cargar prenda nueva", "success");
+                mostrarToastAdmin("Formulario listo para cargar prenda nueva", "success");
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
-            headerWrap.appendChild(tituloForm);
-            headerWrap.appendChild(btnNueva);
-            
-            // Lo insertamos justo antes del formulario
-            form.parentNode.insertBefore(headerWrap, form);
+            btnContainer.appendChild(btnNueva);
+            // Lo metemos como primer elemento adentro del formulario
+            form.insertBefore(btnContainer, form.firstChild);
         }
     }, 200);
 
@@ -209,6 +220,7 @@ if(formLogin) {
                     sessionStorage.setItem('adminLogueado', 'true');
                     document.getElementById('login-wrapper').style.display = 'none';
                     document.getElementById('panel-dashboard').style.display = 'block';
+                    mostrarToastAdmin("Acceso concedido", "success");
                     cargarTodo();
                 } else {
                     errorMsg.innerText = data.message || 'Credenciales incorrectas';
@@ -220,7 +232,7 @@ if(formLogin) {
             } finally {
                 btn.innerText = 'Ingresar'; btn.disabled = false;
             }
-        }, "Sí, ingresar");
+        }, "Ingresar");
     });
 }
 
@@ -237,40 +249,6 @@ function cerrarSesionLocal() {
 window.onload = () => { 
     if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
 };
-
-function showCustomAlert(msg, type = 'error', reload = false) {
-    reloadAfterAlert = reload;
-    const modal = document.getElementById('custom-alert-modal');
-    const icon = document.getElementById('custom-alert-icon');
-    document.getElementById('custom-alert-text').innerText = msg;
-    if(type === 'success') icon.innerHTML = '<i class="fas fa-check-circle" style="color:#27ae60;"></i>';
-    else icon.innerHTML = '<i class="fas fa-times-circle" style="color:#e74c3c;"></i>';
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10); 
-}
-
-function cerrarCustomAlert() {
-    const modal = document.getElementById('custom-alert-modal');
-    modal.classList.remove('active');
-    setTimeout(() => { modal.style.display = 'none'; if(reloadAfterAlert) location.reload(); }, 200);
-}
-
-function showCustomConfirm(msg, callback, btnText = "Sí") {
-    const modal = document.getElementById('custom-confirm-modal');
-    document.getElementById('custom-confirm-text').innerText = msg;
-    document.getElementById('btn-confirmar-accion').innerText = btnText;
-    accionConfirmada = callback;
-    modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
-}
-
-function cerrarCustomConfirm() {
-    const modal = document.getElementById('custom-confirm-modal');
-    modal.classList.remove('active');
-    setTimeout(() => { modal.style.display = 'none'; accionConfirmada = null; }, 200);
-}
-
-document.getElementById('btn-confirmar-accion')?.addEventListener('click', () => {
-    if (accionConfirmada) accionConfirmada(); cerrarCustomConfirm();
-});
 
 function mostrarNombreArchivo(input, labelId, textoDefault) {
     const label = document.getElementById(labelId);
@@ -294,11 +272,6 @@ function verTab(id) {
     });
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
     document.getElementById(id).style.display = 'block';
-}
-
-function toggleDetalle(id) { 
-    const el = document.getElementById(id); 
-    el.style.display = el.style.display === 'table-row' ? 'none' : 'table-row'; 
 }
 
 function initTallesBuilder() {
@@ -330,16 +303,15 @@ function initTallesBuilder() {
 
     const btnSubmitForm = document.getElementById('btn-crear-producto');
     
-    // === FIX SEGURO: Insertar la caja antes del botón negro, y forzar a la caja contenedora a estirarse ===
     if (btnSubmitForm && btnSubmitForm.parentNode) {
-        btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
+        btnSubmitForm.parentNode.removeChild(btnSubmitForm); 
         
-        // Forzamos al padre del botón (la columna invisible) a estirarse al 100%
-        if(btnSubmitForm.parentElement && btnSubmitForm.parentElement.tagName !== 'FORM') {
-            btnSubmitForm.parentElement.style.gridColumn = '1 / -1';
-            btnSubmitForm.parentElement.style.width = '100%';
-            btnSubmitForm.parentElement.style.display = 'block';
-        }
+        const bottomWrapper = document.createElement('div');
+        bottomWrapper.id = 'bottom-form-wrapper';
+        
+        bottomWrapper.appendChild(mainBox);
+        bottomWrapper.appendChild(btnSubmitForm);
+        document.getElementById('add-product-form').appendChild(bottomWrapper); 
     } else {
         inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
     }
@@ -1010,4 +982,4 @@ function descargarExcel() {
 }
 
 const addProductForm = document.getElementById('add-product-form');
-if (addProductForm) { addProductForm.addEventListener('submit', crearOActualizarProducto); }
+if (addProductForm) { addProductForm.addEventListener('submit', crearOActualizarProducto); }      
