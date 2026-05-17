@@ -12,9 +12,11 @@
         document.documentElement.setAttribute('data-active-tab', tabActivaInit);
     </script>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin.css?v=12">
+    <link rel="stylesheet" href="css/admin.css?v=25">
 </head>
 <body>
+    <div id="toast-container-admin" style="position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
     <div id="login-wrapper" class="login-wrapper">
         <div class="login-box">
             <h2>Ingreso Admin</h2>
@@ -63,65 +65,83 @@
             </div>
 
             <div id="tab-inventario" class="tab-content">
-                <div class="admin-header-row">
-                    <h2 id="titulo-form-admin">Cargar Nueva Prenda</h2>
+                <div class="admin-header-row" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+                    <h2 id="titulo-form-admin" style="margin: 0; font-size: 1.5rem; color: #111;">Cargar Nueva Prenda</h2>
+                    <button type="button" class="btn-crear-nueva" onclick="resetFormularioAdmin()"><i class="fas fa-plus"></i> CREAR NUEVA</button>
                 </div>
+                
                 <div style="background: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #eaeaea; margin-bottom: 30px;">
-                    <div class="admin-form-grid">
-                        <div class="col-span-2">
-                            <label>Nombre del producto (y Color)</label>
-                            <input type="text" id="add-nombre" placeholder="Ej: Chaleco Gamuzado Beige" oninput="validarLetras(this)">
-                        </div>
-                        <div class="col-span-1">
-                            <label>Categoría</label>
-                            <select id="add-categoria"><option value="" disabled selected>Categorías...</option></select>
-                        </div>
+                    <form id="add-product-form">
+                        <div class="admin-form-grid">
+                            <div class="col-span-2">
+                                <label class="form-label">Nombre del producto (y Color)</label>
+                                <input type="text" id="add-nombre" placeholder="Ej: Chaleco Gamuzado Beige" oninput="validarLetras(this)">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="form-label">Categoría</label>
+                                <select id="add-categoria"><option value="" disabled selected>Categorías...</option></select>
+                            </div>
 
-                        <div class="col-span-1">
-                            <label>Cód. Modelo (Obligatorio)</label>
-                            <input type="text" id="add-codigo-modelo" placeholder="Ej: CHAL-01" style="text-transform: uppercase;" required>
-                        </div>
+                            <div class="col-span-1">
+                                <label class="form-label">Cód. Modelo (Obligatorio)</label>
+                                <input type="text" id="add-codigo-modelo" placeholder="Ej: CHAL-01" style="text-transform: uppercase;" required>
+                            </div>
 
-                        <div class="col-span-1">
-                            <label>Tono Variante</label>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <input type="color" id="add-color-hex" value="#d4ba92" style="width: 40px; height: 43px; padding: 0; cursor: pointer; border-radius: 4px; border: 1px solid #ddd;">
-                                <input type="text" id="add-color-nombre" placeholder="Ej: Rojo" oninput="validarLetras(this); detectarColor(this.value);" style="flex: 1;">
+                            <div class="col-span-1">
+                                <label class="form-label">Tono Variante</label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="color" id="add-color-hex" value="#d4ba92" style="width: 40px; height: 43px; padding: 0; cursor: pointer; border-radius: 4px; border: 1px solid #ddd;">
+                                    <input type="text" id="add-color-nombre" placeholder="Ej: Rojo" oninput="validarLetras(this); detectarColor(this.value);" style="flex: 1;">
+                                </div>
+                            </div>
+
+                            <div class="col-span-1">
+                                <label class="form-label">Precio Tarj. ($)</label>
+                                <input type="number" id="add-precio-tarj" placeholder="Ej: 35000" oninput="validarNumeros(this)">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="form-label">Precio Transf. ($)</label>
+                                <input type="number" id="add-precio-efvo" placeholder="Ej: 30000" oninput="validarNumeros(this)">
+                            </div>
+                            <div class="col-span-3">
+                                <label class="form-label">Breve descripción</label>
+                                <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." oninput="validarLetras(this)">
+                            </div>
+
+                            <div class="col-span-full">
+                                <label class="form-label">Fotos (De esta variante)</label>
+                                <label for="add-img" class="custom-file-upload" id="label-add-img">
+                                    <i class="fas fa-camera"></i> <span>Abrir Galería</span>
+                                </label>
+                                <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
+                            </div>
+
+                            <div class="col-span-full" id="talles-builder-container" style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-top: 15px;">
+                                <h4 style="margin-top:0; margin-bottom:15px; font-size:1rem; color:#111; text-transform:uppercase; text-align:center; font-weight:800;">Stock por Talles</h4>
+                                
+                                <label style="font-size: 0.9rem; font-weight: 700; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px;">
+                                    <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0; width: 18px; height: 18px; accent-color: var(--brand-brown);"> Es Talle Único
+                                </label>
+                                
+                                <div id="talles-builder-ui" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+                                    </div>
+                                
+                                <div id="talle-unico-container" style="display: none; text-align: center;">
+                                    <input type="number" id="add-stock-unico" placeholder="Stock Total" style="padding: 12px; font-size: 1rem; font-weight: bold; width: 150px; text-align: center; margin: 0 auto; display: block; border: 1px solid #ccc; border-radius: 6px;" min="0">
+                                </div>
+                                
+                                <button type="button" class="btn-secundario" id="btn-add-talle-ui" style="padding: 10px 20px; font-size: 0.85rem; width: auto; margin: 20px auto 0; display: block;" onclick="agregarTalleUI('', 0)">
+                                    <i class="fas fa-plus"></i> Añadir Talle
+                                </button>
+                            </div>
+                            
+                            <div class="col-span-full">
+                                <button type="button" class="btn-guardar-principal" id="btn-crear-producto" onclick="crearOActualizarProducto(event)">
+                                    <i class="fas fa-save"></i> Guardar Publicación
+                                </button>
                             </div>
                         </div>
-
-                        <div class="col-span-1">
-                            <label>Precio Tarj. ($)</label>
-                            <input type="number" id="add-precio-tarj" placeholder="Ej: 35000" oninput="validarNumeros(this)">
-                        </div>
-                        <div class="col-span-1">
-                            <label>Precio Transf. ($)</label>
-                            <input type="number" id="add-precio-efvo" placeholder="Ej: 30000" oninput="validarNumeros(this)">
-                        </div>
-                        <div class="col-span-2">
-                            <label>Breve descripción</label>
-                            <input type="text" id="add-descripcion" placeholder="Tela, corte, detalles..." oninput="validarLetras(this)">
-                        </div>
-                        <div class="col-span-1 caja-talles">
-                            <label style="font-size: 0.8rem; font-weight: 700; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                                <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0; width: auto;"> Es Talle Único
-                            </label>
-                            <input type="text" id="add-talles" placeholder="S:10, M:5" style="padding: 8px; font-size: 0.85rem;">
-                            <input type="text" id="add-stock-unico" placeholder="Stock Total" style="padding: 8px; font-size: 0.85rem; display: none;" oninput="validarNumeros(this)">
-                        </div>
-                        <div class="col-span-3">
-                            <label>Fotos (De esta variante)</label>
-                            <label for="add-img" class="custom-file-upload" id="label-add-img">
-                                <i class="fas fa-camera"></i> <span>Abrir Galería</span>
-                            </label>
-                            <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
-                        </div>
-                        <div class="col-span-2" style="display: flex; align-items: flex-end;">
-                            <button class="btn-agregar-derecha" id="btn-crear-producto" style="width: 100%; height: 48px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="guardarOActualizarProducto()">
-                                <i class="fas fa-save"></i> Guardar Prenda
-                            </button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
                 
                 <div class="admin-header-row" style="margin-top: 50px;">
@@ -234,25 +254,6 @@
         </div>
     </div>
 
-    <div id="custom-alert-modal" class="custom-alert-overlay" onclick="cerrarCustomAlert()">
-        <div class="custom-alert-box" onclick="event.stopPropagation()">
-            <div id="custom-alert-icon" class="custom-alert-icon"></div>
-            <div id="custom-alert-text" class="custom-alert-text">Mensaje aquí</div>
-            <button class="btn-aceptar-alerta" onclick="cerrarCustomAlert()">Aceptar</button>
-        </div>
-    </div>
-
-    <div id="custom-confirm-modal" class="custom-alert-overlay" onclick="cerrarCustomConfirm()">
-        <div class="custom-alert-box" onclick="event.stopPropagation()">
-            <div class="custom-alert-icon"><i class="fas fa-exclamation-triangle" style="color:#f39c12;"></i></div>
-            <div id="custom-confirm-text" class="custom-alert-text">¿Estás seguro?</div>
-            <div style="display: flex; gap: 15px; justify-content: center;">
-                <button class="btn-secundario" style="width: auto; padding: 10px 25px; margin: 0;" onclick="cerrarCustomConfirm()">Cancelar</button>
-                <button id="btn-confirmar-accion" class="btn-agregar-derecha" style="width: auto; padding: 10px 25px; margin: 0;">Sí</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/admin.js?v=12"></script>
+    <script src="js/admin.js?v=25"></script>
 </body>
 </html>
