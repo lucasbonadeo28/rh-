@@ -113,23 +113,38 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === FIX DE ESTILOS CSS ===
+    // === FIX DE ESTILOS BLINDADO ===
     const adminStyles = document.createElement('style');
     adminStyles.innerHTML = `
-        #bottom-form-wrapper {
-            grid-column: 1 / -1 !important; width: 100% !important; max-width: 100% !important;
-            display: flex; flex-direction: column; align-items: center; margin-top: 20px;
-        }
         #talles-builder-box {
-            width: 100% !important; max-width: 100% !important; display: block !important;
-            box-sizing: border-box !important; background: #f9f9f9; border: 1px solid #ddd;
-            border-radius: 8px; padding: 20px; margin-bottom: 15px;
+            grid-column: 1 / -1 !important; 
+            width: 100% !important; 
+            max-width: 100% !important;
+            display: block !important; 
+            box-sizing: border-box !important; 
+            background: #f9f9f9 !important; 
+            border: 1px solid #ddd !important;
+            border-radius: 8px !important; 
+            padding: 20px !important; 
+            margin: 30px 0 15px 0 !important;
         }
         #btn-crear-producto {
-            width: 100% !important; max-width: 100% !important; padding: 18px !important;
-            font-size: 1.1rem !important; display: block !important; background: #111 !important;
-            color: #fff !important; box-sizing: border-box !important; border: none;
-            border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase;
+            grid-column: 1 / -1 !important; 
+            width: 100% !important; 
+            max-width: 100% !important; 
+            padding: 18px !important;
+            font-size: 1.1rem !important; 
+            display: block !important; 
+            background: #111 !important;
+            color: #fff !important; 
+            box-sizing: border-box !important; 
+            border: none !important;
+            border-radius: 8px !important; 
+            cursor: pointer !important; 
+            font-weight: bold !important; 
+            text-transform: uppercase !important;
+            margin: 0 !important;
+            position: relative !important;
         }
         #talles-builder-ui { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
         .tab-content { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; width: 100% !important; padding-bottom: 15px; }
@@ -139,7 +154,7 @@ window.addEventListener('DOMContentLoaded', () => {
         @media (max-width: 768px) {
             .admin-container { padding: 10px; overflow-x: hidden; }
             #talles-builder-ui { flex-direction: column; align-items: center; }
-            .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; }
+            .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; text-align: center; }
             #btn-add-talle-ui { margin: 15px auto 0 auto !important; display: block; }
             .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
         }
@@ -151,34 +166,39 @@ window.addEventListener('DOMContentLoaded', () => {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
     }
 
-    // === INYECCIÓN DEL BOTÓN "NUEVA PRENDA" ARRIBA A LA DERECHA ===
+    // === INYECCIÓN SEGURA DEL BOTÓN "CREAR NUEVA" ===
     setTimeout(() => {
-        const form = document.getElementById('add-product-form');
-        if (form && !document.getElementById('btn-crear-nueva-flotante')) {
-            const btnContainer = document.createElement('div');
-            // Lo tiramos a la derecha al 100%
-            btnContainer.style.cssText = 'width: 100%; display: flex; justify-content: flex-end; margin-bottom: 20px;';
-            
+        const titulos = document.querySelectorAll('h1, h2, h3, h4');
+        let mainTitle = null;
+        titulos.forEach(t => {
+            if (t.innerText.toLowerCase().includes('nueva prenda') || t.innerText.toLowerCase().includes('cargar')) {
+                mainTitle = t;
+            }
+        });
+
+        if (mainTitle && !document.getElementById('btn-crear-nueva-top')) {
+            const headerWrap = document.createElement('div');
+            headerWrap.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; grid-column: 1 / -1;';
+
+            mainTitle.parentNode.insertBefore(headerWrap, mainTitle);
+            headerWrap.appendChild(mainTitle);
+            mainTitle.style.margin = '0';
+            mainTitle.style.border = 'none';
+            mainTitle.style.padding = '0';
+
             const btnNueva = document.createElement('button');
-            btnNueva.id = 'btn-crear-nueva-flotante';
+            btnNueva.id = 'btn-crear-nueva-top';
             btnNueva.type = 'button';
-            btnNueva.innerHTML = '<i class="fas fa-plus"></i> NUEVA PRENDA';
-            btnNueva.style.cssText = 'background-color: #27ae60; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; transition: transform 0.3s;';
-            
-            btnNueva.onmouseover = () => btnNueva.style.transform = 'translateY(-2px)';
-            btnNueva.onmouseout = () => btnNueva.style.transform = 'translateY(0)';
-            
+            btnNueva.innerHTML = '<i class="fas fa-plus"></i> CREAR NUEVA';
+            btnNueva.style.cssText = 'background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; transition: transform 0.3s;';
             btnNueva.onclick = () => {
                 limpiarFormularioAdmin();
                 mostrarToastAdmin("Formulario listo para cargar prenda nueva", "success");
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
-
-            btnContainer.appendChild(btnNueva);
-            // Lo metemos como primer elemento adentro del formulario
-            form.insertBefore(btnContainer, form.firstChild);
+            headerWrap.appendChild(btnNueva);
         }
-    }, 200);
+    }, 300);
 
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
@@ -275,10 +295,7 @@ function verTab(id) {
 }
 
 function initTallesBuilder() {
-    const inputTalles = document.getElementById('add-talles');
-    if(!inputTalles || document.getElementById('talles-builder-box')) return;
-
-    inputTalles.style.display = 'none'; 
+    if(document.getElementById('talles-builder-box')) return;
 
     const mainBox = document.createElement('div');
     mainBox.id = 'talles-builder-box';
@@ -303,17 +320,10 @@ function initTallesBuilder() {
 
     const btnSubmitForm = document.getElementById('btn-crear-producto');
     
+    // === INYECCIÓN ULTRA SEGURA ===
     if (btnSubmitForm && btnSubmitForm.parentNode) {
-        btnSubmitForm.parentNode.removeChild(btnSubmitForm); 
-        
-        const bottomWrapper = document.createElement('div');
-        bottomWrapper.id = 'bottom-form-wrapper';
-        
-        bottomWrapper.appendChild(mainBox);
-        bottomWrapper.appendChild(btnSubmitForm);
-        document.getElementById('add-product-form').appendChild(bottomWrapper); 
-    } else {
-        inputTalles.parentNode.insertBefore(mainBox, inputTalles.nextSibling);
+        // Insertamos la caja justo antes del botón negro, sin borrar nada
+        btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
     }
 
     agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
@@ -350,7 +360,7 @@ function toggleTalleUnico() {
 }
 
 async function cargarTodo() {
-    if(!document.getElementById('talles-builder-box')) initTallesBuilder();
+    initTallesBuilder();
     cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos?t=` + new Date().getTime(), { cache: 'no-store' }); 
@@ -474,7 +484,7 @@ async function guardarEdicionFila(id, event) {
         });
         
         if (inputsTalles.length === 0) {
-            return showCustomAlert("No hay talles. Entrá a 'Editar Prenda' para agregarlos.", "error", false);
+            return mostrarToastAdmin("No hay talles. Entrá a 'Editar Prenda' para agregarlos.", "error");
         }
     }
 
@@ -495,18 +505,18 @@ async function guardarEdicionFila(id, event) {
         });
 
         if (res.ok) { 
-            showCustomAlert("¡Stock y precios guardados!", "success", false); 
+            mostrarToastAdmin("¡Stock y precios guardados!", "success"); 
             const resI = await fetchSeguro(`${API}/productos?t=` + new Date().getTime(), { cache: 'no-store' }); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
             renderStock(); 
         } else { 
-            showCustomAlert("Error al actualizar el producto.", "error", false); 
+            mostrarToastAdmin("Error al actualizar el producto.", "error"); 
             btn.innerHTML = ogHtml; 
             btn.disabled = false; 
         }
     } catch(e) { 
-        showCustomAlert("Error de conexión.", "error", false); 
+        mostrarToastAdmin("Error de conexión.", "error"); 
         btn.innerHTML = ogHtml; 
         btn.disabled = false; 
     }
@@ -598,15 +608,15 @@ function borrarP(id) {
         try {
             const res = await fetchSeguro(`${API}/productos/${id}`, { method: 'DELETE' });
             if(res.ok) { 
-                showCustomAlert("Producto eliminado correctamente", "success", false); 
+                mostrarToastAdmin("Producto eliminado correctamente", "success"); 
                 const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store'}); 
                 pTotales = await resI.json(); 
                 pFiltrados = [...pTotales]; 
                 renderStock(); 
             } else { 
-                showCustomAlert("Error al eliminar el producto.", "error", false); 
+                mostrarToastAdmin("Error al eliminar el producto.", "error"); 
             }
-        } catch (error) { showCustomAlert("Error de conexión.", "error", false); }
+        } catch (error) { mostrarToastAdmin("Error de conexión.", "error"); }
     }, "Sí, borrar");
 }
 
@@ -657,19 +667,19 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
         });
 
         if(res.ok) { 
-            showCustomAlert(idProductoEditando ? "¡Prenda actualizada!" : "¡Prenda creada!", "success", false); 
+            mostrarToastAdmin(idProductoEditando ? "¡Prenda actualizada!" : "¡Prenda creada!", "success"); 
             limpiarFormularioAdmin(); 
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
             renderStock(); 
         } else { 
-            showCustomAlert("Error al guardar.", "error", false); 
+            mostrarToastAdmin("Error al guardar.", "error"); 
             btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-plus"></i> Guardar Publicación'; 
             btn.disabled = false; 
         }
     } catch(e) { 
-        showCustomAlert("Error de conexión.", "error", false); 
+        mostrarToastAdmin("Error de conexión.", "error"); 
         btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-plus"></i> Guardar Publicación'; 
         btn.disabled = false; 
     }
@@ -691,7 +701,7 @@ async function crearOActualizarProducto(e) {
     const esUnico = chkUnico ? chkUnico.checked : false;
 
     if (!nombre || !categoria || !tarj || !efvo) { 
-        return showCustomAlert("Por favor completa los campos obligatorios.", "error", false); 
+        return mostrarToastAdmin("Por favor completa los campos obligatorios.", "error"); 
     }
 
     let inventarioFinal = {};
@@ -739,6 +749,19 @@ async function crearOActualizarProducto(e) {
     }
 }
 
+// === FIX: EVENT LISTENER AUTÓNOMO PARA EL BOTÓN ===
+window.addEventListener('load', () => {
+    const btnGuardar = document.getElementById('btn-crear-producto');
+    if (btnGuardar) {
+        const form = btnGuardar.closest('form');
+        if (form) {
+            form.addEventListener('submit', crearOActualizarProducto);
+        } else {
+            btnGuardar.addEventListener('click', crearOActualizarProducto);
+        }
+    }
+});
+
 async function cargarCategorias() {
     try {
         const res = await fetchSeguro(`${API}/categorias`);
@@ -781,9 +804,9 @@ async function agregarCategoria(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
     try {
         const res = await fetchSeguro(`${API}/categorias`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nombre}) });
-        if(res.ok) { inputNombre.value = ''; showCustomAlert('Categoría añadida', 'success'); cargarCategorias(); } 
-        else { showCustomAlert('La categoría ya existe', 'error'); }
-    } catch(e) { showCustomAlert('Error de conexión', 'error'); }
+        if(res.ok) { inputNombre.value = ''; mostrarToastAdmin('Categoría añadida', 'success'); cargarCategorias(); } 
+        else { mostrarToastAdmin('La categoría ya existe', 'error'); }
+    } catch(e) { mostrarToastAdmin('Error de conexión', 'error'); }
     btn.innerHTML = '<i class="fas fa-plus"></i> Añadir'; btn.disabled = false;
 }
 
@@ -826,9 +849,9 @@ function completarPedido(id) {
     showCustomConfirm('¿Seguro que querés marcar este pedido como realizado? Se actualizará el stock.', async () => {
         try {
             const res = await fetchSeguro(`${API}/ventas/${id}/completar`, { method: 'PATCH' });
-            if(res.ok) { showCustomAlert("Pedido completado", "success", false); ventasDataGlobal = await (await fetchSeguro(`${API}/ventas`)).json(); vTotales = [...ventasDataGlobal]; renderPedidos(); generarEstadisticasMensuales(); } 
-            else { showCustomAlert("Error al actualizar el pedido.", "error", false); }
-        } catch (error) { showCustomAlert("Error de conexión.", "error", false); }
+            if(res.ok) { mostrarToastAdmin("Pedido completado", "success"); ventasDataGlobal = await (await fetchSeguro(`${API}/ventas`)).json(); vTotales = [...ventasDataGlobal]; renderPedidos(); generarEstadisticasMensuales(); } 
+            else { mostrarToastAdmin("Error al actualizar el pedido.", "error"); }
+        } catch (error) { mostrarToastAdmin("Error de conexión.", "error"); }
     }, "Sí");
 }
 
@@ -836,9 +859,9 @@ function eliminarPedido(id) {
     showCustomConfirm('¿Seguro que querés borrar este pedido de la base de datos? Es una acción definitiva.', async () => {
         try {
             const res = await fetchSeguro(`${API}/ventas/${id}`, { method: 'DELETE' });
-            if(res.ok) { showCustomAlert("Pedido eliminado", "success", false); ventasDataGlobal = await (await fetchSeguro(`${API}/ventas`)).json(); vTotales = [...ventasDataGlobal]; renderPedidos(); generarEstadisticasMensuales(); } 
-            else { showCustomAlert("Error al eliminar el pedido.", "error", false); }
-        } catch (error) { showCustomAlert("Error de conexión.", "error", false); }
+            if(res.ok) { mostrarToastAdmin("Pedido eliminado", "success"); ventasDataGlobal = await (await fetchSeguro(`${API}/ventas`)).json(); vTotales = [...ventasDataGlobal]; renderPedidos(); generarEstadisticasMensuales(); } 
+            else { mostrarToastAdmin("Error al eliminar el pedido.", "error"); }
+        } catch (error) { mostrarToastAdmin("Error de conexión.", "error"); }
     }, "Sí, borrar");
 }
 
@@ -878,16 +901,16 @@ async function agregarBanner(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-submit-banner');
     const imgInput = document.getElementById('add-banner-file');
-    if (!imgInput.files || imgInput.files.length === 0) { return showCustomAlert("Selecciona una foto primero.", "error", false); }
+    if (!imgInput.files || imgInput.files.length === 0) { return mostrarToastAdmin("Selecciona una foto primero.", "error"); }
 
     const file = imgInput.files[0]; const imgBase64 = await procesarImg(file);
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
 
     try {
         const res = await fetchSeguro(`${API}/banners`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ imagen_url: imgBase64 }) });
-        if(res.ok) { imgInput.value = ''; showCustomAlert("¡Foto agregada al carrusel!", "success", false); cargarBanners(); } 
-        else { showCustomAlert("Error al subir.", "error", false); }
-    } catch (error) { showCustomAlert("Error de conexión.", "error", false); }
+        if(res.ok) { imgInput.value = ''; mostrarToastAdmin("¡Foto agregada al carrusel!", "success"); cargarBanners(); } 
+        else { mostrarToastAdmin("Error al subir.", "error"); }
+    } catch (error) { mostrarToastAdmin("Error de conexión.", "error"); }
     btn.innerHTML = '<i class="fas fa-plus"></i> Añadir Foto'; btn.disabled = false;
 }
 
@@ -895,9 +918,9 @@ function eliminarBanner(id) {
     showCustomConfirm('¿Borrar esta foto del carrusel?', async () => {
         try {
             await fetchSeguro(`${API}/banners/${id}`, { method: 'DELETE' });
-            showCustomAlert("Foto eliminada", "success", false);
+            mostrarToastAdmin("Foto eliminada", "success");
             cargarBanners();
-        } catch (error) { showCustomAlert("Error al eliminar", "error", false); }
+        } catch (error) { mostrarToastAdmin("Error al eliminar", "error"); }
     }, "Sí, borrar");
 }
 
@@ -921,15 +944,15 @@ async function agregarCupon(e) {
     const desc = document.getElementById('add-cupon-porcentaje').value;
     const usos = document.getElementById('add-cupon-usos').value;
 
-    if (!codigo || !desc || !usos) { return showCustomAlert("Completa todos los campos del cupón.", "error", false); }
+    if (!codigo || !desc || !usos) { return mostrarToastAdmin("Completa todos los campos del cupón.", "error"); }
 
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
 
     try {
         const res = await fetchSeguro(`${API}/cupones`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ codigo, descuento_porcentaje: desc, usos_disponibles: usos }) });
-        if(res.ok) { document.getElementById('add-cupon-codigo').value = ''; document.getElementById('add-cupon-porcentaje').value = ''; document.getElementById('add-cupon-usos').value = ''; showCustomAlert("¡Cupón creado!", "success", false); cargarCupones(); } 
-        else { showCustomAlert("Error al crear. Ese código podría ya existir.", "error", false); }
-    } catch (error) { showCustomAlert("Error de conexión.", "error", false); }
+        if(res.ok) { document.getElementById('add-cupon-codigo').value = ''; document.getElementById('add-cupon-porcentaje').value = ''; document.getElementById('add-cupon-usos').value = ''; mostrarToastAdmin("¡Cupón creado!", "success"); cargarCupones(); } 
+        else { mostrarToastAdmin("Error al crear. Ese código podría ya existir.", "error"); }
+    } catch (error) { mostrarToastAdmin("Error de conexión.", "error"); }
     btn.innerHTML = 'Crear'; btn.disabled = false;
 }
 
@@ -937,9 +960,9 @@ function eliminarCupon(id) {
     showCustomConfirm('¿Eliminar este cupón para siempre?', async () => {
         try {
             await fetchSeguro(`${API}/cupones/${id}`, { method: 'DELETE' });
-            showCustomAlert("Cupón eliminado", "success", false);
+            mostrarToastAdmin("Cupón eliminado", "success");
             cargarCupones();
-        } catch (error) { showCustomAlert("Error al eliminar", "error", false); }
+        } catch (error) { mostrarToastAdmin("Error al eliminar", "error"); }
     }, "Sí, borrar");
 }
 
@@ -980,6 +1003,3 @@ function descargarExcel() {
     const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "Control_Mensual_RH.csv"); 
     document.body.appendChild(link); link.click(); document.body.removeChild(link); 
 }
-
-const addProductForm = document.getElementById('add-product-form');
-if (addProductForm) { addProductForm.addEventListener('submit', crearOActualizarProducto); }      
