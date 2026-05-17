@@ -43,12 +43,7 @@ function detectarColor(texto) {
 // === SISTEMA DE CARTELES FLOTANTES (TOAST) AUTÓNOMO ===
 function mostrarToastAdmin(mensaje, tipo = 'success') {
     let container = document.getElementById('toast-container-admin');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container-admin';
-        container.style.cssText = 'position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
-        document.body.appendChild(container);
-    }
+    if (!container) return;
     const toast = document.createElement('div');
     toast.style.cssText = `background: ${tipo === 'success' ? 'rgba(39, 174, 96, 0.95)' : 'rgba(231, 76, 60, 0.95)'}; color: white; padding: 16px 30px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; box-shadow: 0 15px 40px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 12px; font-family: 'Montserrat', sans-serif; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 0; transform: translateY(40px) scale(0.9);`;
     toast.innerHTML = tipo === 'success' ? `<i class="fas fa-check-circle"></i> ${mensaje}` : `<i class="fas fa-exclamation-circle"></i> ${mensaje}`;
@@ -113,92 +108,10 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // === FIX DE ESTILOS BLINDADO ===
-    const adminStyles = document.createElement('style');
-    adminStyles.innerHTML = `
-        #talles-builder-box {
-            grid-column: 1 / -1 !important; 
-            width: 100% !important; 
-            max-width: 100% !important;
-            display: block !important; 
-            box-sizing: border-box !important; 
-            background: #f9f9f9 !important; 
-            border: 1px solid #ddd !important;
-            border-radius: 8px !important; 
-            padding: 20px !important; 
-            margin: 30px 0 15px 0 !important;
-        }
-        #btn-crear-producto {
-            grid-column: 1 / -1 !important; 
-            width: 100% !important; 
-            max-width: 100% !important; 
-            padding: 18px !important;
-            font-size: 1.1rem !important; 
-            display: block !important; 
-            background: #111 !important;
-            color: #fff !important; 
-            box-sizing: border-box !important; 
-            border: none !important;
-            border-radius: 8px !important; 
-            cursor: pointer !important; 
-            font-weight: bold !important; 
-            text-transform: uppercase !important;
-            margin: 0 !important;
-            position: relative !important;
-        }
-        #talles-builder-ui { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-        .tab-content { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; width: 100% !important; padding-bottom: 15px; }
-        table { min-width: 950px !important; width: 100% !important; border-collapse: collapse; }
-        th, td { vertical-align: middle !important; }
-
-        @media (max-width: 768px) {
-            .admin-container { padding: 10px; overflow-x: hidden; }
-            #talles-builder-ui { flex-direction: column; align-items: center; }
-            .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; text-align: center; }
-            #btn-add-talle-ui { margin: 15px auto 0 auto !important; display: block; }
-            .form-group input, .form-group textarea, .form-group select { width: 100% !important; box-sizing: border-box; }
-        }
-    `;
-    document.head.appendChild(adminStyles);
-
     const inputColorNombre = document.getElementById('add-color-nombre');
     if (inputColorNombre) {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
     }
-
-    // === INYECCIÓN SEGURA DEL BOTÓN "CREAR NUEVA" ===
-    setTimeout(() => {
-        const titulos = document.querySelectorAll('h1, h2, h3, h4');
-        let mainTitle = null;
-        titulos.forEach(t => {
-            if (t.innerText.toLowerCase().includes('nueva prenda') || t.innerText.toLowerCase().includes('cargar')) {
-                mainTitle = t;
-            }
-        });
-
-        if (mainTitle && !document.getElementById('btn-crear-nueva-top')) {
-            const headerWrap = document.createElement('div');
-            headerWrap.style.cssText = 'display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; grid-column: 1 / -1;';
-
-            mainTitle.parentNode.insertBefore(headerWrap, mainTitle);
-            headerWrap.appendChild(mainTitle);
-            mainTitle.style.margin = '0';
-            mainTitle.style.border = 'none';
-            mainTitle.style.padding = '0';
-
-            const btnNueva = document.createElement('button');
-            btnNueva.id = 'btn-crear-nueva-top';
-            btnNueva.type = 'button';
-            btnNueva.innerHTML = '<i class="fas fa-plus"></i> CREAR NUEVA';
-            btnNueva.style.cssText = 'background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2); display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; transition: transform 0.3s;';
-            btnNueva.onclick = () => {
-                limpiarFormularioAdmin();
-                mostrarToastAdmin("Formulario listo para cargar prenda nueva", "success");
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-            headerWrap.appendChild(btnNueva);
-        }
-    }, 300);
 
     if (sessionStorage.getItem('adminLogueado') === 'true') {
         const loginWrapper = document.getElementById('login-wrapper');
@@ -295,38 +208,11 @@ function verTab(id) {
 }
 
 function initTallesBuilder() {
-    if(document.getElementById('talles-builder-box')) return;
-
-    const mainBox = document.createElement('div');
-    mainBox.id = 'talles-builder-box';
-    mainBox.innerHTML = '<h4 style="margin-top:0; margin-bottom:15px; font-size:0.95rem; color:#333; text-transform:uppercase; text-align:center; font-weight:800;">Stock por Talles</h4>';
-
-    const container = document.createElement('div');
-    container.id = 'talles-builder-ui';
-    
-    const btnAdd = document.createElement('button');
-    btnAdd.id = 'btn-add-talle-ui';
-    btnAdd.type = 'button';
-    btnAdd.className = 'btn-secundario';
-    btnAdd.innerHTML = '<i class="fas fa-plus"></i> Añadir Talle';
-    btnAdd.style.padding = '10px 15px';
-    btnAdd.style.fontSize = '0.85rem';
-    btnAdd.style.width = 'auto';
-    btnAdd.style.marginTop = '15px';
-    btnAdd.onclick = () => agregarTalleUI('', 0);
-
-    mainBox.appendChild(container);
-    mainBox.appendChild(btnAdd);
-
-    const btnSubmitForm = document.getElementById('btn-crear-producto');
-    
-    // === INYECCIÓN ULTRA SEGURA ===
-    if (btnSubmitForm && btnSubmitForm.parentNode) {
-        // Insertamos la caja justo antes del botón negro, sin borrar nada
-        btnSubmitForm.parentNode.insertBefore(mainBox, btnSubmitForm);
+    const container = document.getElementById('talles-builder-ui');
+    if(!container) return;
+    if(container.children.length === 0) {
+        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
     }
-
-    agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
 }
 
 function agregarTalleUI(nombre = '', cantidad = 0) {
@@ -348,14 +234,18 @@ function agregarTalleUI(nombre = '', cantidad = 0) {
 
 function toggleTalleUnico() { 
     const esUnico = document.getElementById('chk-unico').checked; 
-    const builderBox = document.getElementById('talles-builder-box');
+    const builderBox = document.getElementById('talles-builder-ui');
+    const btnAddTalle = document.getElementById('btn-add-talle-ui');
+    const unicoBox = document.getElementById('talle-unico-container');
 
     if(esUnico) {
         if(builderBox) builderBox.style.display = 'none';
-        document.getElementById('add-stock-unico').style.display = 'block';
+        if(btnAddTalle) btnAddTalle.style.display = 'none';
+        if(unicoBox) unicoBox.style.display = 'block';
     } else {
-        if(builderBox) builderBox.style.display = 'block';
-        document.getElementById('add-stock-unico').style.display = 'none';
+        if(builderBox) builderBox.style.display = 'flex';
+        if(btnAddTalle) btnAddTalle.style.display = 'block';
+        if(unicoBox) unicoBox.style.display = 'none';
     }
 }
 
@@ -445,14 +335,14 @@ function renderStock() {
             <td><input type="number" id="efvo-${p.id}" value="${p.precio_efectivo}" style="width:90px; padding:5px;"></td>
             <td><input type="number" id="tarj-${p.id}" value="${p.precio_tarjeta}" style="width:90px; padding:5px;"></td>
             
-            <td>
-                <div class="talles-celda" style="display: flex; flex-wrap: nowrap; gap: 4px; max-width: 250px;">
+            <td class="td-talles-horizontal">
+                <div style="display: flex; flex-wrap: nowrap; gap: 4px; align-items: center; min-width: max-content; padding-bottom: 4px;">
                     ${tallesHtml}
                 </div>
                 <small style="color:${totalStockPrenda > 0 ? '#27ae60' : '#e74c3c'}; font-weight:bold; display:block; margin-top:6px;">Stock Total: ${totalStockPrenda}</small>
             </td>
 
-            <td style="text-align: center;">
+            <td class="td-botones-horizontal">
                 <div style="display: flex; flex-wrap: nowrap; justify-content: center; gap: 8px;">
                     <button style="background: #27ae60; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="guardarEdicionFila(${p.id}, event)" title="Guardar Stock Rápido"><i class="fas fa-check"></i></button>
                     <button style="background: #f39c12; color: white; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; font-size: 1.1rem;" onclick="editarProducto(${p.id})" title="Editar Detalles Completos"><i class="fas fa-pencil-alt"></i></button>
@@ -560,7 +450,9 @@ function editarProducto(id) {
     const imgInput = document.getElementById('add-img');
     const labelImg = document.getElementById('label-add-img');
     if(imgInput) { imgInput.value = ''; }
-    if(labelImg) { labelImg.innerText = 'Reemplazar Foto (Opcional)'; labelImg.classList.remove('selected'); }
+    if(labelImg) { labelImg.innerHTML = '<i class="fas fa-camera"></i> <span>Abrir Galería</span>'; labelImg.classList.remove('selected'); }
+    
+    document.getElementById('titulo-form-admin').innerText = `Editando: ${producto.nombre}`;
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
     verTab('tab-inventario');
@@ -571,7 +463,7 @@ function editarProducto(id) {
     }
 }
 
-function limpiarFormularioAdmin() {
+function resetFormularioAdmin() {
     if(document.getElementById('add-nombre')) document.getElementById('add-nombre').value = '';
     if(document.getElementById('add-categoria')) document.getElementById('add-categoria').value = '';
     if(document.getElementById('add-precio-tarj')) document.getElementById('add-precio-tarj').value = '';
@@ -587,20 +479,22 @@ function limpiarFormularioAdmin() {
     const containerTalles = document.getElementById('talles-builder-ui');
     if(containerTalles) {
         containerTalles.innerHTML = '';
-        agregarTalleUI('L', 0); agregarTalleUI('M', 0); agregarTalleUI('S', 0);
+        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
     }
     
     const imgInput = document.getElementById('add-img');
     const labelImg = document.getElementById('label-add-img');
     if(imgInput) { imgInput.value = ''; }
-    if(labelImg) { labelImg.innerText = 'Subir Foto Principal'; labelImg.classList.remove('selected'); }
+    if(labelImg) { labelImg.innerHTML = '<i class="fas fa-camera"></i> <span>Abrir Galería</span>'; labelImg.classList.remove('selected'); }
 
     idProductoEditando = null;
     const btn = document.getElementById('btn-crear-producto');
     if(btn) {
-        btn.innerHTML = '<i class="fas fa-plus"></i> Guardar Publicación';
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Publicación';
         btn.style.background = '#111';
     }
+    const titulo = document.getElementById('titulo-form-admin');
+    if(titulo) titulo.innerText = 'Cargar Nueva Prenda';
 }
 
 function borrarP(id) { 
@@ -668,25 +562,25 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
 
         if(res.ok) { 
             mostrarToastAdmin(idProductoEditando ? "¡Prenda actualizada!" : "¡Prenda creada!", "success"); 
-            limpiarFormularioAdmin(); 
+            resetFormularioAdmin(); 
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
             pFiltrados = [...pTotales]; 
             renderStock(); 
         } else { 
             mostrarToastAdmin("Error al guardar.", "error"); 
-            btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-plus"></i> Guardar Publicación'; 
+            btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación'; 
             btn.disabled = false; 
         }
     } catch(e) { 
         mostrarToastAdmin("Error de conexión.", "error"); 
-        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-plus"></i> Guardar Publicación'; 
+        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación'; 
         btn.disabled = false; 
     }
 }
 
 async function crearOActualizarProducto(e) {
-    e.preventDefault();
+    if(e) e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
     
     const nombre = document.getElementById('add-nombre') ? document.getElementById('add-nombre').value.trim() : '';
@@ -748,19 +642,6 @@ async function crearOActualizarProducto(e) {
         }, "Sí, publicar");
     }
 }
-
-// === FIX: EVENT LISTENER AUTÓNOMO PARA EL BOTÓN ===
-window.addEventListener('load', () => {
-    const btnGuardar = document.getElementById('btn-crear-producto');
-    if (btnGuardar) {
-        const form = btnGuardar.closest('form');
-        if (form) {
-            form.addEventListener('submit', crearOActualizarProducto);
-        } else {
-            btnGuardar.addEventListener('click', crearOActualizarProducto);
-        }
-    }
-});
 
 async function cargarCategorias() {
     try {
