@@ -53,7 +53,7 @@
                 <div class="admin-header-row"><h2>Últimos Pedidos Realizados</h2></div>
                 <div class="table-responsive">
                     <table>
-                        <thead><tr><th>N° Venta</th><th>Fecha</th><th>Cliente y Contacto</th><th>Pago</th><th>Estado</th><th>Detalle</th><th>Total</th><th style="text-align: center;">Acción</th></tr></thead>
+                        <thead><tr><th>N° Venta</th><th>Fecha</th><th>Cliente y Contacto</th><th>Detalle de Compra</th><th>Total</th><th style="text-align: center;">Acción</th></tr></thead>
                         <tbody id="body-pedidos"></tbody>
                     </table>
                 </div>
@@ -123,8 +123,7 @@
                                     <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0; width: 18px; height: 18px; accent-color: var(--brand-brown);"> Es Talle Único
                                 </label>
                                 
-                                <div id="talles-builder-ui" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                                    </div>
+                                <div id="talles-builder-ui" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;"></div>
                                 
                                 <div id="talle-unico-container" style="display: none; text-align: center;">
                                     <input type="number" id="add-stock-unico" placeholder="Stock Total" style="padding: 12px; font-size: 1rem; font-weight: bold; width: 150px; text-align: center; margin: 0 auto; display: block; border: 1px solid #ccc; border-radius: 6px;" min="0">
@@ -246,7 +245,7 @@
                 </div>
                 <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Año y Mes</th><th>Ventas Totales</th><th>Total Recaudado</th></tr></thead>
+                        <thead><tr><th>Año y Mes</th><th>Ventas Totales</th><th>Total Recaudado</th><th style="text-align: center; width: 80px;">Ver</th></tr></thead>
                         <tbody id="body-meses"></tbody>
                     </table>
                 </div>
