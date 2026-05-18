@@ -43,7 +43,12 @@ function detectarColor(texto) {
 // === SISTEMA DE CARTELES FLOTANTES (TOAST) AUTÓNOMO ===
 function mostrarToastAdmin(mensaje, tipo = 'success') {
     let container = document.getElementById('toast-container-admin');
-    if (!container) return;
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container-admin';
+        container.style.cssText = 'position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+        document.body.appendChild(container);
+    }
     const toast = document.createElement('div');
     toast.style.cssText = `background: ${tipo === 'success' ? 'rgba(39, 174, 96, 0.95)' : 'rgba(231, 76, 60, 0.95)'}; color: white; padding: 16px 30px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; box-shadow: 0 15px 40px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 12px; font-family: 'Montserrat', sans-serif; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); opacity: 0; transform: translateY(40px) scale(0.9);`;
     toast.innerHTML = tipo === 'success' ? `<i class="fas fa-check-circle"></i> ${mensaje}` : `<i class="fas fa-exclamation-circle"></i> ${mensaje}`;
@@ -207,14 +212,6 @@ function verTab(id) {
     document.getElementById(id).style.display = 'block';
 }
 
-function initTallesBuilder() {
-    const container = document.getElementById('talles-builder-ui');
-    if(!container) return;
-    if(container.children.length === 0) {
-        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
-    }
-}
-
 function agregarTalleUI(nombre = '', cantidad = 0) {
     const container = document.getElementById('talles-builder-ui');
     if(!container) return;
@@ -250,7 +247,10 @@ function toggleTalleUnico() {
 }
 
 async function cargarTodo() {
-    initTallesBuilder();
+    const container = document.getElementById('talles-builder-ui');
+    if(container && container.children.length === 0) {
+        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
+    }
     cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos?t=` + new Date().getTime(), { cache: 'no-store' }); 
@@ -412,6 +412,40 @@ async function guardarEdicionFila(id, event) {
     }
 }
 
+function resetFormularioAdmin() {
+    if(document.getElementById('add-nombre')) document.getElementById('add-nombre').value = '';
+    if(document.getElementById('add-categoria')) document.getElementById('add-categoria').value = '';
+    if(document.getElementById('add-precio-tarj')) document.getElementById('add-precio-tarj').value = '';
+    if(document.getElementById('add-precio-efvo')) document.getElementById('add-precio-efvo').value = '';
+    if(document.getElementById('add-descripcion')) document.getElementById('add-descripcion').value = '';
+    if(document.getElementById('add-codigo-modelo')) document.getElementById('add-codigo-modelo').value = '';
+    if(document.getElementById('add-color-hex')) document.getElementById('add-color-hex').value = '#d4ba92';
+    if(document.getElementById('add-color-nombre')) document.getElementById('add-color-nombre').value = '';
+
+    const chkUnico = document.getElementById('chk-unico');
+    if(chkUnico) { chkUnico.checked = false; toggleTalleUnico(); }
+    
+    const containerTalles = document.getElementById('talles-builder-ui');
+    if(containerTalles) {
+        containerTalles.innerHTML = '';
+        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
+    }
+    
+    const imgInput = document.getElementById('add-img');
+    const labelImg = document.getElementById('label-add-img');
+    if(imgInput) { imgInput.value = ''; }
+    if(labelImg) { labelImg.innerHTML = '<i class="fas fa-camera"></i> <span>Abrir Galería</span>'; labelImg.classList.remove('selected'); }
+
+    idProductoEditando = null;
+    const btn = document.getElementById('btn-crear-producto');
+    if(btn) {
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Publicación';
+        btn.style.background = '#111';
+    }
+    const titulo = document.getElementById('titulo-form-admin');
+    if(titulo) titulo.innerText = 'Cargar Nueva Prenda';
+}
+
 function editarProducto(id) {
     const producto = pTotales.find(p => p.id === id);
     if (!producto) return;
@@ -450,7 +484,7 @@ function editarProducto(id) {
     const imgInput = document.getElementById('add-img');
     const labelImg = document.getElementById('label-add-img');
     if(imgInput) { imgInput.value = ''; }
-    if(labelImg) { labelImg.innerHTML = '<i class="fas fa-camera"></i> <span>Abrir Galería</span>'; labelImg.classList.remove('selected'); }
+    if(labelImg) { labelImg.innerText = 'Reemplazar Foto (Opcional)'; labelImg.classList.remove('selected'); }
     
     document.getElementById('titulo-form-admin').innerText = `Editando: ${producto.nombre}`;
     
@@ -461,40 +495,6 @@ function editarProducto(id) {
         btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
         btn.style.background = '#f39c12';
     }
-}
-
-function resetFormularioAdmin() {
-    if(document.getElementById('add-nombre')) document.getElementById('add-nombre').value = '';
-    if(document.getElementById('add-categoria')) document.getElementById('add-categoria').value = '';
-    if(document.getElementById('add-precio-tarj')) document.getElementById('add-precio-tarj').value = '';
-    if(document.getElementById('add-precio-efvo')) document.getElementById('add-precio-efvo').value = '';
-    if(document.getElementById('add-descripcion')) document.getElementById('add-descripcion').value = '';
-    if(document.getElementById('add-codigo-modelo')) document.getElementById('add-codigo-modelo').value = '';
-    if(document.getElementById('add-color-hex')) document.getElementById('add-color-hex').value = '#d4ba92';
-    if(document.getElementById('add-color-nombre')) document.getElementById('add-color-nombre').value = '';
-
-    const chkUnico = document.getElementById('chk-unico');
-    if(chkUnico) { chkUnico.checked = false; toggleTalleUnico(); }
-    
-    const containerTalles = document.getElementById('talles-builder-ui');
-    if(containerTalles) {
-        containerTalles.innerHTML = '';
-        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
-    }
-    
-    const imgInput = document.getElementById('add-img');
-    const labelImg = document.getElementById('label-add-img');
-    if(imgInput) { imgInput.value = ''; }
-    if(labelImg) { labelImg.innerHTML = '<i class="fas fa-camera"></i> <span>Abrir Galería</span>'; labelImg.classList.remove('selected'); }
-
-    idProductoEditando = null;
-    const btn = document.getElementById('btn-crear-producto');
-    if(btn) {
-        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Publicación';
-        btn.style.background = '#111';
-    }
-    const titulo = document.getElementById('titulo-form-admin');
-    if(titulo) titulo.innerText = 'Cargar Nueva Prenda';
 }
 
 function borrarP(id) { 
@@ -579,7 +579,7 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
     }
 }
 
-async function crearOActualizarProducto(e) {
+function crearOActualizarProducto(e) {
     if(e) e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
     
@@ -617,31 +617,42 @@ async function crearOActualizarProducto(e) {
     const base64Images = []; 
     if (imgInput && imgInput.files && imgInput.files.length > 0) { 
         const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
-        for (let file of filesToProcess) { base64Images.push(await procesarImg(file)); } 
+        for (let file of filesToProcess) { 
+            procesarImg(file).then(b64 => { base64Images.push(b64); }); 
+        } 
     }
     
-    const payload = { 
-        nombre, 
-        categoria, 
-        tarjeta: tarj, 
-        efectivo: efvo, 
-        descripcion: desc, 
-        inventario_talles: inventarioFinal,
-        codigo_modelo: codigoModelo,
-        color_hex: colorHex,
-        color_nombre: colorNombre
-    };
+    // Le damos 1 segundo al procesador de imágenes antes de armar el payload final
+    setTimeout(() => {
+        const payload = { 
+            nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
+            inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre
+        };
 
-    if (idProductoEditando !== null) {
-        showCustomConfirm('¿Seguro que querés guardar los cambios (Actualizar) de esta prenda?', async () => {
-            await ejecutarGuardadoFinal(payload, base64Images, btn);
-        }, "Sí, actualizar");
-    } else {
-        showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', async () => {
-            await ejecutarGuardadoFinal(payload, base64Images, btn);
-        }, "Sí, publicar");
-    }
+        if (idProductoEditando !== null) {
+            showCustomConfirm('¿Seguro que querés guardar los cambios (Actualizar) de esta prenda?', async () => {
+                await ejecutarGuardadoFinal(payload, base64Images, btn);
+            }, "Sí, actualizar");
+        } else {
+            showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', async () => {
+                await ejecutarGuardadoFinal(payload, base64Images, btn);
+            }, "Sí, publicar");
+        }
+    }, 500);
 }
+
+// === FIX: EVENT LISTENER AUTÓNOMO PARA EL BOTÓN ===
+window.addEventListener('load', () => {
+    const btnGuardar = document.getElementById('btn-crear-producto');
+    if (btnGuardar) {
+        const form = btnGuardar.closest('form');
+        if (form) {
+            form.addEventListener('submit', crearOActualizarProducto);
+        } else {
+            btnGuardar.addEventListener('click', crearOActualizarProducto);
+        }
+    }
+});
 
 async function cargarCategorias() {
     try {
@@ -697,6 +708,7 @@ function eliminarCategoria(id) {
     });
 }
 
+// === FIX TABLA DE PEDIDOS (ALINEADA Y ESTÉTICA) ===
 function renderPedidos() {
     const inicio = (vPagina - 1) * vPorPagina; const items = vTotales.slice(inicio, inicio + vPorPagina);
     const tbodyVentas = document.getElementById('body-pedidos');
@@ -707,16 +719,26 @@ function renderPedidos() {
     } else {
         tbodyVentas.innerHTML = items.map(v => {
             const fecha = new Date(v.fecha_creacion).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit' });
-            let detalleTxt = '<span style="color:#e74c3c;">Sin detalle</span>';
-            if (v.detalles && v.detalles.length > 0) { detalleTxt = v.detalles.map(d => `<b>${d.cantidad}x</b> ${d.nombre_producto} (Talle: ${d.talle})`).join('<br>'); }
+            
+            let detalleTxt = '<span style="color:#e74c3c; font-weight:bold;">Sin detalle</span>';
+            if (v.detalles && v.detalles.length > 0) { 
+                detalleTxt = `<div style="display:flex; flex-direction:column; gap:6px;">` + 
+                             v.detalles.map(d => `
+                                <div style="background:#f9f9f9; padding:8px 12px; border-radius:6px; border:1px solid #eee; text-align:left; font-size:0.85rem; line-height:1.4;">
+                                    <strong style="color:#111;">${d.cantidad}x</strong> ${d.nombre_producto}<br>
+                                    <span style="color:#666; font-size:0.8rem;">Talle: <strong>${d.talle}</strong></span>
+                                </div>
+                             `).join('') + `</div>`;
+            }
+
             return `
             <tr>
-                <td>#${v.id}</td>
-                <td><strong>${fecha}</strong></td>
-                <td><div style="font-weight:600;">${v.cliente_nombre} ${v.cliente_apellido}</div><small style="color:gray;">${v.cliente_email} / ${v.cliente_telefono}</small></td>
-                <td>${detalleTxt}</td>
-                <td style="color:#27ae60; font-weight:bold;">$${v.total}</td>
-                <td style="text-align: center;"><button class="btn-secundario" onclick="eliminarPedido(${v.id})"><i class="fas fa-trash-alt"></i></button></td>
+                <td style="vertical-align: top; padding-top: 15px;">#${v.id}</td>
+                <td style="vertical-align: top; padding-top: 15px;"><strong>${fecha}</strong></td>
+                <td style="vertical-align: top; padding-top: 15px;"><div style="font-weight:600;">${v.cliente_nombre} ${v.cliente_apellido}</div><small style="color:gray;">${v.cliente_email}<br>${v.cliente_telefono}</small></td>
+                <td style="vertical-align: top; padding-top: 15px;">${detalleTxt}</td>
+                <td style="color:#27ae60; font-weight:bold; vertical-align: top; padding-top: 15px;">$${v.total}</td>
+                <td style="text-align: center; vertical-align: top; padding-top: 15px;"><button class="btn-secundario" onclick="eliminarPedido(${v.id})"><i class="fas fa-trash-alt"></i></button></td>
             </tr>`;
         }).join('');
     }
@@ -749,6 +771,7 @@ function eliminarPedido(id) {
 function paginaSiguientePedidos() { const inicio = (vPagina - 1) * vPorPagina; if (inicio + vPorPagina < vTotales.length) { vPagina++; renderPedidos(); } }
 function paginaAnteriorPedidos() { if (vPagina > 1) { vPagina--; renderPedidos(); } }
 
+// === FIX FLECHA PARA DESPLEGAR DETALLES MENSUALES ===
 function generarEstadisticasMensuales() {
     const statsAgrupadas = {};
     const mesesStr = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -757,13 +780,64 @@ function generarEstadisticasMensuales() {
         const f = new Date(v.fecha_creacion);
         const llaveMes = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}`;
         
-        if(!statsAgrupadas[llaveMes]) { statsAgrupadas[llaveMes] = { mesAno: llaveMes, mesNombre: `${mesesStr[f.getMonth()]} ${f.getFullYear()}`, total: 0, cantidad: 0 }; }
-        statsAgrupadas[llaveMes].total += parseFloat(v.total); statsAgrupadas[llaveMes].cantidad += 1;
+        if(!statsAgrupadas[llaveMes]) { 
+            statsAgrupadas[llaveMes] = { mesAno: llaveMes, mesNombre: `${mesesStr[f.getMonth()]} ${f.getFullYear()}`, total: 0, cantidad: 0, ventas: [] }; 
+        }
+        statsAgrupadas[llaveMes].total += parseFloat(v.total); 
+        statsAgrupadas[llaveMes].cantidad += 1;
+        statsAgrupadas[llaveMes].ventas.push(v);
     });
 
     const tbodyStats = document.getElementById('body-meses');
-    if(tbodyStats) tbodyStats.innerHTML = Object.values(statsAgrupadas).sort((a,b) => b.mesAno.localeCompare(a.mesAno)).map(m => `<tr><td><b>${m.mesNombre}</b></td><td>${m.cantidad} pedidos</td><td style="color:#27ae60; font-weight:bold; font-size:1.1rem;">$${m.total.toLocaleString('es-AR')}</td></tr>`).join('');
+    if(tbodyStats) {
+        tbodyStats.innerHTML = Object.values(statsAgrupadas).sort((a,b) => b.mesAno.localeCompare(a.mesAno)).map(m => `
+            <tr style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'" onclick="toggleDetalleMes('${m.mesAno}')">
+                <td><b>${m.mesNombre}</b></td>
+                <td>${m.cantidad} pedidos</td>
+                <td style="color:#27ae60; font-weight:bold; font-size:1.1rem;">$${m.total.toLocaleString('es-AR')}</td>
+                <td style="text-align: center; color: #888;"><i class="fas fa-chevron-down" id="icono-mes-${m.mesAno}" style="transition: 0.3s;"></i></td>
+            </tr>
+            <tr id="detalle-mes-${m.mesAno}" style="display: none; background: #fafafa;">
+                <td colspan="4" style="padding: 15px 20px;">
+                    <div style="background: white; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                        <table style="width: 100%; min-width: auto !important; margin: 0; box-shadow: none;">
+                            <thead style="background: #f0f0f0;">
+                                <tr>
+                                    <th style="padding: 10px; font-size: 0.75rem;">Fecha</th>
+                                    <th style="padding: 10px; font-size: 0.75rem;">Cliente</th>
+                                    <th style="padding: 10px; font-size: 0.75rem;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${m.ventas.map(v => {
+                                    const fVenta = new Date(v.fecha_creacion).toLocaleDateString('es-AR');
+                                    return `
+                                    <tr>
+                                        <td style="padding: 10px; font-size: 0.85rem;">${fVenta}</td>
+                                        <td style="padding: 10px; font-size: 0.85rem;">${v.cliente_nombre} ${v.cliente_apellido}</td>
+                                        <td style="padding: 10px; font-size: 0.85rem; font-weight: bold; color: #27ae60;">$${v.total}</td>
+                                    </tr>`;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
 }
+
+window.toggleDetalleMes = function(id) {
+    const fila = document.getElementById(`detalle-mes-${id}`);
+    const icono = document.getElementById(`icono-mes-${id}`);
+    if (fila.style.display === 'none') {
+        fila.style.display = 'table-row';
+        icono.style.transform = 'rotate(180deg)';
+    } else {
+        fila.style.display = 'none';
+        icono.style.transform = 'rotate(0deg)';
+    }
+};
 
 async function cargarBanners() {
     const tbody = document.getElementById('body-banners');

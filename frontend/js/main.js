@@ -11,12 +11,8 @@ let cuponAplicado = { codigo: null, descuento: 0 };
 let banners = [];
 let currentSlide = 0;
 let slideInterval;
-
-// Variables para el táctil del carrusel
 let touchStartX = 0;
 let touchEndX = 0;
-
-// Variables para el táctil de las fotos de los productos
 let modalTouchStartX = 0;
 let modalTouchEndX = 0;
 
@@ -66,7 +62,6 @@ function getColorSeguro(v) {
     return '#d4ba92'; 
 }
 
-// === CERRAR MODALES TOCANDO AFUERA + DROPDOWN BUSCADOR ===
 window.addEventListener('click', function(event) {
     const modalProducto = document.getElementById('modal-detalle-producto');
     const modalCheckout = document.getElementById('modal-principal');
@@ -82,7 +77,6 @@ window.addEventListener('click', function(event) {
     }
 });
 
-// === MOSTRAR BOTÓN VOLVER ARRIBA ===
 window.addEventListener('scroll', () => {
     const btnTop = document.getElementById('btn-back-to-top');
     if (btnTop) {
@@ -97,7 +91,6 @@ window.addEventListener('scroll', () => {
 window.onload = async () => { 
     window.scrollTo(0, 0);
 
-    // === HABILITAMOS EL TÁCTIL (SWIPE) PARA EL CARRUSEL PRINCIPAL ===
     const carruselBanner = document.querySelector('.hero-carousel');
     if(carruselBanner) {
         carruselBanner.addEventListener('touchstart', e => {
@@ -105,13 +98,12 @@ window.onload = async () => {
         }, {passive: true});
         carruselBanner.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
-            if (touchEndX < touchStartX - 40) nextSlide(); // Desliza a la izquierda
-            if (touchEndX > touchStartX + 40) prevSlide(); // Desliza a la derecha
+            if (touchEndX < touchStartX - 40) nextSlide(); 
+            if (touchEndX > touchStartX + 40) prevSlide(); 
             reiniciarAutoplay();
         }, {passive: true});
     }
 
-    // === HABILITAMOS EL TÁCTIL (SWIPE) PARA LAS FOTOS DE LOS PRODUCTOS ===
     const fotoModal = document.querySelector('.modal-img-wrapper');
     if(fotoModal) {
         fotoModal.addEventListener('touchstart', e => {
@@ -119,9 +111,9 @@ window.onload = async () => {
         }, {passive: true});
         fotoModal.addEventListener('touchend', e => {
             modalTouchEndX = e.changedTouches[0].screenX;
-            if(modalImages.length > 1) { // Solo si tiene más de 1 foto
-                if (modalTouchEndX < modalTouchStartX - 40) nextModalImg(); // Pasa a la siguiente
-                if (modalTouchEndX > modalTouchStartX + 40) prevModalImg(); // Vuelve a la anterior
+            if(modalImages.length > 1) { 
+                if (modalTouchEndX < modalTouchStartX - 40) nextModalImg(); 
+                if (modalTouchEndX > modalTouchStartX + 40) prevModalImg(); 
             }
         }, {passive: true});
     }
@@ -1187,7 +1179,13 @@ async function finalizarCompra() {
     if(errorFormulario) return mostrarToast(mensajeError, "error"); 
     
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; const btn = document.getElementById('btn-pagar');
-    btn.innerHTML = '<i class="fas fa-spinner ruedita-girando"></i> PROCESANDO...'; btn.disabled = true; btn.style.opacity = '0.7';
+    
+    // === FIX BOTÓN PROCESANDO ===
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...'; 
+    btn.disabled = true; 
+    btn.style.opacity = '0.7';
+    btn.style.userSelect = 'none'; // Evita que se seleccione en azul raro
+    btn.style.pointerEvents = 'none';
 
     const partesNombre = inputNomCompleto.value.trim().split(' ');
     const nombreGuardar = partesNombre[0];
@@ -1225,6 +1223,6 @@ async function finalizarCompra() {
         }
     } catch (err) { 
         mostrarToast("Hubo un error al procesar la compra. Intentá nuevamente.", "error"); 
-        btn.innerHTML = 'Confirmar Pedido'; btn.disabled = false; btn.style.opacity = '1'; 
+        btn.innerHTML = 'Confirmar Pedido'; btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
     }
 }
