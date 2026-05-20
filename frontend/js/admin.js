@@ -450,53 +450,32 @@ function resetFormularioAdmin() {
 }
 
 function editarProducto(id) {
-    const producto = pTotales.find(p => p.id === id);
-    if (!producto) return;
-    idProductoEditando = id;
-    
-    if(document.getElementById('add-nombre')) document.getElementById('add-nombre').value = producto.nombre || '';
-    if(document.getElementById('add-categoria')) document.getElementById('add-categoria').value = producto.categoria || '';
-    if(document.getElementById('add-precio-tarj')) document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || producto.tarjeta || '';
-    if(document.getElementById('add-precio-efvo')) document.getElementById('add-precio-efvo').value = producto.precio_efectivo || producto.efectivo || '';
-    if(document.getElementById('add-descripcion')) document.getElementById('add-descripcion').value = producto.descripcion || '';
-    if(document.getElementById('add-codigo-modelo')) document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
-    if(document.getElementById('add-color-hex')) document.getElementById('add-color-hex').value = producto.color_hex || '#d4ba92';
-    if(document.getElementById('add-color-nombre')) document.getElementById('add-color-nombre').value = producto.color_nombre || '';
+    // Asegurate de tener esta variable al principio de tu admin.js
+    let idProductoEditando = null; 
 
-    const chkUnico = document.getElementById('chk-unico');
-    const inputStockUnico = document.getElementById('add-stock-unico');
-    const containerTalles = document.getElementById('talles-builder-ui');
-
-    if(containerTalles) containerTalles.innerHTML = '';
-
-    if (producto.inventario_talles && producto.inventario_talles['ÚNICO'] !== undefined) {
-        if(chkUnico) chkUnico.checked = true;
-        toggleTalleUnico();
-        if(inputStockUnico) inputStockUnico.value = producto.inventario_talles['ÚNICO'];
-    } else {
-        if(chkUnico) chkUnico.checked = false;
-        toggleTalleUnico();
-        if (producto.inventario_talles) {
-            Object.entries(producto.inventario_talles).forEach(([t, c]) => agregarTalleUI(t, c));
-        } else {
-            agregarTalleUI('S', 0);
-        }
-        if(inputStockUnico) inputStockUnico.value = '';
+    // Función para preparar el formulario al editar
+    window.editarProducto = function(id) {
+    const producto = productosCargados.find(p => p.id === id);
+    if (!producto) {
+        mostrarToastAdmin("Error al cargar producto", "error");
+        return;
     }
 
-    const imgInput = document.getElementById('add-img');
-    const labelImg = document.getElementById('label-add-img');
-    if(imgInput) { imgInput.value = ''; }
-    if(labelImg) { labelImg.innerText = 'Reemplazar Foto (Opcional)'; labelImg.classList.remove('selected'); }
+    idProductoEditando = id; // Esto es CLAVE: le decimos al script qué ID estamos editando
+
+    // Rellenar campos
+    document.getElementById('add-nombre').value = producto.nombre || '';
+    document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || '';
+    document.getElementById('add-precio-efvo').value = producto.precio_efectivo || '';
+    document.getElementById('add-descripcion').value = producto.descripcion || '';
     
-    document.getElementById('titulo-form-admin').innerText = `Editando: ${producto.nombre}`;
+    // Cambiar texto del botón
+    const btn = document.getElementById('btn-crear-producto');
+    btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
+    btn.style.backgroundColor = '#f39c12'; // Color naranja para identificar edición
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    verTab('tab-inventario');
-    const btn = document.getElementById('btn-crear-producto');
-    if(btn) {
-        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
-        btn.style.background = '#f39c12';
+
     }
 }
 
@@ -583,9 +562,14 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
 }
 
 function crearOActualizarProducto(e) {
+    async function crearOActualizarProducto(e) {
     if(e) e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
     
+    // Animación de carga
+    btn.classList.add('btn-procesando');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
+
     const nombre = document.getElementById('add-nombre') ? document.getElementById('add-nombre').value.trim() : '';
     const categoria = document.getElementById('add-categoria') ? document.getElementById('add-categoria').value : '';
     const tarj = document.getElementById('add-precio-tarj') ? document.getElementById('add-precio-tarj').value : '';
@@ -598,14 +582,15 @@ function crearOActualizarProducto(e) {
     const esUnico = chkUnico ? chkUnico.checked : false;
 
     if (!nombre || !categoria || !tarj || !efvo) { 
+        btn.classList.remove('btn-procesando');
+        btn.innerHTML = 'Guardar';
         return mostrarToastAdmin("Por favor completa los campos obligatorios.", "error"); 
     }
 
     let inventarioFinal = {};
     if (esUnico) {
         const inputStockU = document.getElementById('add-stock-unico');
-        const stockU = inputStockU ? (parseInt(inputStockU.value) || 0) : 0;
-        inventarioFinal['ÚNICO'] = stockU;
+        inventarioFinal['ÚNICO'] = inputStockU ? (parseInt(inputStockU.value) || 0) : 0;
     } else {
         const nombresT = document.querySelectorAll('.builder-talle-nombre');
         const cantsT = document.querySelectorAll('.builder-talle-cant');
@@ -621,26 +606,29 @@ function crearOActualizarProducto(e) {
     if (imgInput && imgInput.files && imgInput.files.length > 0) { 
         const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
         for (let file of filesToProcess) { 
-            procesarImg(file).then(b64 => { base64Images.push(b64); }); 
+            const b64 = await procesarImg(file); // IMPORTANTE: await aquí para asegurar las imágenes
+            base64Images.push(b64); 
         } 
     }
     
-    setTimeout(() => {
-        const payload = { 
-            nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
-            inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre
-        };
+    const payload = { 
+        nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
+        inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
+        id: idProductoEditando // <--- AQUÍ LE PASAMOS EL ID AL SERVIDOR
+    };
 
-        if (idProductoEditando !== null) {
-            showCustomConfirm('¿Seguro que querés guardar los cambios (Actualizar) de esta prenda?', async () => {
-                await ejecutarGuardadoFinal(payload, base64Images, btn);
-            }, "Sí, actualizar");
-        } else {
-            showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', async () => {
-                await ejecutarGuardadoFinal(payload, base64Images, btn);
-            }, "Sí, publicar");
-        }
-    }, 500);
+    const accion = async () => {
+        await ejecutarGuardadoFinal(payload, base64Images, btn);
+        idProductoEditando = null; // Reseteamos el modo edición
+    };
+
+    if (idProductoEditando !== null) {
+        showCustomConfirm('¿Seguro que querés guardar los cambios?', accion, "Sí, actualizar");
+    } else {
+        showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', accion, "Sí, publicar");
+    }
+    }
+    
 }
 
 window.addEventListener('load', () => {

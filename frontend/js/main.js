@@ -994,7 +994,6 @@ function renderizarCarritoSidebar() {
         document.getElementById('subtotal-sidebar').innerText = '0'; document.getElementById('fila-descuento-sidebar').style.display = 'none'; return; 
     } 
     
-    // === FIX NÚMEROS NEGROS EN EL CARRITO ===
     lista.innerHTML = carrito.map(p => { 
         subtotal += (p.precio_efectivo * p.cantidad); 
         return `
@@ -1182,13 +1181,8 @@ async function finalizarCompra() {
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; 
     
     const btn = document.getElementById('btn-pagar');
-    
-    // === FIX BOTÓN PROCESANDO (ANIMACIÓN OFICIAL DE FONTAWESOME Y SIN TEXTO AZUL) ===
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...'; 
-    btn.disabled = true; 
-    btn.style.opacity = '0.7';
-    btn.style.userSelect = 'none'; 
-    btn.style.pointerEvents = 'none';
+    btn.classList.add('btn-procesando');
 
     const partesNombre = inputNomCompleto.value.trim().split(' ');
     const nombreGuardar = partesNombre[0];
@@ -1227,8 +1221,6 @@ async function finalizarCompra() {
     } catch (err) { 
         mostrarToast("Hubo un error al procesar la compra. Intentá nuevamente.", "error"); 
         btn.innerHTML = 'Confirmar Pedido'; 
-        btn.disabled = false; 
-        btn.style.opacity = '1'; 
-        btn.style.pointerEvents = 'auto';
+        btn.classList.remove('btn-procesando');
     }
 }
