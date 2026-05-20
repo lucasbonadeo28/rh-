@@ -260,3 +260,20 @@ th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; font-size: 
     #talles-builder-ui { flex-direction: column; align-items: center; }
     .builder-talle-nombre, .builder-talle-cant { width: 80px !important; flex: none !important; text-align: center; }
 }
+
+/* --- Arreglo para que el Admin no se rompa en celular --- */
+@media (max-width: 768px) {
+    .admin-form-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+    .col-span-1, .col-span-2, .col-span-3, .col-span-full {
+        width: 100% !important;
+    }
+    #btn-crear-producto {
+        width: 100% !important;
+        padding: 18px !important;
+        margin-top: 20px !important;
+    }
+}
