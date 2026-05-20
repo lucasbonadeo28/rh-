@@ -1178,13 +1178,15 @@ async function finalizarCompra() {
     
     if(errorFormulario) return mostrarToast(mensajeError, "error"); 
     
-    const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; const btn = document.getElementById('btn-pagar');
+    const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; 
     
-    // === FIX BOTÓN PROCESANDO ===
+    const btn = document.getElementById('btn-pagar');
+    
+    // === FIX BOTÓN PROCESANDO (ANIMADO Y SIN SOMBRA AZUL) ===
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...'; 
     btn.disabled = true; 
     btn.style.opacity = '0.7';
-    btn.style.userSelect = 'none'; // Evita que se seleccione en azul raro
+    btn.style.userSelect = 'none'; 
     btn.style.pointerEvents = 'none';
 
     const partesNombre = inputNomCompleto.value.trim().split(' ');
@@ -1223,6 +1225,9 @@ async function finalizarCompra() {
         }
     } catch (err) { 
         mostrarToast("Hubo un error al procesar la compra. Intentá nuevamente.", "error"); 
-        btn.innerHTML = 'Confirmar Pedido'; btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+        btn.innerHTML = 'Confirmar Pedido'; 
+        btn.disabled = false; 
+        btn.style.opacity = '1'; 
+        btn.style.pointerEvents = 'auto';
     }
 }

@@ -212,6 +212,14 @@ function verTab(id) {
     document.getElementById(id).style.display = 'block';
 }
 
+function initTallesBuilder() {
+    const container = document.getElementById('talles-builder-ui');
+    if(!container) return;
+    if(container.children.length === 0) {
+        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
+    }
+}
+
 function agregarTalleUI(nombre = '', cantidad = 0) {
     const container = document.getElementById('talles-builder-ui');
     if(!container) return;
@@ -247,10 +255,7 @@ function toggleTalleUnico() {
 }
 
 async function cargarTodo() {
-    const container = document.getElementById('talles-builder-ui');
-    if(container && container.children.length === 0) {
-        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
-    }
+    initTallesBuilder();
     cargarBanners(); cargarCupones(); cargarCategorias();
     try {
         const resI = await fetchSeguro(`${API}/productos?t=` + new Date().getTime(), { cache: 'no-store' }); 
@@ -622,7 +627,6 @@ function crearOActualizarProducto(e) {
         } 
     }
     
-    // Le damos 1 segundo al procesador de imágenes antes de armar el payload final
     setTimeout(() => {
         const payload = { 
             nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
@@ -641,7 +645,6 @@ function crearOActualizarProducto(e) {
     }, 500);
 }
 
-// === FIX: EVENT LISTENER AUTÓNOMO PARA EL BOTÓN ===
 window.addEventListener('load', () => {
     const btnGuardar = document.getElementById('btn-crear-producto');
     if (btnGuardar) {
@@ -708,7 +711,6 @@ function eliminarCategoria(id) {
     });
 }
 
-// === FIX TABLA DE PEDIDOS (ALINEADA Y ESTÉTICA) ===
 function renderPedidos() {
     const inicio = (vPagina - 1) * vPorPagina; const items = vTotales.slice(inicio, inicio + vPorPagina);
     const tbodyVentas = document.getElementById('body-pedidos');
@@ -719,26 +721,16 @@ function renderPedidos() {
     } else {
         tbodyVentas.innerHTML = items.map(v => {
             const fecha = new Date(v.fecha_creacion).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute:'2-digit' });
-            
-            let detalleTxt = '<span style="color:#e74c3c; font-weight:bold;">Sin detalle</span>';
-            if (v.detalles && v.detalles.length > 0) { 
-                detalleTxt = `<div style="display:flex; flex-direction:column; gap:6px;">` + 
-                             v.detalles.map(d => `
-                                <div style="background:#f9f9f9; padding:8px 12px; border-radius:6px; border:1px solid #eee; text-align:left; font-size:0.85rem; line-height:1.4;">
-                                    <strong style="color:#111;">${d.cantidad}x</strong> ${d.nombre_producto}<br>
-                                    <span style="color:#666; font-size:0.8rem;">Talle: <strong>${d.talle}</strong></span>
-                                </div>
-                             `).join('') + `</div>`;
-            }
-
+            let detalleTxt = '<span style="color:#e74c3c;">Sin detalle</span>';
+            if (v.detalles && v.detalles.length > 0) { detalleTxt = v.detalles.map(d => `<b>${d.cantidad}x</b> ${d.nombre_producto} (Talle: ${d.talle})`).join('<br>'); }
             return `
             <tr>
-                <td style="vertical-align: top; padding-top: 15px;">#${v.id}</td>
-                <td style="vertical-align: top; padding-top: 15px;"><strong>${fecha}</strong></td>
-                <td style="vertical-align: top; padding-top: 15px;"><div style="font-weight:600;">${v.cliente_nombre} ${v.cliente_apellido}</div><small style="color:gray;">${v.cliente_email}<br>${v.cliente_telefono}</small></td>
-                <td style="vertical-align: top; padding-top: 15px;">${detalleTxt}</td>
-                <td style="color:#27ae60; font-weight:bold; vertical-align: top; padding-top: 15px;">$${v.total}</td>
-                <td style="text-align: center; vertical-align: top; padding-top: 15px;"><button class="btn-secundario" onclick="eliminarPedido(${v.id})"><i class="fas fa-trash-alt"></i></button></td>
+                <td>#${v.id}</td>
+                <td><strong>${fecha}</strong></td>
+                <td><div style="font-weight:600;">${v.cliente_nombre} ${v.cliente_apellido}</div><small style="color:gray;">${v.cliente_email} / ${v.cliente_telefono}</small></td>
+                <td>${detalleTxt}</td>
+                <td style="color:#27ae60; font-weight:bold;">$${v.total}</td>
+                <td style="text-align: center;"><button class="btn-secundario" onclick="eliminarPedido(${v.id})"><i class="fas fa-trash-alt"></i></button></td>
             </tr>`;
         }).join('');
     }
@@ -771,7 +763,7 @@ function eliminarPedido(id) {
 function paginaSiguientePedidos() { const inicio = (vPagina - 1) * vPorPagina; if (inicio + vPorPagina < vTotales.length) { vPagina++; renderPedidos(); } }
 function paginaAnteriorPedidos() { if (vPagina > 1) { vPagina--; renderPedidos(); } }
 
-// === FIX FLECHA PARA DESPLEGAR DETALLES MENSUALES ===
+// === FIX: SE AGREGÓ LA COLUMNA DE PRODUCTOS EN EL DETALLE MENSUAL ===
 function generarEstadisticasMensuales() {
     const statsAgrupadas = {};
     const mesesStr = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -805,16 +797,22 @@ function generarEstadisticasMensuales() {
                                 <tr>
                                     <th style="padding: 10px; font-size: 0.75rem;">Fecha</th>
                                     <th style="padding: 10px; font-size: 0.75rem;">Cliente</th>
+                                    <th style="padding: 10px; font-size: 0.75rem;">Productos</th>
                                     <th style="padding: 10px; font-size: 0.75rem;">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${m.ventas.map(v => {
                                     const fVenta = new Date(v.fecha_creacion).toLocaleDateString('es-AR');
+                                    let detalleProds = '<span style="color:#e74c3c; font-size:0.75rem;">Sin detalle</span>';
+                                    if (v.detalles && v.detalles.length > 0) {
+                                        detalleProds = v.detalles.map(d => `<b>${d.cantidad}x</b> ${d.nombre_producto} (Talle: ${d.talle})`).join('<br>');
+                                    }
                                     return `
-                                    <tr>
+                                    <tr style="border-bottom: 1px solid #eee;">
                                         <td style="padding: 10px; font-size: 0.85rem;">${fVenta}</td>
-                                        <td style="padding: 10px; font-size: 0.85rem;">${v.cliente_nombre} ${v.cliente_apellido}</td>
+                                        <td style="padding: 10px; font-size: 0.85rem;"><b>${v.cliente_nombre} ${v.cliente_apellido}</b></td>
+                                        <td style="padding: 10px; font-size: 0.8rem; color: #555; line-height: 1.3;">${detalleProds}</td>
                                         <td style="padding: 10px; font-size: 0.85rem; font-weight: bold; color: #27ae60;">$${v.total}</td>
                                     </tr>`;
                                 }).join('')}
