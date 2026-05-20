@@ -487,6 +487,24 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     #sidebar-desktop { display: none !important; }
 }
 
+.detail-box { 
+        flex-direction: column !important; 
+        max-height: 90vh !important; 
+        overflow-y: auto !important; 
+    }
+    .product-detail-modal .detail-img { 
+        flex: 0 0 100% !important; 
+        max-width: 100% !important; 
+        padding: 15px !important; 
+    }
+    .detail-info { 
+        flex: 0 0 100% !important; 
+        max-width: 100% !important; 
+        padding: 0 20px 20px 20px !important; 
+    }
+    .detail-title { font-size: 1.4rem !important; margin-bottom: 10px !important; }
+    .price-box-detail { margin-bottom: 15px !important; padding: 12px !important; }
+    .talles-selector { margin-top: 5px !important; }
 /* ========================================= */
 /* CORRECCIONES FINALES PEDIDAS POR EL USUARIO */
 /* ========================================= */
