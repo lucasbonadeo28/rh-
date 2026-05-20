@@ -13,7 +13,7 @@ let ventasDataGlobal = [];
 let categoriasGlobal = [];
 let cPagina = 1;
 const cPorPagina = 10;
-let idProductoEditando = null;
+let idProductoEditando = null; // VARIABLE CLAVE ARREGLADA
 
 const mapaColores = {
     'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
@@ -449,34 +449,50 @@ function resetFormularioAdmin() {
     if(titulo) titulo.innerText = 'Cargar Nueva Prenda';
 }
 
+// === FIX: FUNCIÓN EDITAR PRODUCTO ARREGLADA Y LIMPIA ===
 function editarProducto(id) {
-    // Asegurate de tener esta variable al principio de tu admin.js
-    let idProductoEditando = null; 
-
-    // Función para preparar el formulario al editar
-    window.editarProducto = function(id) {
-    const producto = productosCargados.find(p => p.id === id);
+    const producto = pTotales.find(p => p.id === id);
     if (!producto) {
         mostrarToastAdmin("Error al cargar producto", "error");
         return;
     }
 
-    idProductoEditando = id; // Esto es CLAVE: le decimos al script qué ID estamos editando
+    idProductoEditando = id; 
 
-    // Rellenar campos
     document.getElementById('add-nombre').value = producto.nombre || '';
     document.getElementById('add-precio-tarj').value = producto.precio_tarjeta || '';
     document.getElementById('add-precio-efvo').value = producto.precio_efectivo || '';
     document.getElementById('add-descripcion').value = producto.descripcion || '';
+    document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
+    document.getElementById('add-categoria').value = producto.categoria || '';
     
-    // Cambiar texto del botón
+    if(producto.color_hex) document.getElementById('add-color-hex').value = producto.color_hex;
+    if(producto.color_nombre) document.getElementById('add-color-nombre').value = producto.color_nombre;
+    
+    const chkUnico = document.getElementById('chk-unico');
+    const containerTalles = document.getElementById('talles-builder-ui');
+    if(containerTalles) containerTalles.innerHTML = '';
+    
+    if (producto.inventario_talles && producto.inventario_talles['ÚNICO'] !== undefined) {
+        if(chkUnico) chkUnico.checked = true;
+        toggleTalleUnico();
+        const inUnico = document.getElementById('add-stock-unico');
+        if(inUnico) inUnico.value = producto.inventario_talles['ÚNICO'];
+    } else {
+        if(chkUnico) chkUnico.checked = false;
+        toggleTalleUnico();
+        if (producto.inventario_talles) {
+            Object.entries(producto.inventario_talles).forEach(([t, c]) => agregarTalleUI(t, c));
+        }
+    }
+
     const btn = document.getElementById('btn-crear-producto');
-    btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
-    btn.style.backgroundColor = '#f39c12'; // Color naranja para identificar edición
+    if(btn) {
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
+        btn.style.backgroundColor = '#f39c12';
+    }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    }
 }
 
 function borrarP(id) { 
@@ -561,12 +577,11 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
     }
 }
 
-function crearOActualizarProducto(e) {
-    async function crearOActualizarProducto(e) {
+// === FIX: FUNCIÓN DE GUARDAR ARREGLADA (SIN FUNCIONES ANIDADAS ROTAS) ===
+async function crearOActualizarProducto(e) {
     if(e) e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
     
-    // Animación de carga
     btn.classList.add('btn-procesando');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
 
@@ -583,7 +598,7 @@ function crearOActualizarProducto(e) {
 
     if (!nombre || !categoria || !tarj || !efvo) { 
         btn.classList.remove('btn-procesando');
-        btn.innerHTML = 'Guardar';
+        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
         return mostrarToastAdmin("Por favor completa los campos obligatorios.", "error"); 
     }
 
@@ -606,7 +621,7 @@ function crearOActualizarProducto(e) {
     if (imgInput && imgInput.files && imgInput.files.length > 0) { 
         const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
         for (let file of filesToProcess) { 
-            const b64 = await procesarImg(file); // IMPORTANTE: await aquí para asegurar las imágenes
+            const b64 = await procesarImg(file);
             base64Images.push(b64); 
         } 
     }
@@ -614,12 +629,11 @@ function crearOActualizarProducto(e) {
     const payload = { 
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
-        id: idProductoEditando // <--- AQUÍ LE PASAMOS EL ID AL SERVIDOR
+        id: idProductoEditando 
     };
 
     const accion = async () => {
         await ejecutarGuardadoFinal(payload, base64Images, btn);
-        idProductoEditando = null; // Reseteamos el modo edición
     };
 
     if (idProductoEditando !== null) {
@@ -627,8 +641,6 @@ function crearOActualizarProducto(e) {
     } else {
         showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', accion, "Sí, publicar");
     }
-    }
-    
 }
 
 window.addEventListener('load', () => {
@@ -749,7 +761,6 @@ function eliminarPedido(id) {
 function paginaSiguientePedidos() { const inicio = (vPagina - 1) * vPorPagina; if (inicio + vPorPagina < vTotales.length) { vPagina++; renderPedidos(); } }
 function paginaAnteriorPedidos() { if (vPagina > 1) { vPagina--; renderPedidos(); } }
 
-// === FIX SINTAXIS: LA TABLA MENSUAL AHORA ANDA PERFECTO ===
 function generarEstadisticasMensuales() {
     const statsAgrupadas = {};
     const mesesStr = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
