@@ -40,7 +40,6 @@ function detectarColor(texto) {
     }
 }
 
-// === SISTEMA DE CARTELES FLOTANTES (TOAST) AUTÓNOMO ===
 function mostrarToastAdmin(mensaje, tipo = 'success') {
     let container = document.getElementById('toast-container-admin');
     if (!container) {
@@ -66,7 +65,6 @@ function showCustomAlert(msg, type = 'error', reload = false) {
     if(reload) setTimeout(() => location.reload(), 1500);
 }
 
-// === SISTEMA DE CONFIRMACIÓN MODAL AUTÓNOMO ===
 function showCustomConfirm(msg, callback, btnText = "Sí") {
     let modal = document.getElementById('dinamic-confirm-modal');
     if (!modal) {
@@ -763,7 +761,7 @@ function eliminarPedido(id) {
 function paginaSiguientePedidos() { const inicio = (vPagina - 1) * vPorPagina; if (inicio + vPorPagina < vTotales.length) { vPagina++; renderPedidos(); } }
 function paginaAnteriorPedidos() { if (vPagina > 1) { vPagina--; renderPedidos(); } }
 
-// === FIX: SE AGREGÓ LA COLUMNA DE PRODUCTOS EN EL DETALLE MENSUAL ===
+// === FIX SINTAXIS: LA TABLA MENSUAL AHORA ANDA PERFECTO ===
 function generarEstadisticasMensuales() {
     const statsAgrupadas = {};
     const mesesStr = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -782,14 +780,16 @@ function generarEstadisticasMensuales() {
 
     const tbodyStats = document.getElementById('body-meses');
     if(tbodyStats) {
-        tbodyStats.innerHTML = Object.values(statsAgrupadas).sort((a,b) => b.mesAno.localeCompare(a.mesAno)).map(m => `
-            <tr style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'" onclick="toggleDetalleMes('${m.mesAno}')">
+        tbodyStats.innerHTML = Object.values(statsAgrupadas).sort((a,b) => b.mesAno.localeCompare(a.mesAno)).map(m => {
+            const rowId = `detalle-mes-${m.mesAno}`;
+            return `
+            <tr style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#f9f9f9'" onmouseout="this.style.background='transparent'" onclick="const f = document.getElementById('${rowId}'); f.style.display = f.style.display === 'none' ? 'table-row' : 'none'; const i = document.getElementById('icono-mes-${m.mesAno}'); i.style.transform = f.style.display === 'none' ? 'rotate(0deg)' : 'rotate(180deg)';">
                 <td><b>${m.mesNombre}</b></td>
                 <td>${m.cantidad} pedidos</td>
                 <td style="color:#27ae60; font-weight:bold; font-size:1.1rem;">$${m.total.toLocaleString('es-AR')}</td>
                 <td style="text-align: center; color: #888;"><i class="fas fa-chevron-down" id="icono-mes-${m.mesAno}" style="transition: 0.3s;"></i></td>
             </tr>
-            <tr id="detalle-mes-${m.mesAno}" style="display: none; background: #fafafa;">
+            <tr id="${rowId}" style="display: none; background: #fafafa;">
                 <td colspan="4" style="padding: 15px 20px;">
                     <div style="background: white; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
                         <table style="width: 100%; min-width: auto !important; margin: 0; box-shadow: none;">
@@ -797,12 +797,12 @@ function generarEstadisticasMensuales() {
                                 <tr>
                                     <th style="padding: 10px; font-size: 0.75rem;">Fecha</th>
                                     <th style="padding: 10px; font-size: 0.75rem;">Cliente</th>
-                                    <th style="padding: 10px; font-size: 0.75rem;">Productos</th>
+                                    <th style="padding: 10px; font-size: 0.75rem;">Productos Comprados</th>
                                     <th style="padding: 10px; font-size: 0.75rem;">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${m.ventas.map(v => {
+                                ` + m.ventas.map(v => {
                                     const fVenta = new Date(v.fecha_creacion).toLocaleDateString('es-AR');
                                     let detalleProds = '<span style="color:#e74c3c; font-size:0.75rem;">Sin detalle</span>';
                                     if (v.detalles && v.detalles.length > 0) {
@@ -815,27 +815,16 @@ function generarEstadisticasMensuales() {
                                         <td style="padding: 10px; font-size: 0.8rem; color: #555; line-height: 1.3;">${detalleProds}</td>
                                         <td style="padding: 10px; font-size: 0.85rem; font-weight: bold; color: #27ae60;">$${v.total}</td>
                                     </tr>`;
-                                }).join('')}
+                                }).join('') + `
                             </tbody>
                         </table>
                     </div>
                 </td>
             </tr>
-        `).join('');
+            `;
+        }).join('');
     }
 }
-
-window.toggleDetalleMes = function(id) {
-    const fila = document.getElementById(`detalle-mes-${id}`);
-    const icono = document.getElementById(`icono-mes-${id}`);
-    if (fila.style.display === 'none') {
-        fila.style.display = 'table-row';
-        icono.style.transform = 'rotate(180deg)';
-    } else {
-        fila.style.display = 'none';
-        icono.style.transform = 'rotate(0deg)';
-    }
-};
 
 async function cargarBanners() {
     const tbody = document.getElementById('body-banners');

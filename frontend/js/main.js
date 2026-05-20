@@ -994,6 +994,7 @@ function renderizarCarritoSidebar() {
         document.getElementById('subtotal-sidebar').innerText = '0'; document.getElementById('fila-descuento-sidebar').style.display = 'none'; return; 
     } 
     
+    // === FIX NÚMEROS NEGROS EN EL CARRITO ===
     lista.innerHTML = carrito.map(p => { 
         subtotal += (p.precio_efectivo * p.cantidad); 
         return `
@@ -1002,7 +1003,7 @@ function renderizarCarritoSidebar() {
                 <img src="${p.imagen_url || 'https://via.placeholder.com/400x500?text=Sin+Imagen'}">
                 <div style="max-width: 130px;">
                     <strong style="display:block; font-size: 0.85rem; color:var(--primary); line-height: 1.2; margin-bottom:4px; font-weight:700;">${p.nombre}</strong>
-                    <span style="color:var(--success); font-size:0.85rem; font-weight:800;">$${p.precio_efectivo}</span>
+                    <span style="color:var(--primary); font-size:0.85rem; font-weight:800;">$${p.precio_efectivo}</span>
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap: 15px;">
@@ -1182,7 +1183,7 @@ async function finalizarCompra() {
     
     const btn = document.getElementById('btn-pagar');
     
-    // === FIX BOTÓN PROCESANDO (ANIMADO Y SIN SOMBRA AZUL) ===
+    // === FIX BOTÓN PROCESANDO (ANIMACIÓN OFICIAL DE FONTAWESOME Y SIN TEXTO AZUL) ===
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...'; 
     btn.disabled = true; 
     btn.style.opacity = '0.7';
