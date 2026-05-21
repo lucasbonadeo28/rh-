@@ -650,28 +650,41 @@ async function ejecutarGuardadoFinal(payload, btn) {
     }
 }
 
-// === NUEVA FUNCIÓN PARA ENGAÑAR AL SERVIDOR ===
+// === NUEVA FUNCIÓN AGRESIVA PARA ENGAÑAR AL SERVIDOR ===
 // Descarga las URLs viejas y las convierte a Base64 para que el servidor 
-// crea que son archivos nuevos y acepte borrar las fotos que quitaste.
+// crea que son archivos 100% nuevos y no ignore tu orden de borrado.
 async function urlABase64(url) {
     if (url.startsWith('data:image')) return url; // Ya es nueva
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous"; 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width; canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
-        };
-        img.onerror = () => {
-            console.warn("Fallo CORS, enviando URL original");
-            resolve(url); // Si falla algo, intentamos mandarla normal
-        };
-        // Engañamos al caché para evitar bloqueos
-        img.src = url + (url.includes('?') ? '&' : '?') + 'cors=' + new Date().getTime();
-    });
+    
+    try {
+        // Intento 1: Fetch (Bypassea muchos problemas)
+        const response = await fetch(url, { cache: 'no-cache' });
+        const blob = await response.blob();
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        // Intento 2: Canvas por si falla el fetch
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.onerror = () => {
+                console.warn("Fallo CORS en la imagen. Enviando URL original.");
+                resolve(url); 
+            };
+            img.src = url;
+        });
+    }
 }
 
 async function crearOActualizarProducto(e) {
@@ -718,7 +731,8 @@ async function crearOActualizarProducto(e) {
         }
     }
     
-    // Convertimos TODO a Base64 para obligar al backend a guardar los cambios
+    // === FIX HACK PARA EL SERVIDOR ===
+    // Transformamos las URLs viejas en archivos nuevos (base64)
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
     const imagenesFinales = [];
     for (let img of imagenesCargadas) {
