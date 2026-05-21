@@ -13,7 +13,10 @@ let ventasDataGlobal = [];
 let categoriasGlobal = [];
 let cPagina = 1;
 const cPorPagina = 10;
-let idProductoEditando = null; // VARIABLE CLAVE ARREGLADA
+let idProductoEditando = null; 
+
+// === NUEVO: ALMACÉN GLOBAL DE IMÁGENES ===
+let imagenesCargadas = [];
 
 const mapaColores = {
     'rojo': '#ff0000', 'azul': '#0000ff', 'verde': '#008000', 'amarillo': '#ffff00', 
@@ -110,10 +113,84 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
     }, 10);
 }
 
+// === NUEVO: FUNCIONES DEL GESTOR DE IMÁGENES ===
+function renderizarMiniaturas() {
+    let container = document.getElementById('preview-imagenes-container');
+    const labelImg = document.getElementById('label-add-img');
+    
+    if (!container && labelImg) {
+        container = document.createElement('div');
+        container.id = 'preview-imagenes-container';
+        container.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; width: 100%;';
+        labelImg.parentNode.insertBefore(container, labelImg.nextSibling);
+    }
+    if(!container) return;
+    
+    container.innerHTML = '';
+    
+    imagenesCargadas.forEach((imgSrc, index) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'position: relative; width: 80px; height: 80px; border-radius: 8px; border: 1px solid #ddd; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #fff;';
+        
+        let finalSrc = imgSrc;
+        if (finalSrc && !finalSrc.startsWith('data:') && !finalSrc.includes('via.placeholder')) {
+            finalSrc += (finalSrc.includes('?') ? '&' : '?') + 'v=' + new Date().getTime();
+        }
+
+        div.innerHTML = `
+            <img src="${finalSrc}" style="width: 100%; height: 100%; object-fit: cover;">
+            <button type="button" onclick="eliminarMiniatura(${index})" style="position: absolute; top: 4px; right: 4px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: 0.2s;"><i class="fas fa-times"></i></button>
+        `;
+        container.appendChild(div);
+    });
+
+    if (labelImg) {
+        if (imagenesCargadas.length > 0) {
+            labelImg.innerHTML = `<i class="fas fa-camera"></i> <span style="font-weight:700;">Añadir más fotos (${imagenesCargadas.length}/5)</span>`;
+            labelImg.classList.add('selected');
+        } else {
+            labelImg.innerHTML = `<i class="fas fa-camera"></i> <span>Abrir Galería</span>`;
+            labelImg.classList.remove('selected');
+        }
+    }
+}
+
+window.eliminarMiniatura = function(index) {
+    imagenesCargadas.splice(index, 1);
+    renderizarMiniaturas();
+};
+
 window.addEventListener('DOMContentLoaded', () => {
     const inputColorNombre = document.getElementById('add-color-nombre');
     if (inputColorNombre) {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
+    }
+
+    // === NUEVO: CAPTURAR LA SUBIDA DE FOTOS AL INSTANTE ===
+    const imgInput = document.getElementById('add-img');
+    if (imgInput) {
+        imgInput.addEventListener('change', async function() {
+            if (this.files && this.files.length > 0) {
+                const espaciosDisponibles = 5 - imagenesCargadas.length;
+                if (espaciosDisponibles <= 0) {
+                    mostrarToastAdmin("Máximo 5 fotos por prenda.", "error");
+                    this.value = '';
+                    return;
+                }
+                
+                const filesToProcess = Array.from(this.files).slice(0, espaciosDisponibles);
+                const label = document.getElementById('label-add-img');
+                if(label) label.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Procesando...</span>';
+
+                for (let file of filesToProcess) {
+                    const b64 = await procesarImg(file);
+                    imagenesCargadas.push(b64);
+                }
+                
+                renderizarMiniaturas();
+                this.value = ''; // Reseteamos el input para permitir seleccionar el mismo archivo de nuevo
+            }
+        });
     }
 
     if (sessionStorage.getItem('adminLogueado') === 'true') {
@@ -185,16 +262,6 @@ function cerrarSesionLocal() {
 window.onload = () => { 
     if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
 };
-
-function mostrarNombreArchivo(input, labelId, textoDefault) {
-    const label = document.getElementById(labelId);
-    if (input.files && input.files.length > 0) {
-        label.innerText = input.files.length === 1 ? input.files[0].name : `${input.files.length} fotos elegidas`;
-        label.classList.add('selected'); 
-    } else {
-        label.innerText = textoDefault; label.classList.remove('selected'); 
-    }
-}
 
 async function fetchSeguro(url, opciones = {}) {
     const res = await fetch(url, opciones); return res;
@@ -434,10 +501,11 @@ function resetFormularioAdmin() {
         agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
     }
     
+    // === FIX GESTOR IMÁGENES AL RESETEAR ===
+    imagenesCargadas = [];
+    renderizarMiniaturas();
     const imgInput = document.getElementById('add-img');
-    const labelImg = document.getElementById('label-add-img');
-    if(imgInput) { imgInput.value = ''; }
-    if(labelImg) { labelImg.innerHTML = '<i class="fas fa-camera"></i> <span>Abrir Galería</span>'; labelImg.classList.remove('selected'); }
+    if(imgInput) imgInput.value = '';
 
     idProductoEditando = null;
     const btn = document.getElementById('btn-crear-producto');
@@ -449,7 +517,6 @@ function resetFormularioAdmin() {
     if(titulo) titulo.innerText = 'Cargar Nueva Prenda';
 }
 
-// === FIX: FUNCIÓN EDITAR PRODUCTO ARREGLADA Y LIMPIA ===
 function editarProducto(id) {
     const producto = pTotales.find(p => p.id === id);
     if (!producto) {
@@ -485,6 +552,18 @@ function editarProducto(id) {
             Object.entries(producto.inventario_talles).forEach(([t, c]) => agregarTalleUI(t, c));
         }
     }
+
+    // === FIX GESTOR IMÁGENES AL EDITAR ===
+    imagenesCargadas = [];
+    if (producto.imagen_url) {
+        try {
+            const arr = JSON.parse(producto.imagen_url);
+            imagenesCargadas = Array.isArray(arr) ? arr : [producto.imagen_url];
+        } catch(e) {
+            imagenesCargadas = [producto.imagen_url];
+        }
+    }
+    renderizarMiniaturas();
 
     const btn = document.getElementById('btn-crear-producto');
     if(btn) {
@@ -542,15 +621,13 @@ const procesarImg = (file) => {
     });
 };
 
-async function ejecutarGuardadoFinal(payload, base64Images, btn) {
+async function ejecutarGuardadoFinal(payload, btn) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'; 
     btn.disabled = true;
 
     try {
         let url = `${API}/productos`; let metodo = 'POST';
         if (idProductoEditando !== null) { url = `${API}/productos/${idProductoEditando}`; metodo = 'PUT'; }
-
-        if (base64Images.length > 0) payload.imagen_url = JSON.stringify(base64Images);
 
         const res = await fetchSeguro(url, { 
             method: metodo, 
@@ -577,7 +654,6 @@ async function ejecutarGuardadoFinal(payload, base64Images, btn) {
     }
 }
 
-// === FIX: FUNCIÓN DE GUARDAR ARREGLADA (SIN FUNCIONES ANIDADAS ROTAS) ===
 async function crearOActualizarProducto(e) {
     if(e) e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
@@ -602,6 +678,12 @@ async function crearOActualizarProducto(e) {
         return mostrarToastAdmin("Por favor completa los campos obligatorios.", "error"); 
     }
 
+    if (imagenesCargadas.length === 0) {
+        btn.classList.remove('btn-procesando');
+        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
+        return mostrarToastAdmin("Añadí al menos 1 foto.", "error");
+    }
+
     let inventarioFinal = {};
     if (esUnico) {
         const inputStockU = document.getElementById('add-stock-unico');
@@ -615,25 +697,17 @@ async function crearOActualizarProducto(e) {
             if(n && c > 0) inventarioFinal[n] = c;
         }
     }
-
-    const imgInput = document.getElementById('add-img');
-    const base64Images = []; 
-    if (imgInput && imgInput.files && imgInput.files.length > 0) { 
-        const filesToProcess = Array.from(imgInput.files).slice(0, 5); 
-        for (let file of filesToProcess) { 
-            const b64 = await procesarImg(file);
-            base64Images.push(b64); 
-        } 
-    }
     
+    // === FIX GESTOR IMÁGENES: Mandamos directamente el array procesado ===
     const payload = { 
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
-        id: idProductoEditando 
+        id: idProductoEditando,
+        imagen_url: JSON.stringify(imagenesCargadas) 
     };
 
     const accion = async () => {
-        await ejecutarGuardadoFinal(payload, base64Images, btn);
+        await ejecutarGuardadoFinal(payload, btn);
     };
 
     if (idProductoEditando !== null) {
