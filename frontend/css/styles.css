@@ -130,8 +130,10 @@ nav {
 .img-wrapper.agotado img { opacity: 0.5; filter: grayscale(80%); }
 .btn-card-add.disabled { background: #eee !important; color: #999 !important; cursor: not-allowed; pointer-events: none; box-shadow: none; }
 
+/* === FIX CORAZONES FAVORITOS COLOR ARENA === */
 .btn-fav { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); border: none; color: #999; width: 36px; height: 36px; cursor: pointer; z-index: 10; font-size: 1.1rem; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 .btn-fav:hover { transform: scale(1.1); color: var(--brand-brown); background: var(--white); }
+.btn-fav.active { color: var(--brand-brown) !important; opacity: 1; }
 
 .card-info { padding: 15px 12px 18px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; flex-grow: 1; background: var(--white); z-index: 2; }
 .card-info h4 { margin: 0 0 8px 0; font-size: 0.75rem; color: #444; font-weight: 600; text-transform: uppercase; cursor: pointer; line-height: 1.4; min-height: 2.8em; display: flex; align-items: flex-start; justify-content: center; }
@@ -284,7 +286,9 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     width: 45px; height: 45px; font-size: 1.3rem; color: #999; cursor: pointer; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 20; display: flex; justify-content: center; align-items: center; transition: all 0.3s ease; 
 }
+/* === FIX CORAZONES FAVORITOS COLOR ARENA EN MODAL === */
 .btn-fav-modal:hover { transform: scale(1.1); color: var(--brand-brown); }
+.btn-fav-modal.active { color: var(--brand-brown); }
 
 .detail-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 15px; color: #111 !important; line-height: 1.1; }
 
@@ -347,6 +351,22 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
 .btn-agregar-derecha:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(212, 186, 146, 0.6); }
 .btn-secundario { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: 16px 30px; border-radius: var(--radius-lg); cursor: pointer; font-weight: 800; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; text-align: center; width: 100%; }
 .btn-secundario:hover { background: var(--primary); color: var(--white); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+
+/* === FIX ANIMACIÓN Y BOTÓN PROCESANDO === */
+@keyframes girarRuedita { 
+    0% { transform: rotate(0deg); } 
+    100% { transform: rotate(360deg); } 
+}
+.ruedita-girando { 
+    animation: girarRuedita 1s linear infinite !important; 
+    display: inline-block; 
+}
+.btn-procesando { 
+    pointer-events: none !important; 
+    user-select: none !important; 
+    -webkit-user-select: none !important; 
+    opacity: 0.8 !important; 
+}
 
 .toast-container { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
 .toast { background: rgba(17, 17, 17, 0.95); backdrop-filter: blur(10px); color: var(--white); padding: 16px 30px; border-radius: var(--radius-lg); font-size: 0.95rem; font-weight: 600; box-shadow: 0 15px 40px rgba(0,0,0,0.25); animation: slideUpToast 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), fadeOutToast 0.4s ease 3s forwards; display: flex; align-items: center; gap: 12px; }
@@ -485,67 +505,23 @@ ul.filter-checkbox-list li, ul.mobile-checkbox-list li { margin-left: 0 !importa
     .main-catalogo { width: 100% !important; flex: none !important; }
     
     #sidebar-desktop { display: none !important; }
-}
 
-.detail-box { 
+    /* === FIX: MODAL DE PRODUCTO EN MÓVIL (ESTO ARREGLA LA FOTO DEFORMADA) === */
+    .detail-box { 
         flex-direction: column !important; 
-        max-height: 90vh !important; 
         overflow-y: auto !important; 
+        padding: 0 !important; 
+        max-height: 92vh !important; 
     }
     .product-detail-modal .detail-img { 
         flex: 0 0 100% !important; 
         max-width: 100% !important; 
-        padding: 15px !important; 
+        padding: 20px !important; 
     }
     .detail-info { 
         flex: 0 0 100% !important; 
         max-width: 100% !important; 
-        padding: 0 20px 20px 20px !important; 
+        padding: 20px !important; 
+        overflow: visible !important; 
     }
-    .detail-title { font-size: 1.4rem !important; margin-bottom: 10px !important; }
-    .price-box-detail { margin-bottom: 15px !important; padding: 12px !important; }
-    .talles-selector { margin-top: 5px !important; }
-/* ========================================= */
-/* CORRECCIONES FINALES PEDIDAS POR EL USUARIO */
-/* ========================================= */
-
-/* 1. Animación del botón PROCESANDO y bloqueo de selección (azul) */
-@keyframes fa-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-.fa-spinner.fa-spin {
-    animation: fa-spin 1s linear infinite !important;
-    display: inline-block !important;
-}
-.btn-procesando {
-    pointer-events: none !important;
-    user-select: none !important;
-    -webkit-user-select: none !important;
-    opacity: 0.8 !important;
-}
-
-/* 2. Total del checkout y precios del carrito en NEGRO */
-#checkout-total-final,
-#checkout-total-final *,
-#checkout-total-final-container,
-.total-checkout-green {
-    color: #111111 !important;
-}
-
-#paso-2-formulario h3,
-#paso-2-formulario h3 span,
-#paso-2-formulario .total-box,
-#paso-2-formulario .total-box span,
-.checkout-box span[style*="color:var(--success)"],
-.checkout-box span[style*="color: var(--success)"] {
-    color: #111111 !important;
-}
-
-/* 3. Corazones de favoritos en color ARENA (incluyendo el del modal) */
-.btn-fav.active i,
-.btn-fav-modal.active i,
-.btn-fav.active,
-.btn-fav-modal.active {
-    color: var(--brand-brown) !important;
 }
