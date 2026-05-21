@@ -15,7 +15,7 @@ let cPagina = 1;
 const cPorPagina = 10;
 let idProductoEditando = null; 
 
-// === NUEVO: ALMACÉN GLOBAL DE IMÁGENES ===
+// === NUEVO GESTOR DE IMÁGENES ===
 let imagenesCargadas = [];
 
 const mapaColores = {
@@ -113,7 +113,7 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
     }, 10);
 }
 
-// === NUEVO: FUNCIONES DEL GESTOR DE IMÁGENES ===
+// === LÓGICA DE LAS FOTOS MINIATURA ===
 function renderizarMiniaturas() {
     let container = document.getElementById('preview-imagenes-container');
     const labelImg = document.getElementById('label-add-img');
@@ -166,7 +166,6 @@ window.addEventListener('DOMContentLoaded', () => {
         inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
     }
 
-    // === NUEVO: CAPTURAR LA SUBIDA DE FOTOS AL INSTANTE ===
     const imgInput = document.getElementById('add-img');
     if (imgInput) {
         imgInput.addEventListener('change', async function() {
@@ -188,7 +187,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 renderizarMiniaturas();
-                this.value = ''; // Reseteamos el input para permitir seleccionar el mismo archivo de nuevo
+                this.value = ''; 
             }
         });
     }
@@ -262,6 +261,16 @@ function cerrarSesionLocal() {
 window.onload = () => { 
     if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
 };
+
+function mostrarNombreArchivo(input, labelId, textoDefault) {
+    const label = document.getElementById(labelId);
+    if (input.files && input.files.length > 0) {
+        label.innerText = input.files.length === 1 ? input.files[0].name : `${input.files.length} fotos elegidas`;
+        label.classList.add('selected'); 
+    } else {
+        label.innerText = textoDefault; label.classList.remove('selected'); 
+    }
+}
 
 async function fetchSeguro(url, opciones = {}) {
     const res = await fetch(url, opciones); return res;
@@ -501,7 +510,6 @@ function resetFormularioAdmin() {
         agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
     }
     
-    // === FIX GESTOR IMÁGENES AL RESETEAR ===
     imagenesCargadas = [];
     renderizarMiniaturas();
     const imgInput = document.getElementById('add-img');
@@ -553,7 +561,6 @@ function editarProducto(id) {
         }
     }
 
-    // === FIX GESTOR IMÁGENES AL EDITAR ===
     imagenesCargadas = [];
     if (producto.imagen_url) {
         try {
@@ -698,7 +705,6 @@ async function crearOActualizarProducto(e) {
         }
     }
     
-    // === FIX GESTOR IMÁGENES: Mandamos directamente el array procesado ===
     const payload = { 
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
