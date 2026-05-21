@@ -15,7 +15,6 @@ let cPagina = 1;
 const cPorPagina = 10;
 let idProductoEditando = null; 
 
-// === NUEVO GESTOR DE IMÁGENES ===
 let imagenesCargadas = [];
 
 const mapaColores = {
@@ -113,7 +112,7 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
     }, 10);
 }
 
-// === LÓGICA DE LAS FOTOS MINIATURA ===
+// === GESTOR DE IMÁGENES ===
 function renderizarMiniaturas() {
     let container = document.getElementById('preview-imagenes-container');
     const labelImg = document.getElementById('label-add-img');
@@ -261,16 +260,6 @@ function cerrarSesionLocal() {
 window.onload = () => { 
     if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
 };
-
-function mostrarNombreArchivo(input, labelId, textoDefault) {
-    const label = document.getElementById(labelId);
-    if (input.files && input.files.length > 0) {
-        label.innerText = input.files.length === 1 ? input.files[0].name : `${input.files.length} fotos elegidas`;
-        label.classList.add('selected'); 
-    } else {
-        label.innerText = textoDefault; label.classList.remove('selected'); 
-    }
-}
 
 async function fetchSeguro(url, opciones = {}) {
     const res = await fetch(url, opciones); return res;
@@ -629,7 +618,7 @@ const procesarImg = (file) => {
 };
 
 async function ejecutarGuardadoFinal(payload, btn) {
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'; 
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo al servidor...'; 
     btn.disabled = true;
 
     try {
@@ -659,6 +648,30 @@ async function ejecutarGuardadoFinal(payload, btn) {
         btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación'; 
         btn.disabled = false; 
     }
+}
+
+// === NUEVA FUNCIÓN PARA ENGAÑAR AL SERVIDOR ===
+// Descarga las URLs viejas y las convierte a Base64 para que el servidor 
+// crea que son archivos nuevos y acepte borrar las fotos que quitaste.
+async function urlABase64(url) {
+    if (url.startsWith('data:image')) return url; // Ya es nueva
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous"; 
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width; canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => {
+            console.warn("Fallo CORS, enviando URL original");
+            resolve(url); // Si falla algo, intentamos mandarla normal
+        };
+        // Engañamos al caché para evitar bloqueos
+        img.src = url + (url.includes('?') ? '&' : '?') + 'cors=' + new Date().getTime();
+    });
 }
 
 async function crearOActualizarProducto(e) {
@@ -705,11 +718,19 @@ async function crearOActualizarProducto(e) {
         }
     }
     
+    // Convertimos TODO a Base64 para obligar al backend a guardar los cambios
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
+    const imagenesFinales = [];
+    for (let img of imagenesCargadas) {
+        const b64 = await urlABase64(img);
+        imagenesFinales.push(b64);
+    }
+
     const payload = { 
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
         id: idProductoEditando,
-        imagen_url: JSON.stringify(imagenesCargadas) 
+        imagen_url: JSON.stringify(imagenesFinales) 
     };
 
     const accion = async () => {
