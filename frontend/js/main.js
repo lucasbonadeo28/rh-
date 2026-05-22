@@ -37,7 +37,6 @@ function sortTalles(a, b) {
 
 function getColorSeguro(v) {
     if (v.color_hex && v.color_hex !== '#d4ba92') return v.color_hex;
-    
     const textRaw = ((v.color_nombre || '') + ' ' + (v.nombre || '') + ' ' + (v.descripcion || '')).toLowerCase();
     const text = textRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -47,17 +46,12 @@ function getColorSeguro(v) {
         'marron': '#8b4513', 'rosa': '#ffc0cb', 'naranja': '#ffa500', 
         'violeta': '#ee82ee', 'celeste': '#87ceeb', 'beige': '#f5f5dc', 'crema': '#fffdd0', 
         'mostaza': '#e1ad01', 'bordo': '#800000', 'arena': '#d4ba92', 
-        'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b', 'fucsia': '#ff00ff',
-        'suela': '#c19a6b', 'francia': '#318ce7', 'melange': '#d3d3d3',
-        'oliva': '#808000', 'coral': '#ff7f50', 'lila': '#c8a2c8',
-        'chocolate': '#d2691e', 'ladrillo': '#b22222', 'cafe': '#6f4e37'
+        'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b', 'fucsia': '#ff00ff'
     };
 
     for (let c in mapaFront) {
         const regex = new RegExp('(^|[^a-z])' + c + '([^a-z]|$)', 'i');
-        if (regex.test(text)) {
-            return mapaFront[c];
-        }
+        if (regex.test(text)) return mapaFront[c];
     }
     return '#d4ba92'; 
 }
@@ -65,9 +59,8 @@ function getColorSeguro(v) {
 window.addEventListener('click', function(event) {
     const modalProducto = document.getElementById('modal-detalle-producto');
     const modalCheckout = document.getElementById('modal-principal');
-    
-    if (event.target === modalProducto) { cerrarDetalle(); }
-    if (event.target === modalCheckout) { cerrarCheckoutModal(); }
+    if (event.target === modalProducto) cerrarDetalle(); 
+    if (event.target === modalCheckout) cerrarCheckoutModal(); 
 
     const dropdown = document.getElementById('search-dropdown');
     const container = document.getElementById('main-search-container');
@@ -80,11 +73,8 @@ window.addEventListener('click', function(event) {
 window.addEventListener('scroll', () => {
     const btnTop = document.getElementById('btn-back-to-top');
     if (btnTop) {
-        if (window.scrollY > 300) {
-            btnTop.classList.add('show');
-        } else {
-            btnTop.classList.remove('show');
-        }
+        if (window.scrollY > 300) btnTop.classList.add('show');
+        else btnTop.classList.remove('show');
     }
 });
 
@@ -93,9 +83,7 @@ window.onload = async () => {
 
     const carruselBanner = document.querySelector('.hero-carousel');
     if(carruselBanner) {
-        carruselBanner.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
+        carruselBanner.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
         carruselBanner.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
             if (touchEndX < touchStartX - 40) nextSlide(); 
@@ -106,9 +94,7 @@ window.onload = async () => {
 
     const fotoModal = document.querySelector('.modal-img-wrapper');
     if(fotoModal) {
-        fotoModal.addEventListener('touchstart', e => {
-            modalTouchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
+        fotoModal.addEventListener('touchstart', e => { modalTouchStartX = e.changedTouches[0].screenX; }, {passive: true});
         fotoModal.addEventListener('touchend', e => {
             modalTouchEndX = e.changedTouches[0].screenX;
             if(modalImages.length > 1) { 
@@ -134,9 +120,7 @@ window.onload = async () => {
 
     const inputCuponElem = document.getElementById('input-codigo-cupon');
     if(inputCuponElem) {
-        inputCuponElem.addEventListener('input', function() {
-            this.value = this.value.toUpperCase();
-        });
+        inputCuponElem.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
     }
 
     await Promise.all([ fetchBanners(), fetchProductos() ]);
@@ -148,21 +132,15 @@ window.onload = async () => {
     document.querySelectorAll('.chk-talle').forEach(cb => {
         cb.checked = false;
         cb.onchange = function() {
-            if(this.checked) {
-                this.parentElement.classList.add('active');
-            } else {
-                this.parentElement.classList.remove('active');
-            }
+            if(this.checked) this.parentElement.classList.add('active');
+            else this.parentElement.classList.remove('active');
             aplicarFiltrosCatalogo();
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
         };
     });
 
-    if (vistaGuardada === 'favoritos') {
-        mostrarFavoritos();
-    } else {
-        cambiarVista(vistaGuardada, catGuardada);
-    }
+    if (vistaGuardada === 'favoritos') mostrarFavoritos();
+    else cambiarVista(vistaGuardada, catGuardada);
 };
 
 function obtenerArrayImagenes(imgData) {
@@ -171,9 +149,7 @@ function obtenerArrayImagenes(imgData) {
         const arr = JSON.parse(imgData);
         if (Array.isArray(arr) && arr.length > 0) return arr;
         return [imgData];
-    } catch(e) {
-        return [imgData];
-    }
+    } catch(e) { return [imgData]; }
 }
 
 async function renderizarCategoriasDinamicas() {
@@ -195,7 +171,6 @@ async function renderizarCategoriasDinamicas() {
     const navCenter = document.getElementById('nav-menu-celular');
     if (navCenter) {
         let htmlNav = `<a class="filter-link active" onclick="cambiarVista('catalogo', 'Todos')">TODO</a>`;
-        
         const limiteSueltas = 3; 
         const sueltas = categoriasUnicas.slice(0, limiteSueltas);
         const ocultas = categoriasUnicas.slice(limiteSueltas);
@@ -204,25 +179,19 @@ async function renderizarCategoriasDinamicas() {
 
         if (ocultas.length > 0) {
             let dropHtml = ocultas.map(cat => `<a class="drop-link" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</a>`).join('');
-            htmlNav += `
-            <div class="nav-dropdown-wrapper">
-                <a class="filter-link btn-mas-cat" onclick="toggleAcordeonMobile(this)">MÁS CATEGORÍAS <i class="fas fa-chevron-down" style="transition: 0.3s;"></i></a>
-                <div class="nav-dropdown-menu">${dropHtml}</div>
-            </div>`;
+            htmlNav += `<div class="nav-dropdown-wrapper"><a class="filter-link btn-mas-cat" onclick="toggleAcordeonMobile(this)">MÁS CATEGORÍAS <i class="fas fa-chevron-down" style="transition: 0.3s;"></i></a><div class="nav-dropdown-menu">${dropHtml}</div></div>`;
         }
         navCenter.innerHTML = htmlNav;
     }
 
     const sidebarDesktop = document.querySelector('#sidebar-desktop .filter-list');
     if (sidebarDesktop) {
-        sidebarDesktop.innerHTML = `<li><a onclick="cambiarVista('catalogo', 'Todos')" class="cat-link active">Todos</a></li>` +
-            categoriasUnicas.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')" class="cat-link">${cat}</a></li>`).join('');
+        sidebarDesktop.innerHTML = `<li><a onclick="cambiarVista('catalogo', 'Todos')" class="cat-link active">Todos</a></li>` + categoriasUnicas.map(cat => `<li><a onclick="cambiarVista('catalogo', '${cat}')" class="cat-link">${cat}</a></li>`).join('');
     }
 
     const mobilePills = document.querySelector('#filter-sidebar .pills-container');
     if (mobilePills) {
-        mobilePills.innerHTML = `<button class="filter-pill active" onclick="cambiarVista('catalogo', 'Todos')">TODOS</button>` +
-            categoriasUnicas.map(cat => `<button class="filter-pill" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</button>`).join('');
+        mobilePills.innerHTML = `<button class="filter-pill active" onclick="cambiarVista('catalogo', 'Todos')">TODOS</button>` + categoriasUnicas.map(cat => `<button class="filter-pill" onclick="cambiarVista('catalogo', '${cat}')">${cat.toUpperCase()}</button>`).join('');
     }
 
     const footerCols = document.querySelectorAll('.footer-col');
@@ -238,45 +207,39 @@ async function renderizarCategoriasDinamicas() {
 
 function toggleAcordeonMobile(btn) {
     if(window.innerWidth > 992) return; 
-    
     btn.classList.toggle('active-acordeon');
     const icon = btn.querySelector('i');
     const content = btn.nextElementSibling;
-    
     if (content.style.maxHeight && content.style.maxHeight !== '0px') {
-        content.style.maxHeight = '0px';
-        icon.style.transform = 'rotate(0deg)';
+        content.style.maxHeight = '0px'; icon.style.transform = 'rotate(0deg)';
     } else {
-        content.style.maxHeight = content.scrollHeight + "px";
-        icon.style.transform = 'rotate(180deg)';
+        content.style.maxHeight = content.scrollHeight + "px"; icon.style.transform = 'rotate(180deg)';
     }
 }
 
 function guardarCarrito() { localStorage.setItem('carritoLucTienda', JSON.stringify(carrito)); }
 
+/* === FIX CACHÉ: OBLIGA A ACTUALIZAR FOTOS Y PRODUCTOS === */
 async function fetchProductos() {
     try {
-        const resTodos = await fetch(`${API}/productos`);
-        if(resTodos.ok) {
-            const data = await resTodos.json();
-            productosCargados = Array.isArray(data) ? data : [];
-        }
+        const ts = new Date().getTime();
+        const resTodos = await fetch(`${API}/productos?t=${ts}`);
+        if(resTodos.ok) productosCargados = await resTodos.json();
+        else productosCargados = [];
     } catch (err) { productosCargados = []; }
 
     try {
-        const resNuevos = await fetch(`${API}/productos/nuevos`);
-        if(resNuevos.ok) {
-            const data = await resNuevos.json();
-            productosNuevos = Array.isArray(data) ? data : productosCargados.slice(0, 8);
-        } else {
-            productosNuevos = productosCargados.slice(0, 8);
-        }
+        const ts = new Date().getTime();
+        const resNuevos = await fetch(`${API}/productos/nuevos?t=${ts}`);
+        if(resNuevos.ok) productosNuevos = await resNuevos.json();
+        else productosNuevos = productosCargados.slice(0, 8);
     } catch(e) { productosNuevos = productosCargados.slice(0, 8); }
 }
 
 async function fetchBanners() {
     try {
-        const res = await fetch(`${API}/banners/home`);
+        const ts = new Date().getTime();
+        const res = await fetch(`${API}/banners/home?t=${ts}`);
         if(res.ok) {
             const data = await res.json();
             if(Array.isArray(data) && data.length > 0) banners = data;
@@ -292,10 +255,8 @@ function renderBanners() {
     const track = document.getElementById('carousel-track');
     const dotsContainer = document.getElementById('carousel-dots');
     if(!track || !dotsContainer || banners.length === 0) return;
-    
     track.innerHTML = banners.map(b => `<div class="carousel-item"><img src="${b.imagen_url}" alt="Banner"></div>`).join('');
     dotsContainer.innerHTML = banners.map((b, i) => `<div class="carousel-dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`).join('');
-    
     iniciarAutoplay(); 
 }
 
@@ -359,8 +320,7 @@ function cambiarVista(vista, categoria = 'Todos') {
     document.documentElement.setAttribute('data-vista-activa', vista);
     
     document.querySelectorAll('.chk-talle').forEach(cb => {
-        cb.checked = false;
-        cb.parentElement.classList.remove('active');
+        cb.checked = false; cb.parentElement.classList.remove('active');
     }); 
     
     if (vista === 'home') {
@@ -372,7 +332,6 @@ function cambiarVista(vista, categoria = 'Todos') {
         if(breadCat) breadCat.innerText = categoria === 'Todos' ? 'Productos' : categoria;
         
         const catLower = categoria.toLowerCase();
-
         document.querySelectorAll('.nav-center .filter-link, .nav-center .drop-link').forEach(l => {
             if (l.classList.contains('btn-mas-cat')) return; 
             const text = l.innerText.trim().toLowerCase();
@@ -401,9 +360,7 @@ function ejecutarBusquedaPredictiva(event) {
     if (event.key === 'Enter') {
         dropdown.classList.remove('active');
         container.classList.remove('active-search');
-        if (txt !== "") {
-            forzarBusquedaCompleta(txt);
-        }
+        if (txt !== "") forzarBusquedaCompleta(txt);
         return;
     }
 
@@ -415,15 +372,10 @@ function ejecutarBusquedaPredictiva(event) {
 
     timeoutPredictivo = setTimeout(() => {
         const filtrados = productosCargados.filter(p => (String(p.nombre || '')).toLowerCase().includes(txt));
-        
-        const unicos = [];
-        const codigosVistos = new Set();
+        const unicos = []; const codigosVistos = new Set();
         filtrados.forEach(p => {
             const code = p.codigo_modelo || p.nombre;
-            if(!codigosVistos.has(code)) {
-                codigosVistos.add(code);
-                unicos.push(p);
-            }
+            if(!codigosVistos.has(code)) { codigosVistos.add(code); unicos.push(p); }
         });
 
         container.classList.add('active-search');
@@ -433,14 +385,7 @@ function ejecutarBusquedaPredictiva(event) {
         } else {
             dropdown.innerHTML = unicos.slice(0, 5).map(p => {
                 const img = obtenerArrayImagenes(p.imagen_url)[0];
-                return `
-                <div class="search-item" onclick="abrirDetalleDesdeBusqueda(${p.id})">
-                    <img src="${img}">
-                    <div class="search-item-info">
-                        <span class="search-item-title">${p.nombre}</span>
-                        <span class="search-item-price">$${p.precio_efectivo}</span>
-                    </div>
-                </div>`;
+                return `<div class="search-item" onclick="abrirDetalleDesdeBusqueda(${p.id})"><img src="${img}"><div class="search-item-info"><span class="search-item-title">${p.nombre}</span><span class="search-item-price" style="color:var(--primary);">$${p.precio_efectivo}</span></div></div>`;
             }).join('') + (unicos.length > 5 ? `<div style="text-align:center; padding:10px;"><button class="btn-secundario" style="padding:10px 15px; font-size:0.75rem; width:100%;" onclick="forzarBusquedaCompleta('${txt}')">Ver todos los resultados</button></div>` : '');
         }
         dropdown.classList.add('active');
@@ -474,9 +419,7 @@ function forzarBusquedaCompleta(txt) {
     if (grid) grid.innerHTML = generarGridHTML(listafiltrada);
 }
 
-function ejecutarBusquedaNav(event) {
-    ejecutarBusquedaPredictiva(event);
-}
+function ejecutarBusquedaNav(event) { ejecutarBusquedaPredictiva(event); }
 
 function aplicarFiltrosCatalogo() {
     if(filtrandoFavoritos) return mostrarFavoritos(); 
@@ -515,24 +458,15 @@ function generarGridHTML(listaRaw) {
         let icono = filtrandoFavoritos ? "fa-heart" : "fa-box-open";
         let colorIcono = filtrandoFavoritos ? "var(--brand-brown)" : "#ccc";
         
-        return `
-        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; margin-top: 20px;">
-            <i class="fas ${icono}" style="font-size: 3.5rem; color: ${colorIcono}; margin-bottom: 20px;"></i>
-            <p style="color: #444; font-size: 1.2rem; font-weight: 700; margin: 0; text-transform: uppercase;">${msj}</p>
-            ${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 25px; padding: 12px 30px; width: auto;" onclick="cambiarVista('catalogo', 'Todos')">Ver Catálogo</button>` : ''}
-        </div>`;
+        return `<div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; margin-top: 20px;"><i class="fas ${icono}" style="font-size: 3.5rem; color: ${colorIcono}; margin-bottom: 20px;"></i><p style="color: #444; font-size: 1.2rem; font-weight: 700; margin: 0; text-transform: uppercase;">${msj}</p>${filtrandoFavoritos ? `<button class="btn-secundario" style="margin-top: 25px; padding: 12px 30px; width: auto;" onclick="cambiarVista('catalogo', 'Todos')">Ver Catálogo</button>` : ''}</div>`;
     }
 
     if (filtrandoFavoritos) {
         return listaRaw.map(vDefault => {
-            let stockTotalPrenda = 0;
-            let tallesDisponibles = new Set();
+            let stockTotalPrenda = 0; let tallesDisponibles = new Set();
             if (vDefault.inventario_talles && typeof vDefault.inventario_talles === 'object') {
                 Object.entries(vDefault.inventario_talles).forEach(([talle, cant]) => {
-                    if (parseInt(cant) > 0) {
-                        stockTotalPrenda += parseInt(cant);
-                        tallesDisponibles.add(talle);
-                    }
+                    if (parseInt(cant) > 0) { stockTotalPrenda += parseInt(cant); tallesDisponibles.add(talle); }
                 });
             }
             const productoAgotado = stockTotalPrenda <= 0;
@@ -546,13 +480,8 @@ function generarGridHTML(listaRaw) {
             let tallesHTML = '';
             let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
             if (tallesArray.length > 0) {
-                if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                    tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
-                } else {
-                    tallesHTML = `<div class="card-talles-container">` + 
-                                 tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
-                                 `</div>`;
-                }
+                if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
+                else tallesHTML = `<div class="card-talles-container">` + tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + `</div>`;
             }
 
             const colorVal = getColorSeguro(vDefault);
@@ -592,29 +521,18 @@ function generarGridHTML(listaRaw) {
                 const pCode = (prod.codigo_modelo && String(prod.codigo_modelo).trim() !== '') ? String(prod.codigo_modelo).trim().toUpperCase() : String(prod.nombre || 'SIN NOMBRE').trim().toUpperCase();
                 return pCode.replace(/[^a-zA-Z0-9]/g, '-') === claveAgrupacion;
             });
-
-            grupos[claveAgrupacion] = {
-                isGroup: true,
-                clave: claveAgrupacion, 
-                variantes: todasLasVariantes
-            };
+            grupos[claveAgrupacion] = { isGroup: true, clave: claveAgrupacion, variantes: todasLasVariantes };
             listaAgrupada.push(grupos[claveAgrupacion]);
         }
     });
 
     return listaAgrupada.map(item => {
         const vDefault = item.variantes[0]; 
-        
-        let stockTotalPrenda = 0;
-        let tallesDisponibles = new Set();
-
+        let stockTotalPrenda = 0; let tallesDisponibles = new Set();
         item.variantes.forEach(v => {
             if (v.inventario_talles && typeof v.inventario_talles === 'object') {
                 Object.entries(v.inventario_talles).forEach(([talle, cant]) => {
-                    if (parseInt(cant) > 0) {
-                        stockTotalPrenda += parseInt(cant);
-                        tallesDisponibles.add(talle);
-                    }
+                    if (parseInt(cant) > 0) { stockTotalPrenda += parseInt(cant); tallesDisponibles.add(talle); }
                 });
             }
         });
@@ -638,15 +556,9 @@ function generarGridHTML(listaRaw) {
 
         let tallesHTML = '';
         let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
-        
         if (tallesArray.length > 0) {
-            if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
-            } else {
-                tallesHTML = `<div class="card-talles-container">` + 
-                             tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
-                             `</div>`;
-            }
+            if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
+            else tallesHTML = `<div class="card-talles-container">` + tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + `</div>`;
         }
 
         return `
@@ -719,6 +631,7 @@ function toggleFavoritoCard(event, claveGrupo) {
     }
 }
 
+// === FIX SECCION FAVORITOS AISLADA ===
 function mostrarFavoritos() { 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     filtrandoFavoritos = true; 
@@ -728,21 +641,22 @@ function mostrarFavoritos() {
     document.documentElement.setAttribute('data-vista-activa', 'favoritos');
     
     const tituloCat = document.getElementById('titulo-catalogo');
-    if(tituloCat) tituloCat.innerText = `Mis Favoritos (${favoritos.length})`; 
+    if(tituloCat) { tituloCat.style.display = 'block'; tituloCat.innerText = `Mis Favoritos (${favoritos.length})`; }
     
     const breadCat = document.getElementById('bread-cat-nombre');
     if(breadCat) breadCat.innerText = `Mis Favoritos (${favoritos.length})`;
     
     const listaFavs = productosCargados.filter(p => favoritos.includes(parseInt(p.id))); 
     const grid = document.getElementById('grid-catalogo');
-    if (grid) { 
-        grid.innerHTML = generarGridHTML(listaFavs); 
-    }
+    if (grid) { grid.innerHTML = generarGridHTML(listaFavs); grid.style.display = 'grid'; }
     
-    document.querySelectorAll('.cat-link').forEach(a => a.classList.remove('active'));
-    if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) {
-        toggleMenuMobile();
-    }
+    document.querySelectorAll('.cat-link, .filter-link, .drop-link, .filter-pill').forEach(a => a.classList.remove('active'));
+    if(document.getElementById('nav-menu-celular') && document.getElementById('nav-menu-celular').classList.contains('active')) toggleMenuMobile();
+    
+    const vistaHome = document.getElementById('vista-home');
+    if(vistaHome) vistaHome.style.display = 'none';
+    const vistaCat = document.getElementById('vista-catalogo');
+    if(vistaCat) vistaCat.style.display = 'block';
 }
 
 function mostrarToast(mensaje, tipo = 'success') { 
@@ -757,7 +671,6 @@ function toggleMenuMobile() { document.getElementById('nav-menu-celular').classL
 
 function toggleFavorito(id, event) { 
     if(event) event.stopPropagation(); 
-    
     const idParseado = parseInt(id);
     if (favoritos.includes(idParseado)) { 
         favoritos = favoritos.filter(f => f !== idParseado); 
@@ -766,19 +679,16 @@ function toggleFavorito(id, event) {
         favoritos.push(idParseado); 
         mostrarToast('Agregado a favoritos', 'success'); 
     } 
-    
     localStorage.setItem('favsLucTienda', JSON.stringify(favoritos)); 
     actualizarContadores(); 
     
-    if(filtrandoFavoritos) {
+    if (vistaActual === 'favoritos' || filtrandoFavoritos) {
         mostrarFavoritos(); 
     } else { 
         if (vistaActual === 'home') { 
             const grid = document.getElementById('grid-home');
-            if (grid) grid.innerHTML = generarGridHTML(productosNuevos); 
-        } else if (vistaActual === 'catalogo') { 
-            aplicarFiltrosCatalogo(); 
-        } 
+            if(grid) grid.innerHTML = generarGridHTML(productosNuevos); 
+        } else if (vistaActual === 'catalogo') aplicarFiltrosCatalogo(); 
     }
 }
 
@@ -793,58 +703,29 @@ function toggleFavoritoModal(event) {
 function actualizarImagenModalUI() {
     const imagenPrincipal = document.getElementById('det-img-url');
     imagenPrincipal.style.opacity = '0.3'; 
-    setTimeout(() => { 
-        imagenPrincipal.src = modalImages[currentModalImageIndex]; 
-        imagenPrincipal.style.opacity = '1'; 
-    }, 150); 
-    
-    imagenSeleccionadaUrl = modalImages[currentModalImageIndex];
-    indexImagenSeleccionada = currentModalImageIndex + 1;
+    setTimeout(() => { imagenPrincipal.src = modalImages[currentModalImageIndex]; imagenPrincipal.style.opacity = '1'; }, 150); 
+    imagenSeleccionadaUrl = modalImages[currentModalImageIndex]; indexImagenSeleccionada = currentModalImageIndex + 1;
 
     const galeria = document.getElementById('det-mini-gallery');
     if (galeria) {
         const imgs = galeria.querySelectorAll('img');
         imgs.forEach((img, idx) => {
-            if (idx === currentModalImageIndex) {
-                img.classList.add('selected');
-                img.classList.remove('img-gall-inactive');
-            } else {
-                img.classList.remove('selected');
-                img.classList.add('img-gall-inactive');
-            }
+            if (idx === currentModalImageIndex) { img.classList.add('selected'); img.classList.remove('img-gall-inactive'); } 
+            else { img.classList.remove('selected'); img.classList.add('img-gall-inactive'); }
         });
     }
     actualizarFlechasModal();
 }
 
 function actualizarFlechasModal() {
-    const prevBtn = document.querySelector('.prev-arrow');
-    const nextBtn = document.querySelector('.next-arrow');
-    if(modalImages.length <= 1) {
-        if(prevBtn) prevBtn.style.display = 'none';
-        if(nextBtn) nextBtn.style.display = 'none';
-    } else {
-        if(prevBtn) prevBtn.style.display = 'flex';
-        if(nextBtn) nextBtn.style.display = 'flex';
-    }
+    const prevBtn = document.querySelector('.prev-arrow'); const nextBtn = document.querySelector('.next-arrow');
+    if(modalImages.length <= 1) { if(prevBtn) prevBtn.style.display = 'none'; if(nextBtn) nextBtn.style.display = 'none'; } 
+    else { if(prevBtn) prevBtn.style.display = 'flex'; if(nextBtn) nextBtn.style.display = 'flex'; }
 }
 
-function prevModalImg() {
-    if (currentModalImageIndex > 0) { currentModalImageIndex--; } 
-    else { currentModalImageIndex = modalImages.length - 1; }
-    actualizarImagenModalUI();
-}
-
-function nextModalImg() {
-    if (currentModalImageIndex < modalImages.length - 1) { currentModalImageIndex++; } 
-    else { currentModalImageIndex = 0; }
-    actualizarImagenModalUI();
-}
-
-function cambiarImagenDetalle(index) {
-    currentModalImageIndex = index;
-    actualizarImagenModalUI();
-}
+function prevModalImg() { if (currentModalImageIndex > 0) currentModalImageIndex--; else currentModalImageIndex = modalImages.length - 1; actualizarImagenModalUI(); }
+function nextModalImg() { if (currentModalImageIndex < modalImages.length - 1) currentModalImageIndex++; else currentModalImageIndex = 0; actualizarImagenModalUI(); }
+function cambiarImagenDetalle(index) { currentModalImageIndex = index; actualizarImagenModalUI(); }
 
 function seleccionarTalleDOM(elemento, talle) {
     const hermanos = elemento.parentElement.querySelectorAll('.talle-label');
@@ -870,16 +751,18 @@ function abrirDetalle(id) {
     const contColores = document.getElementById('det-colores-container');
     const txtColor = document.getElementById('det-color-nombre');
 
-    if (variantes.length > 1) {
-        seccionColores.style.display = 'block';
-        txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
-        contColores.innerHTML = variantes.map(v => {
-            const isAct = v.id === prodSeleccionado.id ? 'active' : '';
-            const colorVal = getColorSeguro(v);
-            return `<div class="color-circle ${isAct}" style="background-color: ${colorVal}; width: 32px; height: 32px; margin-right: 5px;" onclick="abrirDetalle(${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
-        }).join('');
-    } else {
-        seccionColores.style.display = 'none';
+    if (seccionColores && contColores && txtColor) {
+        if (variantes.length > 1) {
+            seccionColores.style.display = 'block';
+            txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
+            contColores.innerHTML = variantes.map(v => {
+                const isAct = v.id === prodSeleccionado.id ? 'active' : '';
+                const colorVal = getColorSeguro(v);
+                return `<div class="color-circle ${isAct}" style="background-color: ${colorVal}; width: 32px; height: 32px; margin-right: 5px;" onclick="abrirDetalle(${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
+            }).join('');
+        } else {
+            seccionColores.style.display = 'none';
+        }
     }
 
     modalImages = obtenerArrayImagenes(prodSeleccionado.imagen_url);
@@ -910,7 +793,9 @@ function abrirDetalle(id) {
     document.getElementById('det-titulo').innerText = prodSeleccionado.nombre || 'Producto'; 
     document.getElementById('det-precio-tarj').innerText = `$${prodSeleccionado.precio_tarjeta || prodSeleccionado.tarjeta || 0} Tarjeta`; 
     document.getElementById('det-precio-efvo').innerText = `$${prodSeleccionado.precio_efectivo || prodSeleccionado.efectivo || 0} Transf.`; 
-    document.getElementById('det-descripcion').innerText = prodSeleccionado.descripcion || 'Sin descripción disponible.'; 
+    
+    const detDesc = document.getElementById('det-descripcion');
+    if(detDesc) detDesc.innerText = prodSeleccionado.descripcion || 'Sin descripción disponible.'; 
     
     const btnFavModal = document.getElementById('btn-fav-modal');
     if (favoritos.includes(parseInt(prodSeleccionado.id))) btnFavModal.classList.add('active'); 
@@ -1008,7 +893,7 @@ function renderizarCarritoSidebar() {
             <div style="display:flex; align-items:center; gap: 15px;">
                 <div class="cant-control">
                     <button class="btn-cant" onclick="ajustarCantidad('${p.idUnico}', -1)">-</button>
-                    <span style="font-weight:700; font-size:0.9rem;">${p.cantidad}</span>
+                    <span style="font-weight:700; font-size:0.9rem; color:var(--primary);">${p.cantidad}</span>
                     <button class="btn-cant" onclick="ajustarCantidad('${p.idUnico}', 1)">+</button>
                 </div>
                 <button class="btn-eliminar-item" onclick="eliminarDelCarrito('${p.idUnico}')" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
@@ -1017,13 +902,22 @@ function renderizarCarritoSidebar() {
     }).join(''); 
     
     let totalFinalCarrito = subtotal;
+    const filaDescuento = document.getElementById('fila-descuento-sidebar');
     if (cuponAplicado && cuponAplicado.descuento > 0) {
         let descuento = (subtotal * cuponAplicado.descuento) / 100; totalFinalCarrito = subtotal - descuento;
-        document.getElementById('fila-descuento-sidebar').style.display = 'flex';
+        if(filaDescuento) {
+            filaDescuento.style.display = 'flex';
+            filaDescuento.style.color = 'var(--primary)';
+        }
         document.getElementById('nombre-descuento-sidebar').innerText = `Cupón ${cuponAplicado.descuento}% OFF`;
         document.getElementById('valor-descuento-sidebar').innerText = `-$${Math.round(descuento)}`;
-    } else { document.getElementById('fila-descuento-sidebar').style.display = 'none'; }
+    } else { if(filaDescuento) filaDescuento.style.display = 'none'; }
+    
     document.getElementById('subtotal-sidebar').innerText = Math.round(totalFinalCarrito); 
+    document.getElementById('subtotal-sidebar').style.color = 'var(--primary)';
+    if(document.getElementById('subtotal-sidebar').parentElement) {
+        document.getElementById('subtotal-sidebar').parentElement.style.color = 'var(--primary)';
+    }
 }
 
 function ajustarCantidad(idUnico, delta) { 
@@ -1093,6 +987,7 @@ function calcularEnvio() {
     mostrarToast('Costo de envío calculado', 'success'); 
 }
 
+/* === FIX PRECIOS NEGROS CHECKOUT (Foto 1) === */
 function recalcularTotalPaso2() { 
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; 
     let totalPrendas = 0; 
@@ -1100,13 +995,16 @@ function recalcularTotalPaso2() {
     document.getElementById('resumen-checkout-paso2').innerHTML = carrito.map(p => { 
         const precio = metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta; 
         totalPrendas += (precio * p.cantidad); 
-        return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom: 5px; font-size:0.9rem; color:#555; font-weight:500;"><span>${p.cantidad}x ${p.nombre}</span><strong style="color:var(--primary)">$${precio * p.cantidad}</strong></div>`; 
+        return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom: 5px; font-size:0.9rem; color:#111; font-weight:500;"><span>${p.cantidad}x ${p.nombre}</span><strong style="color:var(--primary)">$${precio * p.cantidad}</strong></div>`; 
     }).join(''); 
     
     let descuentoMonto = 0;
     if (cuponAplicado && cuponAplicado.descuento > 0) {
         descuentoMonto = (totalPrendas * cuponAplicado.descuento) / 100;
-        document.getElementById('resumen-checkout-paso2').innerHTML += `<div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.95rem; color:var(--success); font-weight:bold;"><span><i class="fas fa-tag"></i> Descuento (${cuponAplicado.descuento}%)</span><span>-$${Math.round(descuentoMonto)}</span></div>`;
+        document.getElementById('resumen-checkout-paso2').innerHTML += `<div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.95rem; color:var(--primary); font-weight:bold;"><span><i class="fas fa-tag"></i> Descuento (${cuponAplicado.descuento}%)</span><span>-$${Math.round(descuentoMonto)}</span></div>`;
+    } else if (metodo === 'transferencia') {
+        descuentoMonto = totalPrendas * 0.10;
+        document.getElementById('resumen-checkout-paso2').innerHTML += `<div style="display:flex; justify-content:space-between; margin-top:10px; font-size:0.95rem; color:var(--primary); font-weight:bold;"><span><i class="fas fa-tag"></i> Desc. Transferencia (10%)</span><span>-$${Math.round(descuentoMonto)}</span></div>`;
     }
     
     const subtotalConDescuento = totalPrendas - descuentoMonto;
@@ -1120,14 +1018,26 @@ function recalcularTotalPaso2() {
         if(cpBlock) cpBlock.style.display = 'none';
         if(msgGratis) msgGratis.style.display = 'block';
         if(txtCostoEnvio) txtCostoEnvio.style.display = 'none';
-        document.getElementById('checkout-envio-final').innerHTML = '<span style="color:var(--success); font-weight:800; text-transform: uppercase;">¡Gratis!</span>';
+        document.getElementById('checkout-envio-final').innerHTML = '<span style="color:var(--primary); font-weight:800; text-transform: uppercase;">¡Gratis!</span>';
     } else {
         if(cpBlock) cpBlock.style.display = 'block';
         if(msgGratis) msgGratis.style.display = 'none';
         document.getElementById('checkout-envio-final').innerText = `$${costoEnvio}`; 
+        document.getElementById('checkout-envio-final').style.color = 'var(--primary)';
     }
     
     document.getElementById('checkout-total-final').innerText = Math.round(subtotalConDescuento + costoEnvio); 
+    
+    const totalElem = document.getElementById('checkout-total-final');
+    if(totalElem && totalElem.parentElement) {
+        totalElem.parentElement.style.color = 'var(--primary)';
+    }
+
+    document.querySelectorAll('span').forEach(span => {
+        if(span.innerText.includes('10% OFF') || span.innerText.includes('10%')) {
+            span.style.color = 'var(--primary)';
+        }
+    });
 }
 
 function actualizarContadores() { document.getElementById('cart-count').innerText = carrito.reduce((a, b) => a + b.cantidad, 0); document.getElementById('fav-count').innerText = favoritos.length; }
@@ -1180,11 +1090,15 @@ async function finalizarCompra() {
     
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; const totalFinal = document.getElementById('checkout-total-final').innerText; 
     
+    /* === FIX BOTÓN PROCESANDO CON ANIMACIÓN === */
     const btn = document.getElementById('btn-pagar');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...'; 
-    btn.classList.add('btn-procesando');
+    btn.innerHTML = '<i class="fas fa-spinner ruedita-girando" style="margin-right: 8px;"></i> PROCESANDO...'; 
+    btn.disabled = true; 
+    btn.style.opacity = '0.7';
+    btn.style.userSelect = 'none'; 
+    btn.style.pointerEvents = 'none';
 
-    const partesNombre = inputNomCompleto.value.trim().split(' ');
+    const partesNombre = inputNomCompleto ? inputNomCompleto.value.trim().split(' ') : ['Cliente', ''];
     const nombreGuardar = partesNombre[0];
     const apellidoGuardar = partesNombre.slice(1).join(' ');
 
@@ -1221,6 +1135,8 @@ async function finalizarCompra() {
     } catch (err) { 
         mostrarToast("Hubo un error al procesar la compra. Intentá nuevamente.", "error"); 
         btn.innerHTML = 'Confirmar Pedido'; 
-        btn.classList.remove('btn-procesando');
+        btn.disabled = false; 
+        btn.style.opacity = '1'; 
+        btn.style.pointerEvents = 'auto';
     }
 }
