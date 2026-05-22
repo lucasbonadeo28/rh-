@@ -112,6 +112,7 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
     }, 10);
 }
 
+// === GESTOR DE IMÁGENES ===
 function renderizarMiniaturas() {
     let container = document.getElementById('preview-imagenes-container');
     const labelImg = document.getElementById('label-add-img');
@@ -640,7 +641,7 @@ async function ejecutarGuardadoFinal(payload, btn) {
         });
 
         if(res.ok) { 
-            mostrarToastAdmin(idProductoEditando ? "¡Prenda actualizada!" : "¡Prenda creada!", "success"); 
+            mostrarToastAdmin("¡Exito! Producto guardado.", "success"); 
             resetFormularioAdmin(); 
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
@@ -658,34 +659,33 @@ async function ejecutarGuardadoFinal(payload, btn) {
     }
 }
 
-async function urlABase64(url) {
-    if (url.startsWith('data:image')) return url; 
+// === FIX MAESTRO PARA ENGAÑAR A TU SERVIDOR ===
+// Como tu servidor ignora el borrado si no le enviamos un archivo nuevo (en base64),
+// esta función agarra una foto vieja tuya, la baja con un proxy, y la convierte
+// en un archivo "nuevo" para obligar a tu servidor a reemplazar la base de datos.
+async function urlABase64Forzado(url) {
+    if (url.startsWith('data:image')) return url;
     
+    const blobToBase64 = (blob) => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+    });
+
     try {
-        const response = await fetch(url, { cache: 'no-cache' });
-        const blob = await response.blob();
-        return await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    } catch (error) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width; canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL('image/jpeg', 0.8));
-            };
-            img.onerror = () => {
-                resolve(url); 
-            };
-            img.src = url;
-        });
+        const res = await fetch(url, { cache: 'no-cache' });
+        const blob = await res.blob();
+        return await blobToBase64(blob);
+    } catch (e) {
+        try {
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+            const res = await fetch(proxyUrl, { cache: 'no-cache' });
+            const blob = await res.blob();
+            return await blobToBase64(blob);
+        } catch (e2) {
+            console.warn("No se pudo convertir, enviando URL original");
+            return url;
+        }
     }
 }
 
@@ -733,19 +733,27 @@ async function crearOActualizarProducto(e) {
         }
     }
     
-    // === EL FIX DEFINITIVO ESTÁ ACÁ ===
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
     const imagenesFinales = [];
-    for (let img of imagenesCargadas) {
-        const b64 = await urlABase64(img);
-        imagenesFinales.push(b64);
+    
+    // Acá detectamos si no metiste ninguna foto nueva en la compu
+    let hayNuevas = imagenesCargadas.some(img => img.startsWith('data:image'));
+    
+    for (let i = 0; i < imagenesCargadas.length; i++) {
+        let img = imagenesCargadas[i];
+        // Si borraste una foto pero no subiste ninguna nueva, le transformamos la primer
+        // foto vieja en un archivo base64 para que tu servidor crea que es nueva y guarde los cambios.
+        if (!hayNuevas && i === 0) {
+            img = await urlABase64Forzado(img);
+        }
+        imagenesFinales.push(img);
     }
 
     const payload = { 
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
         id: idProductoEditando,
-        imagen_url: JSON.stringify(imagenesFinales) // ACÁ ENVIAMOS EL ARRAY CORRECTO CON LOS ARCHIVOS
+        imagen_url: JSON.stringify(imagenesFinales) // Ahora sí, el servidor no te va a poder ignorar
     };
 
     const accion = async () => {
