@@ -112,7 +112,6 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
     }, 10);
 }
 
-// === GESTOR DE IMÁGENES ===
 function renderizarMiniaturas() {
     let container = document.getElementById('preview-imagenes-container');
     const labelImg = document.getElementById('label-add-img');
@@ -191,7 +190,6 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Funcionalidad para el link rojo de "Eliminar fotos actuales"
     document.addEventListener('click', (e) => {
         if (e.target && e.target.innerText && e.target.innerText.toLowerCase().includes('eliminar fotos actuales')) {
             e.preventDefault();
@@ -642,8 +640,7 @@ async function ejecutarGuardadoFinal(payload, btn) {
         });
 
         if(res.ok) { 
-            // EL MENSAJE FUE CORREGIDO PARA QUE SEPAS QUE ESTÁS CORRIENDO ESTE CÓDIGO NUEVO
-            mostrarToastAdmin("¡Exito! Producto guardado.", "success"); 
+            mostrarToastAdmin(idProductoEditando ? "¡Prenda actualizada!" : "¡Prenda creada!", "success"); 
             resetFormularioAdmin(); 
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
@@ -658,6 +655,37 @@ async function ejecutarGuardadoFinal(payload, btn) {
         mostrarToastAdmin("Error de conexión.", "error"); 
         btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación'; 
         btn.disabled = false; 
+    }
+}
+
+async function urlABase64(url) {
+    if (url.startsWith('data:image')) return url; 
+    
+    try {
+        const response = await fetch(url, { cache: 'no-cache' });
+        const blob = await response.blob();
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.onerror = () => {
+                resolve(url); 
+            };
+            img.src = url;
+        });
     }
 }
 
@@ -705,12 +733,19 @@ async function crearOActualizarProducto(e) {
         }
     }
     
-    // === ESTO ES LO QUE OBLIGA AL SERVIDOR A GUARDAR LA FOTO BORRADA ===
+    // === EL FIX DEFINITIVO ESTÁ ACÁ ===
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
+    const imagenesFinales = [];
+    for (let img of imagenesCargadas) {
+        const b64 = await urlABase64(img);
+        imagenesFinales.push(b64);
+    }
+
     const payload = { 
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
         id: idProductoEditando,
-        imagen_url: JSON.stringify(imagenesCargadas) // Le enviamos las fotos que quedaron sí o sí
+        imagen_url: JSON.stringify(imagenesFinales) // ACÁ ENVIAMOS EL ARRAY CORRECTO CON LOS ARCHIVOS
     };
 
     const accion = async () => {
