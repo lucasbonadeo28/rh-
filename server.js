@@ -113,6 +113,16 @@ const inicializarBaseDeDatos = async () => {
                 precio_unitario DECIMAL(10, 2)
             );
         `);
+
+        // FIX: AGREGAMOS LAS COLUMNAS FALTANTES SI NO EXISTEN
+        try {
+            await pool.query(`ALTER TABLE productos ADD COLUMN IF NOT EXISTS codigo_modelo VARCHAR(100);`);
+            await pool.query(`ALTER TABLE productos ADD COLUMN IF NOT EXISTS color_hex VARCHAR(20);`);
+            await pool.query(`ALTER TABLE productos ADD COLUMN IF NOT EXISTS color_nombre VARCHAR(50);`);
+        } catch(e) {
+            console.log("✅ Columnas extras verificadas.");
+        }
+
         console.log("✅ Tablas de la base de datos listas y verificadas.");
     } catch (error) {
         console.error("❌ Error al crear las tablas:", error);
@@ -200,19 +210,47 @@ app.get('/api/productos/nuevos', async (req, res) => {
     } catch (error) { res.status(500).json({ error: "Error interno" }); }
 });
 
+// === CREAR PRODUCTO NUEVO ===
 app.post('/api/productos', async (req, res) => {
-    const { nombre, categoria, precio_efectivo, precio_tarjeta, descripcion, inventario_talles, imagen_url } = req.body;
+    // FIX: Ahora lee "efectivo" y "tarjeta" que es como lo envía el front
+    const { nombre, categoria, efectivo, tarjeta, descripcion, inventario_talles, imagen_url, codigo_modelo, color_hex, color_nombre } = req.body;
     try {
         const query = `
-            INSERT INTO productos (nombre, categoria, precio_efectivo, precio_tarjeta, descripcion, inventario_talles, imagen_url) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+            INSERT INTO productos (nombre, categoria, precio_efectivo, precio_tarjeta, descripcion, inventario_talles, imagen_url, codigo_modelo, color_hex, color_nombre) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *
         `;
-        const valores = [nombre, categoria, precio_efectivo, precio_tarjeta, descripcion, inventario_talles, imagen_url];
+        const valores = [nombre, categoria, efectivo, tarjeta, descripcion, inventario_talles, imagen_url, codigo_modelo, color_hex, color_nombre];
         const resultado = await pool.query(query, valores);
         res.json({ success: true, producto: resultado.rows[0] });
     } catch (error) {
         console.error("Error al crear producto:", error);
         res.status(500).json({ success: false, message: "Error al guardar en la base de datos" });
+    }
+});
+
+// ========================================================
+// === EL FIX MAESTRO: ESTA RUTA NO EXISTÍA EN TU CÓDIGO ==
+// ========================================================
+app.put('/api/productos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { nombre, categoria, efectivo, tarjeta, descripcion, inventario_talles, imagen_url, codigo_modelo, color_hex, color_nombre } = req.body;
+    
+    try {
+        const query = `
+            UPDATE productos 
+            SET nombre = $1, categoria = $2, precio_efectivo = $3, precio_tarjeta = $4, descripcion = $5, inventario_talles = $6, imagen_url = $7, codigo_modelo = $8, color_hex = $9, color_nombre = $10 
+            WHERE id = $11 RETURNING *
+        `;
+        const valores = [nombre, categoria, efectivo, tarjeta, descripcion, inventario_talles, imagen_url, codigo_modelo, color_hex, color_nombre, id];
+        const resultado = await pool.query(query, valores);
+        
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Producto no encontrado en la base de datos." });
+        }
+        res.json({ success: true, producto: resultado.rows[0] });
+    } catch (error) {
+        console.error("Error al actualizar producto en PUT:", error);
+        res.status(500).json({ success: false, message: "Error crítico al actualizar en la base de datos." });
     }
 });
 
