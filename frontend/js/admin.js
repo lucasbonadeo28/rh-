@@ -520,6 +520,19 @@ function editarProducto(id) {
         mostrarToastAdmin("Error al cargar producto", "error");
         return;
     }
+    // ... dentro de editarProducto ...
+    const btnGuardar = document.getElementById('btn-crear-producto');
+    // ... 
+    // AGREGAR ESTO PARA QUE APAREZCA EL BOTÓN DE BORRAR
+    let cajaFotos = document.getElementById('label-add-img').parentNode;
+    if(!document.getElementById('caja-borrar-fotos')) {
+    let div = document.createElement('div');
+    div.id = 'caja-borrar-fotos';
+    div.style.marginTop = '10px';
+    div.innerHTML = `<label style="color:red; cursor:pointer;"><input type="checkbox" id="chk-borrar-fotos"> Eliminar fotos actuales</label>`;
+    cajaFotos.appendChild(div);
+    }
+    document.getElementById('caja-borrar-fotos').style.display = 'block';
 
     idProductoEditando = id; 
 
@@ -694,29 +707,44 @@ async function crearOActualizarProducto(e) {
     btn.classList.add('btn-procesando');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
 
-    const nombre = document.getElementById('add-nombre') ? document.getElementById('add-nombre').value.trim() : '';
-    const categoria = document.getElementById('add-categoria') ? document.getElementById('add-categoria').value : '';
-    const tarj = document.getElementById('add-precio-tarj') ? document.getElementById('add-precio-tarj').value : '';
-    const efvo = document.getElementById('add-precio-efvo') ? document.getElementById('add-precio-efvo').value : '';
-    const desc = document.getElementById('add-descripcion') ? document.getElementById('add-descripcion').value.trim() : '';
-    const codigoModelo = document.getElementById('add-codigo-modelo') ? document.getElementById('add-codigo-modelo').value.trim().toUpperCase() : '';
-    const colorHex = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : '#d4ba92';
-    const colorNombre = document.getElementById('add-color-nombre') ? document.getElementById('add-color-nombre').value.trim() : '';
+    const nombre = document.getElementById('add-nombre').value.trim();
+    const categoria = document.getElementById('add-categoria').value;
+    const tarj = document.getElementById('add-precio-tarj').value;
+    const efvo = document.getElementById('add-precio-efvo').value;
+    const desc = document.getElementById('add-descripcion').value.trim();
+    const codigoModelo = document.getElementById('add-codigo-modelo').value.trim().toUpperCase();
+    const colorHex = document.getElementById('add-color-hex').value;
+    const colorNombre = document.getElementById('add-color-nombre').value.trim();
     const chkUnico = document.getElementById('chk-unico');
     const esUnico = chkUnico ? chkUnico.checked : false;
+    const imgInput = document.getElementById('add-img');
 
-    if (!nombre || !categoria || !tarj || !efvo) { 
+    // Validaciones
+    if (!nombre || !categoria || !tarj || !efvo || !codigoModelo) { 
         btn.classList.remove('btn-procesando');
         btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
-        return mostrarToastAdmin("Por favor completa los campos obligatorios.", "error"); 
+        return mostrarToastAdmin("Por favor, completá los campos obligatorios.", "error"); 
     }
 
-    if (imagenesCargadas.length === 0) {
+    // Lógica de imágenes
+    let imgDataToSave = null;
+    const chkBorrar = document.getElementById('chk-borrar-fotos');
+    
+    if (chkBorrar && chkBorrar.checked && idProductoEditando !== null) {
+        imgDataToSave = JSON.stringify([]);
+    } else if (imagenesCargadas.length > 0) {
+        const base64Images = [];
+        for (let img of imagenesCargadas) {
+            base64Images.push(await urlABase64(img));
+        }
+        imgDataToSave = JSON.stringify(base64Images);
+    } else if (idProductoEditando === null) {
         btn.classList.remove('btn-procesando');
-        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
+        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Publicación';
         return mostrarToastAdmin("Añadí al menos 1 foto.", "error");
     }
 
+    // Lógica de inventario
     let inventarioFinal = {};
     if (esUnico) {
         const inputStockU = document.getElementById('add-stock-unico');
@@ -730,31 +758,44 @@ async function crearOActualizarProducto(e) {
             if(n && c > 0) inventarioFinal[n] = c;
         }
     }
-    
-    // === FIX HACK PARA EL SERVIDOR ===
-    // Transformamos las URLs viejas en archivos nuevos (base64)
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
-    const imagenesFinales = [];
-    for (let img of imagenesCargadas) {
-        const b64 = await urlABase64(img);
-        imagenesFinales.push(b64);
-    }
 
+    // Armado del objeto real (ACÁ ESTABA EL ERROR DEL {...})
     const payload = { 
-        nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
-        inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
-        id: idProductoEditando,
-        imagen_url: JSON.stringify(imagenesFinales) 
+        nombre: nombre,
+        categoria: categoria,
+        precio_tarjeta: tarj,
+        precio_efectivo: efvo,
+        descripcion: desc,
+        codigo_modelo: codigoModelo,
+        color_hex: colorHex,
+        color_nombre: colorNombre,
+        inventario_talles: inventarioFinal,
+        imagen_url: imgDataToSave
     };
 
-    const accion = async () => {
-        await ejecutarGuardadoFinal(payload, btn);
-    };
+    // Envío al servidor
+    try {
+        let url = `${API}/productos`;
+        let metodo = idProductoEditando !== null ? 'PUT' : 'POST';
+        if (idProductoEditando !== null) url += `/${idProductoEditando}`;
 
-    if (idProductoEditando !== null) {
-        showCustomConfirm('¿Seguro que querés guardar los cambios?', accion, "Sí, actualizar");
-    } else {
-        showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', accion, "Sí, publicar");
+        const res = await fetchSeguro(`${url}?t=${new Date().getTime()}`, { 
+            method: metodo, 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(payload) 
+        });
+
+        if(res.ok) { 
+            showCustomAlert("¡Éxito! Producto guardado.", "success", true); 
+        } else { 
+            mostrarToastAdmin("Error al guardar en el servidor.", "error");
+            btn.classList.remove('btn-procesando');
+            btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
+        }
+    } catch(e) { 
+        mostrarToastAdmin("Error de conexión.", "error"); 
+        btn.classList.remove('btn-procesando');
+        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
     }
 }
 

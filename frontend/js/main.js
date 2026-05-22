@@ -219,21 +219,16 @@ function toggleAcordeonMobile(btn) {
 
 function guardarCarrito() { localStorage.setItem('carritoLucTienda', JSON.stringify(carrito)); }
 
-/* === FIX CACHÉ: OBLIGA A ACTUALIZAR FOTOS Y PRODUCTOS === */
+/* === FIX CACHÉ: FUERZA LA ACTUALIZACIÓN DE FOTOS/DATOS EN TIENDA === */
 async function fetchProductos() {
     try {
-        const ts = new Date().getTime();
-        const resTodos = await fetch(`${API}/productos?t=${ts}`);
-        if(resTodos.ok) productosCargados = await resTodos.json();
-        else productosCargados = [];
+        // EL "?t=" + timestamp obliga al servidor a darte los datos nuevos siempre
+        const resTodos = await fetch(`${API}/productos?t=${new Date().getTime()}`);
+        if(resTodos.ok) {
+            productosCargados = await resTodos.json();
+        }
     } catch (err) { productosCargados = []; }
-
-    try {
-        const ts = new Date().getTime();
-        const resNuevos = await fetch(`${API}/productos/nuevos?t=${ts}`);
-        if(resNuevos.ok) productosNuevos = await resNuevos.json();
-        else productosNuevos = productosCargados.slice(0, 8);
-    } catch(e) { productosNuevos = productosCargados.slice(0, 8); }
+    // ... (mantené el resto igual)
 }
 
 async function fetchBanners() {
@@ -631,7 +626,7 @@ function toggleFavoritoCard(event, claveGrupo) {
     }
 }
 
-// === FIX SECCION FAVORITOS AISLADA ===
+// === FIX FAVORITOS: SECCIÓN LIMPIA AISLADA ===
 function mostrarFavoritos() { 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     filtrandoFavoritos = true; 
@@ -987,7 +982,7 @@ function calcularEnvio() {
     mostrarToast('Costo de envío calculado', 'success'); 
 }
 
-/* === FIX PRECIOS NEGROS CHECKOUT (Foto 1) === */
+/* === FIX PRECIOS NEGROS CHECKOUT === */
 function recalcularTotalPaso2() { 
     const metodo = document.querySelector('input[name="metodoPago"]:checked').value; 
     let totalPrendas = 0; 
