@@ -159,8 +159,97 @@ window.eliminarMiniatura = function(index) {
     renderizarMiniaturas();
 };
 
+
+// =====================================================================
+// === NUEVO: SUPER GESTOR VISUAL DE COLORES (VARIANTES) ===
+// =====================================================================
+function renderizarVariantesAdmin(variantes, currentId) {
+    let container = document.getElementById('admin-variantes-container');
+    
+    // Si no existe, lo inyectamos donde nos pediste (arriba del stock)
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'admin-variantes-container';
+        container.style.cssText = 'display:flex; flex-direction:column; align-items:center; margin-bottom: 25px; padding: 20px; border: 2px dashed #e0e0e0; border-radius: 12px; background: #fafafa; width: 100%; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);';
+        
+        const chkUnico = document.getElementById('chk-unico');
+        if (chkUnico) {
+            let targetNode = chkUnico.closest('div[style*="border"]') || chkUnico.parentElement.parentElement.parentElement;
+            if(targetNode && targetNode.parentNode) {
+                targetNode.parentNode.insertBefore(container, targetNode);
+            }
+        }
+    }
+
+    if (!variantes || (variantes.length === 0 && currentId === null)) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'flex';
+    
+    let html = '<span style="font-size:0.85rem; font-weight:800; color:#555; text-transform:uppercase; margin-bottom:15px; letter-spacing:1px;"><i class="fas fa-palette"></i> Colores de este modelo</span>';
+    html += '<div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center;">';
+    
+    // Dibujamos los circulitos de los colores existentes
+    variantes.forEach(v => {
+        const isAct = v.id === currentId;
+        const border = isAct ? 'border: 3px solid #111; transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2);' : 'border: 1px solid #aaa; opacity: 0.6;';
+        const colorHex = v.color_hex || '#d4ba92';
+        html += `<div title="Editar: ${v.color_nombre || v.nombre}" onclick="editarProducto(${v.id})" style="width: 45px; height: 45px; border-radius: 50%; background-color: ${colorHex}; cursor: pointer; transition: all 0.3s ease; ${border}"></div>`;
+    });
+
+    // Dibujamos el botón gigante de "+"
+    const isNewAct = currentId === null;
+    const borderNew = isNewAct ? 'border: 3px solid #27ae60; transform: scale(1.15); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); color: #27ae60;' : 'border: 2px dashed #999; color: #777; opacity: 0.8;';
+    
+    if (variantes.length > 0) {
+        html += `<div title="Añadir nuevo color" onclick="prepararNuevaVariante('${variantes[0].codigo_modelo || variantes[0].nombre}')" style="width: 45px; height: 45px; border-radius: 50%; background-color: #fff; display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor: pointer; transition: all 0.3s ease; margin-left: 10px; ${borderNew}"><i class="fas fa-plus"></i></div>`;
+    }
+    html += '</div>';
+    
+    if(currentId === null) {
+        html += '<div style="background:#eafaf1; padding:10px 20px; border-radius:8px; border-left: 4px solid #27ae60; margin-top: 15px; width: 100%; text-align: center;">';
+        html += '<p style="color:#27ae60; font-size:0.85rem; margin:0; font-weight:700;"><i class="fas fa-info-circle"></i> Creando nuevo color. Solo elegí las fotos, escribí el nombre del color y poné el stock (el resto se copia solo).</p>';
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+// Función que limpia la mitad del form para cargar rápido un color nuevo
+window.prepararNuevaVariante = function(codigoModelo) {
+    idProductoEditando = null;
+    
+    document.getElementById('add-color-hex').value = '#d4ba92';
+    document.getElementById('add-color-nombre').value = '';
+    
+    const chkUnico = document.getElementById('chk-unico');
+    if(chkUnico) { chkUnico.checked = false; toggleTalleUnico(); }
+    
+    const containerTalles = document.getElementById('talles-builder-ui');
+    if(containerTalles) {
+        containerTalles.innerHTML = '';
+        agregarTalleUI('S', 0); agregarTalleUI('M', 0); agregarTalleUI('L', 0);
+    }
+    
+    imagenesCargadas = [];
+    renderizarMiniaturas();
+    const imgInput = document.getElementById('add-img');
+    if(imgInput) imgInput.value = '';
+
+    const btn = document.getElementById('btn-crear-producto');
+    if(btn) {
+        btn.innerHTML = '<i class="fas fa-plus"></i> Guardar Nuevo Color';
+        btn.style.backgroundColor = '#27ae60';
+    }
+    
+    const variantes = pTotales.filter(p => (p.codigo_modelo || p.nombre) === codigoModelo);
+    renderizarVariantesAdmin(variantes, null);
+};
+
+
 window.addEventListener('DOMContentLoaded', () => {
-    // FIX COLOR: Fuerza el detector de color siempre que tipeen
     document.addEventListener('input', function(e) {
         if(e.target && e.target.id === 'add-color-nombre') {
             detectarColor(e.target.value);
@@ -222,7 +311,6 @@ function togglePassword() {
 
 const formLogin = document.getElementById('form-login');
 if(formLogin) {
-    // FIX LOGIN: Quitamos el cartel de confirmación
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -512,6 +600,8 @@ function resetFormularioAdmin() {
     
     imagenesCargadas = [];
     renderizarMiniaturas();
+    renderizarVariantesAdmin([], null);
+    
     const imgInput = document.getElementById('add-img');
     if(imgInput) imgInput.value = '';
 
@@ -571,6 +661,10 @@ function editarProducto(id) {
         }
     }
     renderizarMiniaturas();
+    
+    const codigoModeloSeguro = producto.codigo_modelo || producto.nombre;
+    const variantes = pTotales.filter(p => (p.codigo_modelo || p.nombre) === codigoModeloSeguro);
+    renderizarVariantesAdmin(variantes, id);
 
     const btn = document.getElementById('btn-crear-producto');
     if(btn) {
