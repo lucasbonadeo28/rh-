@@ -160,10 +160,12 @@ window.eliminarMiniatura = function(index) {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
-    const inputColorNombre = document.getElementById('add-color-nombre');
-    if (inputColorNombre) {
-        inputColorNombre.addEventListener('input', (e) => detectarColor(e.target.value));
-    }
+    // FIX COLOR: Fuerza el detector de color siempre que tipeen
+    document.addEventListener('input', function(e) {
+        if(e.target && e.target.id === 'add-color-nombre') {
+            detectarColor(e.target.value);
+        }
+    });
 
     const imgInput = document.getElementById('add-img');
     if (imgInput) {
@@ -220,39 +222,39 @@ function togglePassword() {
 
 const formLogin = document.getElementById('form-login');
 if(formLogin) {
-    formLogin.addEventListener('submit', (e) => {
+    // FIX LOGIN: Quitamos el cartel de confirmación
+    formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
-        showCustomConfirm('¿Deseás verificar tus datos e ingresar al panel?', async () => {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorMsg = document.getElementById('login-error');
-            const btn = document.getElementById('btn-submit-login');
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const errorMsg = document.getElementById('login-error');
+        const btn = document.getElementById('btn-submit-login');
 
-            btn.innerText = 'Verificando...'; btn.disabled = true; errorMsg.style.display = 'none';
+        btn.innerText = 'Verificando...'; btn.disabled = true; errorMsg.style.display = 'none';
 
-            try {
-                const res = await fetch('/api/admin/login', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-                if (res.ok && data.success) { 
-                    sessionStorage.setItem('adminLogueado', 'true');
-                    document.getElementById('login-wrapper').style.display = 'none';
-                    document.getElementById('panel-dashboard').style.display = 'block';
-                    mostrarToastAdmin("Acceso concedido", "success");
-                    cargarTodo();
-                } else {
-                    errorMsg.innerText = data.message || 'Credenciales incorrectas';
-                    errorMsg.style.display = 'block';
-                }
-            } catch (error) {
-                errorMsg.innerText = 'Error de conexión.';
+        try {
+            const res = await fetch('/api/admin/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) { 
+                sessionStorage.setItem('adminLogueado', 'true');
+                document.getElementById('login-wrapper').style.display = 'none';
+                document.getElementById('panel-dashboard').style.display = 'block';
+                mostrarToastAdmin("Acceso concedido", "success");
+                cargarTodo();
+            } else {
+                errorMsg.innerText = data.message || 'Credenciales incorrectas';
                 errorMsg.style.display = 'block';
-            } finally {
-                btn.innerText = 'Ingresar'; btn.disabled = false;
             }
-        }, "Ingresar");
+        } catch (error) {
+            errorMsg.innerText = 'Error de conexión.';
+            errorMsg.style.display = 'block';
+        } finally {
+            btn.innerText = 'Ingresar'; btn.disabled = false;
+        }
     });
 }
 
@@ -659,10 +661,6 @@ async function ejecutarGuardadoFinal(payload, btn) {
     }
 }
 
-// === FIX MAESTRO PARA ENGAÑAR A TU SERVIDOR ===
-// Como tu servidor ignora el borrado si no le enviamos un archivo nuevo (en base64),
-// esta función agarra una foto vieja tuya, la baja con un proxy, y la convierte
-// en un archivo "nuevo" para obligar a tu servidor a reemplazar la base de datos.
 async function urlABase64Forzado(url) {
     if (url.startsWith('data:image')) return url;
     
@@ -683,7 +681,6 @@ async function urlABase64Forzado(url) {
             const blob = await res.blob();
             return await blobToBase64(blob);
         } catch (e2) {
-            console.warn("No se pudo convertir, enviando URL original");
             return url;
         }
     }
@@ -736,13 +733,10 @@ async function crearOActualizarProducto(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
     const imagenesFinales = [];
     
-    // Acá detectamos si no metiste ninguna foto nueva en la compu
     let hayNuevas = imagenesCargadas.some(img => img.startsWith('data:image'));
     
     for (let i = 0; i < imagenesCargadas.length; i++) {
         let img = imagenesCargadas[i];
-        // Si borraste una foto pero no subiste ninguna nueva, le transformamos la primer
-        // foto vieja en un archivo base64 para que tu servidor crea que es nueva y guarde los cambios.
         if (!hayNuevas && i === 0) {
             img = await urlABase64Forzado(img);
         }
@@ -753,7 +747,7 @@ async function crearOActualizarProducto(e) {
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
         id: idProductoEditando,
-        imagen_url: JSON.stringify(imagenesFinales) // Ahora sí, el servidor no te va a poder ignorar
+        imagen_url: JSON.stringify(imagenesFinales) 
     };
 
     const accion = async () => {
