@@ -40,6 +40,9 @@ function detectarColor(texto) {
     if(mapaColores[colorLower]) {
         hex.value = mapaColores[colorLower];
     }
+    // ACUALIZA EL CIRCULITO EN VIVO
+    const circuloActual = document.getElementById('circulo-color-actual');
+    if(circuloActual) circuloActual.style.backgroundColor = hex.value;
 }
 
 function mostrarToastAdmin(mensaje, tipo = 'success') {
@@ -161,7 +164,7 @@ window.eliminarMiniatura = function(index) {
 
 
 // =====================================================================
-// === NUEVO: SUPER GESTOR VISUAL DE COLORES (VARIANTES) ===
+// === GESTOR VISUAL DE COLORES SIEMPRE VISIBLE ===
 // =====================================================================
 function renderizarVariantesAdmin(variantes, currentId) {
     let container = document.getElementById('admin-variantes-container');
@@ -170,7 +173,7 @@ function renderizarVariantesAdmin(variantes, currentId) {
     if (!container) {
         container = document.createElement('div');
         container.id = 'admin-variantes-container';
-        container.style.cssText = 'display:flex; flex-direction:column; align-items:center; margin-bottom: 25px; padding: 20px; border: 2px dashed #e0e0e0; border-radius: 12px; background: #fafafa; width: 100%; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);';
+        container.style.cssText = 'display:flex; flex-direction:column; align-items:center; margin-bottom: 25px; padding: 20px; border: 2px dashed #ccc; border-radius: 12px; background: #fafafa; width: 100%; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);';
         
         const chkUnico = document.getElementById('chk-unico');
         if (chkUnico) {
@@ -181,43 +184,56 @@ function renderizarVariantesAdmin(variantes, currentId) {
         }
     }
 
-    if (!variantes || (variantes.length === 0 && currentId === null)) {
-        container.style.display = 'none';
-        return;
-    }
-
     container.style.display = 'flex';
     
     let html = '<span style="font-size:0.85rem; font-weight:800; color:#555; text-transform:uppercase; margin-bottom:15px; letter-spacing:1px;"><i class="fas fa-palette"></i> Colores de este modelo</span>';
     html += '<div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center;">';
     
-    // Dibujamos los circulitos de los colores existentes
-    variantes.forEach(v => {
-        const isAct = v.id === currentId;
-        const border = isAct ? 'border: 3px solid #111; transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2);' : 'border: 1px solid #aaa; opacity: 0.6;';
-        const colorHex = v.color_hex || '#d4ba92';
-        html += `<div title="Editar: ${v.color_nombre || v.nombre}" onclick="editarProducto(${v.id})" style="width: 45px; height: 45px; border-radius: 50%; background-color: ${colorHex}; cursor: pointer; transition: all 0.3s ease; ${border}"></div>`;
-    });
+    // SI LA PRENDA ES NUEVA (No tiene variantes guardadas todavía)
+    if (!variantes || variantes.length === 0) {
+        const hexActual = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : '#d4ba92';
+        
+        // Circulito central que cambia en vivo
+        html += `<div id="circulo-color-actual" title="Color actual" style="width: 45px; height: 45px; border-radius: 50%; background-color: ${hexActual}; border: 3px solid #111; transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: background-color 0.3s;"></div>`;
+        
+        // Botón '+' que avisa que guarde primero
+        html += `<div title="Añadir nuevo color" onclick="mostrarToastAdmin('Guardá esta prenda primero para poder agregarle más colores.', 'error')" style="width: 45px; height: 45px; border-radius: 50%; background-color: #fff; display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor: pointer; transition: all 0.3s ease; margin-left: 10px; border: 2px dashed #999; color: #777; opacity: 0.8;"><i class="fas fa-plus"></i></div>`;
+        
+    } else {
+        // SI LA PRENDA YA EXISTE Y TIENE VARIANTES
+        variantes.forEach(v => {
+            const isAct = v.id === currentId;
+            const border = isAct ? 'border: 3px solid #111; transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2);' : 'border: 1px solid #aaa; opacity: 0.6;';
+            const colorHex = v.color_hex || '#d4ba92';
+            
+            // Si es la que se edita, le damos el ID dinámico
+            const extraId = isAct ? 'id="circulo-color-actual"' : '';
+            
+            html += `<div ${extraId} title="Editar: ${v.color_nombre || v.nombre}" onclick="editarProducto(${v.id})" style="width: 45px; height: 45px; border-radius: 50%; background-color: ${colorHex}; cursor: pointer; transition: all 0.3s ease; ${border}"></div>`;
+        });
 
-    // Dibujamos el botón gigante de "+"
-    const isNewAct = currentId === null;
-    const borderNew = isNewAct ? 'border: 3px solid #27ae60; transform: scale(1.15); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); color: #27ae60;' : 'border: 2px dashed #999; color: #777; opacity: 0.8;';
-    
-    if (variantes.length > 0) {
-        html += `<div title="Añadir nuevo color" onclick="prepararNuevaVariante('${variantes[0].codigo_modelo || variantes[0].nombre}')" style="width: 45px; height: 45px; border-radius: 50%; background-color: #fff; display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor: pointer; transition: all 0.3s ease; margin-left: 10px; ${borderNew}"><i class="fas fa-plus"></i></div>`;
+        const isNewAct = currentId === null;
+        const borderNew = isNewAct ? 'border: 3px solid #27ae60; transform: scale(1.15); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); color: #27ae60;' : 'border: 2px dashed #999; color: #777; opacity: 0.8;';
+        
+        if (isNewAct) {
+            const hexActual = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : '#d4ba92';
+            html += `<div id="circulo-color-actual" title="Color actual" style="width: 45px; height: 45px; border-radius: 50%; background-color: ${hexActual}; border: 3px solid #27ae60; transform: scale(1.15); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); margin-left:10px; transition: background-color 0.3s;"></div>`;
+        } else {
+            html += `<div title="Añadir nuevo color" onclick="prepararNuevaVariante('${variantes[0].codigo_modelo || variantes[0].nombre}')" style="width: 45px; height: 45px; border-radius: 50%; background-color: #fff; display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor: pointer; transition: all 0.3s ease; margin-left: 10px; ${borderNew}"><i class="fas fa-plus"></i></div>`;
+        }
     }
+    
     html += '</div>';
     
-    if(currentId === null) {
+    if(currentId === null && variantes && variantes.length > 0) {
         html += '<div style="background:#eafaf1; padding:10px 20px; border-radius:8px; border-left: 4px solid #27ae60; margin-top: 15px; width: 100%; text-align: center;">';
-        html += '<p style="color:#27ae60; font-size:0.85rem; margin:0; font-weight:700;"><i class="fas fa-info-circle"></i> Creando nuevo color. Solo elegí las fotos, escribí el nombre del color y poné el stock (el resto se copia solo).</p>';
+        html += '<p style="color:#27ae60; font-size:0.85rem; margin:0; font-weight:700;"><i class="fas fa-info-circle"></i> Creando nuevo color. Solo elegí las fotos, escribí el nombre del color y poné el stock.</p>';
         html += '</div>';
     }
 
     container.innerHTML = html;
 }
 
-// Función que limpia la mitad del form para cargar rápido un color nuevo
 window.prepararNuevaVariante = function(codigoModelo) {
     idProductoEditando = null;
     
@@ -248,11 +264,15 @@ window.prepararNuevaVariante = function(codigoModelo) {
     renderizarVariantesAdmin(variantes, null);
 };
 
-
 window.addEventListener('DOMContentLoaded', () => {
+    // FIX COLOR EN VIVO (Escucha tipeo o click en la paleta)
     document.addEventListener('input', function(e) {
         if(e.target && e.target.id === 'add-color-nombre') {
             detectarColor(e.target.value);
+        }
+        if(e.target && e.target.id === 'add-color-hex') {
+            const circuloActual = document.getElementById('circulo-color-actual');
+            if(circuloActual) circuloActual.style.backgroundColor = e.target.value;
         }
     });
 
@@ -358,6 +378,9 @@ function cerrarSesionLocal() {
 
 window.onload = () => { 
     if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
+    
+    // Iniciar con el recuadro visual incluso en blanco
+    renderizarVariantesAdmin([], null);
 };
 
 async function fetchSeguro(url, opciones = {}) {
