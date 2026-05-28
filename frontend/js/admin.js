@@ -40,7 +40,6 @@ function detectarColor(texto) {
     if(mapaColores[colorLower]) {
         hex.value = mapaColores[colorLower];
     }
-    // ACUALIZA EL CIRCULITO EN VIVO
     const circuloActual = document.getElementById('circulo-color-actual');
     if(circuloActual) circuloActual.style.backgroundColor = hex.value;
 }
@@ -115,7 +114,6 @@ function showCustomConfirm(msg, callback, btnText = "Sí") {
     }, 10);
 }
 
-// === GESTOR DE IMÁGENES ===
 function renderizarMiniaturas() {
     let container = document.getElementById('preview-imagenes-container');
     const labelImg = document.getElementById('label-add-img');
@@ -162,14 +160,9 @@ window.eliminarMiniatura = function(index) {
     renderizarMiniaturas();
 };
 
-
-// =====================================================================
-// === GESTOR VISUAL DE COLORES SIEMPRE VISIBLE ===
-// =====================================================================
 function renderizarVariantesAdmin(variantes, currentId) {
     let container = document.getElementById('admin-variantes-container');
     
-    // Si no existe, lo inyectamos donde nos pediste (arriba del stock)
     if (!container) {
         container = document.createElement('div');
         container.id = 'admin-variantes-container';
@@ -189,26 +182,17 @@ function renderizarVariantesAdmin(variantes, currentId) {
     let html = '<span style="font-size:0.85rem; font-weight:800; color:#555; text-transform:uppercase; margin-bottom:15px; letter-spacing:1px;"><i class="fas fa-palette"></i> Colores de este modelo</span>';
     html += '<div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center;">';
     
-    // SI LA PRENDA ES NUEVA (No tiene variantes guardadas todavía)
     if (!variantes || variantes.length === 0) {
         const hexActual = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : '#d4ba92';
-        
-        // Circulito central que cambia en vivo
         html += `<div id="circulo-color-actual" title="Color actual" style="width: 45px; height: 45px; border-radius: 50%; background-color: ${hexActual}; border: 3px solid #111; transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: background-color 0.3s;"></div>`;
-        
-        // Botón '+' que avisa que guarde primero
         html += `<div title="Añadir nuevo color" onclick="mostrarToastAdmin('Guardá esta prenda primero para poder agregarle más colores.', 'error')" style="width: 45px; height: 45px; border-radius: 50%; background-color: #fff; display:flex; align-items:center; justify-content:center; font-size:1.4rem; cursor: pointer; transition: all 0.3s ease; margin-left: 10px; border: 2px dashed #999; color: #777; opacity: 0.8;"><i class="fas fa-plus"></i></div>`;
         
     } else {
-        // SI LA PRENDA YA EXISTE Y TIENE VARIANTES
         variantes.forEach(v => {
             const isAct = v.id === currentId;
             const border = isAct ? 'border: 3px solid #111; transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,0,0,0.2);' : 'border: 1px solid #aaa; opacity: 0.6;';
             const colorHex = v.color_hex || '#d4ba92';
-            
-            // Si es la que se edita, le damos el ID dinámico
             const extraId = isAct ? 'id="circulo-color-actual"' : '';
-            
             html += `<div ${extraId} title="Editar: ${v.color_nombre || v.nombre}" onclick="editarProducto(${v.id})" style="width: 45px; height: 45px; border-radius: 50%; background-color: ${colorHex}; cursor: pointer; transition: all 0.3s ease; ${border}"></div>`;
         });
 
@@ -258,6 +242,7 @@ window.prepararNuevaVariante = function(codigoModelo) {
     if(btn) {
         btn.innerHTML = '<i class="fas fa-plus"></i> Guardar Nuevo Color';
         btn.style.backgroundColor = '#27ae60';
+        btn.classList.remove('btn-procesando'); // Por las dudas
     }
     
     const variantes = pTotales.filter(p => (p.codigo_modelo || p.nombre) === codigoModelo);
@@ -265,7 +250,6 @@ window.prepararNuevaVariante = function(codigoModelo) {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
-    // FIX COLOR EN VIVO (Escucha tipeo o click en la paleta)
     document.addEventListener('input', function(e) {
         if(e.target && e.target.id === 'add-color-nombre') {
             detectarColor(e.target.value);
@@ -378,8 +362,6 @@ function cerrarSesionLocal() {
 
 window.onload = () => { 
     if (sessionStorage.getItem('adminLogueado') === 'true') { cargarTodo(); }
-    
-    // Iniciar con el recuadro visual incluso en blanco
     renderizarVariantesAdmin([], null);
 };
 
@@ -631,6 +613,8 @@ function resetFormularioAdmin() {
     idProductoEditando = null;
     const btn = document.getElementById('btn-crear-producto');
     if(btn) {
+        btn.classList.remove('btn-procesando');
+        btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-save"></i> Guardar Publicación';
         btn.style.background = '#111';
     }
@@ -691,6 +675,8 @@ function editarProducto(id) {
 
     const btn = document.getElementById('btn-crear-producto');
     if(btn) {
+        btn.classList.remove('btn-procesando');
+        btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Publicación';
         btn.style.backgroundColor = '#f39c12';
     }
@@ -760,7 +746,7 @@ async function ejecutarGuardadoFinal(payload, btn) {
         });
 
         if(res.ok) { 
-            mostrarToastAdmin("¡Exito! Producto guardado.", "success"); 
+            mostrarToastAdmin(idProductoEditando ? "¡Exito! Producto actualizado." : "¡Exito! Producto guardado.", "success"); 
             resetFormularioAdmin(); 
             const resI = await fetchSeguro(`${API}/productos?t=`+new Date().getTime(), {cache:'no-store', headers: {'Cache-Control': 'no-cache'}}); 
             pTotales = await resI.json(); 
@@ -768,11 +754,13 @@ async function ejecutarGuardadoFinal(payload, btn) {
             renderStock(); 
         } else { 
             mostrarToastAdmin("Error al guardar.", "error"); 
+            btn.classList.remove('btn-procesando');
             btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación'; 
             btn.disabled = false; 
         }
     } catch(e) { 
         mostrarToastAdmin("Error de conexión.", "error"); 
+        btn.classList.remove('btn-procesando');
         btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación'; 
         btn.disabled = false; 
     }
@@ -806,9 +794,6 @@ async function urlABase64Forzado(url) {
 async function crearOActualizarProducto(e) {
     if(e) e.preventDefault();
     const btn = document.getElementById('btn-crear-producto');
-    
-    btn.classList.add('btn-procesando');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO...';
 
     const nombre = document.getElementById('add-nombre') ? document.getElementById('add-nombre').value.trim() : '';
     const categoria = document.getElementById('add-categoria') ? document.getElementById('add-categoria').value : '';
@@ -822,14 +807,10 @@ async function crearOActualizarProducto(e) {
     const esUnico = chkUnico ? chkUnico.checked : false;
 
     if (!nombre || !categoria || !tarj || !efvo) { 
-        btn.classList.remove('btn-procesando');
-        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
         return mostrarToastAdmin("Por favor completa los campos obligatorios.", "error"); 
     }
 
     if (imagenesCargadas.length === 0) {
-        btn.classList.remove('btn-procesando');
-        btn.innerHTML = idProductoEditando ? '<i class="fas fa-sync-alt"></i> Actualizar Publicación' : '<i class="fas fa-save"></i> Guardar Publicación';
         return mostrarToastAdmin("Añadí al menos 1 foto.", "error");
     }
 
@@ -846,35 +827,37 @@ async function crearOActualizarProducto(e) {
             if(n && c > 0) inventarioFinal[n] = c;
         }
     }
-    
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
-    const imagenesFinales = [];
-    
-    let hayNuevas = imagenesCargadas.some(img => img.startsWith('data:image'));
-    
-    for (let i = 0; i < imagenesCargadas.length; i++) {
-        let img = imagenesCargadas[i];
-        if (!hayNuevas && i === 0) {
-            img = await urlABase64Forzado(img);
-        }
-        imagenesFinales.push(img);
-    }
 
     const payload = { 
         nombre, categoria, tarjeta: tarj, efectivo: efvo, descripcion: desc, 
         inventario_talles: inventarioFinal, codigo_modelo: codigoModelo, color_hex: colorHex, color_nombre: colorNombre,
-        id: idProductoEditando,
-        imagen_url: JSON.stringify(imagenesFinales) 
+        id: idProductoEditando
     };
 
     const accion = async () => {
+        // Recién acá el botón se pone en modo procesando para no colgar la página antes de tiempo
+        btn.classList.add('btn-procesando');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESANDO FOTOS...';
+        
+        const imagenesFinales = [];
+        let hayNuevas = imagenesCargadas.some(img => img.startsWith('data:image'));
+        
+        for (let i = 0; i < imagenesCargadas.length; i++) {
+            let img = imagenesCargadas[i];
+            if (!hayNuevas && i === 0) {
+                img = await urlABase64Forzado(img);
+            }
+            imagenesFinales.push(img);
+        }
+
+        payload.imagen_url = JSON.stringify(imagenesFinales); 
         await ejecutarGuardadoFinal(payload, btn);
     };
 
     if (idProductoEditando !== null) {
         showCustomConfirm('¿Seguro que querés guardar los cambios?', accion, "Sí, actualizar");
     } else {
-        showCustomConfirm('¿Seguro que querés publicar esta prenda nueva?', accion, "Sí, publicar");
+        showCustomConfirm('¿Seguro que querés publicar este color nuevo?', accion, "Sí, publicar");
     }
 }
 
