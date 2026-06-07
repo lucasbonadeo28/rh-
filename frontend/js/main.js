@@ -254,7 +254,6 @@ function toggleAcordeonMobile(btn) {
 
 function guardarCarrito() { localStorage.setItem('carritoLucTienda', JSON.stringify(carrito)); }
 
-// === FIX: NUNCA DEJAR LA PÁGINA EN BLANCO ===
 async function fetchProductos() {
     try {
         const resTodos = await fetch(`${API}/productos`);
@@ -274,7 +273,6 @@ async function fetchProductos() {
         }
     } catch(e) { productosNuevos = productosCargados.slice(0, 8) || []; }
     
-    // Si por algún motivo falló todo, forzamos a cargar algo para que no quede vacía
     if (!productosNuevos || productosNuevos.length === 0) {
         productosNuevos = productosCargados.slice(0, 8) || [];
     }
@@ -599,7 +597,6 @@ function generarGridHTML(listaRaw) {
                 return pCode.replace(/[^a-zA-Z0-9]/g, '-') === claveAgrupacion;
             });
             
-            // === FIX ANTICRASHEO: Aseguramos que nunca falte la variante para que no salte el "NO HAY PRODUCTOS" ===
             if (!todasLasVariantes || todasLasVariantes.length === 0) {
                 todasLasVariantes = [p];
             }
@@ -974,11 +971,14 @@ function agregarDesdeDetalle() {
     const talleFinal = `${talleElegido} (Foto ${indexImagenSeleccionada})`;
     const idUnico = `${prodSeleccionado.id}-${talleFinal}`; 
     const item = carrito.find(i => i.idUnico === idUnico); 
+    
+    const colorNombre = prodSeleccionado.color_nombre ? prodSeleccionado.color_nombre : '';
 
     if(item) { item.cantidad++; } 
     else { 
         carrito.push({ 
             idUnico: idUnico, id: prodSeleccionado.id, nombre: prodSeleccionado.nombre, talle: talleFinal, 
+            color: colorNombre,
             precio_efectivo: prodSeleccionado.precio_efectivo || prodSeleccionado.efectivo, 
             precio_tarjeta: prodSeleccionado.precio_tarjeta || prodSeleccionado.tarjeta, 
             cantidad: 1, imagen_url: imagenSeleccionadaUrl 
@@ -1007,13 +1007,15 @@ function renderizarCarritoSidebar() {
     
     lista.innerHTML = carrito.map(p => { 
         subtotal += (p.precio_efectivo * p.cantidad); 
+        let colorBadge = p.color ? `<small style="display:block; color:#777; font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Color: ${p.color}</small>` : '';
         return `
         <div class="cart-item-row">
             <div style="display:flex; align-items:center;">
                 <img src="${p.imagen_url || 'https://via.placeholder.com/400x500?text=Sin+Imagen'}">
                 <div style="max-width: 130px;">
-                    <strong style="display:block; font-size: 0.85rem; color:var(--primary); line-height: 1.2; margin-bottom:4px; font-weight:700;">${p.nombre}</strong>
-                    <span style="color:var(--primary); font-size:0.85rem; font-weight:800;">$${p.precio_efectivo}</span>
+                    <strong style="display:block; font-size: 0.85rem; color:var(--primary); line-height: 1.2; margin-bottom:2px; font-weight:700;">${p.nombre}</strong>
+                    ${colorBadge}
+                    <span style="color:var(--primary); font-size:0.85rem; font-weight:800; margin-top: 4px; display:block;">$${p.precio_efectivo}</span>
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap: 15px;">
@@ -1111,7 +1113,8 @@ function recalcularTotalPaso2() {
     document.getElementById('resumen-checkout-paso2').innerHTML = carrito.map(p => { 
         const precio = metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta; 
         totalPrendas += (precio * p.cantidad); 
-        return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom: 5px; font-size:0.9rem; color:#555; font-weight:500;"><span>${p.cantidad}x ${p.nombre}</span><strong style="color:var(--primary)">$${precio * p.cantidad}</strong></div>`; 
+        const txtColor = p.color ? ` - ${p.color}` : '';
+        return `<div style="display:flex; justify-content:space-between; margin-bottom:8px; padding-bottom: 5px; font-size:0.9rem; color:#555; font-weight:500;"><span>${p.cantidad}x ${p.nombre}${txtColor}</span><strong style="color:var(--primary)">$${precio * p.cantidad}</strong></div>`; 
     }).join(''); 
     
     let descuentoMonto = 0;
@@ -1206,7 +1209,7 @@ async function finalizarCompra() {
     const payload = { 
         total: totalFinal, metodo_pago: metodo, costoEnvio: costoEnvio, cupon_usado: cuponAplicado.codigo, 
         cliente: { nombre: nombreGuardar, apellido: apellidoGuardar, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
-        productos: carrito.map(p => ({ id: p.id, nombre: p.nombre, talle: p.talle, cantidad: p.cantidad, precio_pagado: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta), precio: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) })) 
+        productos: carrito.map(p => ({ id: p.id, nombre: p.color ? `${p.nombre} (${p.color})` : p.nombre, talle: p.talle, cantidad: p.cantidad, precio_pagado: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta), precio: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) })) 
     };
 
     try {
