@@ -152,7 +152,7 @@ function agregarColorStockDesdeCampos() {
 
 function obtenerColoresDesdeFormulario() {
     const filas = Array.from(document.querySelectorAll('#colores-builder-ui > div'));
-    return filas.map(fila => {
+    const colores = filas.map(fila => {
         const nombreInput = fila.querySelector('.builder-color-nombre');
         const hexInput = fila.querySelector('.builder-color-hex');
         const stockInput = fila.querySelector('.builder-color-stock');
@@ -162,6 +162,22 @@ function obtenerColoresDesdeFormulario() {
             stock: stockInput ? parseInt(stockInput.value) || 0 : 0
         };
     }).filter(color => color.nombre);
+
+    const nombrePrincipal = document.getElementById('add-color-nombre') ? document.getElementById('add-color-nombre').value.trim() : '';
+    const hexPrincipal = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : colorDefectoHex;
+
+    if (nombrePrincipal && !colores.some(color => color.nombre.toLowerCase() === nombrePrincipal.toLowerCase())) {
+        const filaLibreConStock = filas.find(fila => {
+            const nombreInput = fila.querySelector('.builder-color-nombre');
+            const stockInput = fila.querySelector('.builder-color-stock');
+            return nombreInput && !nombreInput.value.trim() && stockInput && (parseInt(stockInput.value) || 0) > 0;
+        });
+
+        const stockPrincipal = filaLibreConStock ? parseInt(filaLibreConStock.querySelector('.builder-color-stock').value) || 0 : 0;
+        colores.push({ nombre: nombrePrincipal, hex: hexPrincipal, stock: stockPrincipal });
+    }
+
+    return colores;
 }
 
 function mostrarToastAdmin(mensaje, tipo = 'success') {
@@ -877,7 +893,7 @@ async function crearOActualizarProducto(e) {
     const coloresStock = obtenerColoresDesdeFormulario();
 
     if (coloresStock.length === 0) {
-        return mostrarToastAdmin("Agregá al menos un color al stock con el botón.", "error");
+        return mostrarToastAdmin("Agregá al menos un color al stock.", "error");
     }
 
     const inventarioFinal = crearInventarioPorColor(coloresStock);
@@ -1209,7 +1225,7 @@ function descargarExcel() {
 
         let ventaMensual = v1 + v2 + v3 + v4;
         let stockActual = 0;
-        if (p.inventario_talles && typeof p.inventario_talles === 'object') { Object.values(p.inventario_talles).forEach(c => stockActual += parseInt(c) || 0); }
+        stockActual = calcularStockDesdeInventario(p.inventario_talles);
 
         csvContent += `${nombreLimpio},${v1},,,,${v2},,,,${v3},,,,${v4},,,${stockActual},${ventaMensual}\n`; 
     }); 
