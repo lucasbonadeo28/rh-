@@ -74,8 +74,8 @@
                     <form id="add-product-form">
                         <div class="admin-form-grid">
                             <div class="col-span-2">
-                                <label class="form-label">Nombre del producto (y Color)</label>
-                                <input type="text" id="add-nombre" placeholder="Ej: Chaleco Gamuzado Beige" oninput="validarLetras(this)">
+                                <label class="form-label">Nombre del producto</label>
+                                <input type="text" id="add-nombre" placeholder="Ej: Chaleco Gamuzado" oninput="validarLetras(this)">
                             </div>
                             <div class="col-span-1">
                                 <label class="form-label">Categoría</label>
@@ -83,12 +83,12 @@
                             </div>
 
                             <div class="col-span-1">
-                                <label class="form-label">Cód. Modelo (Obligatorio)</label>
+                                <label class="form-label">Cód. Modelo (igual para todos los colores)</label>
                                 <input type="text" id="add-codigo-modelo" placeholder="Ej: CHAL-01" style="text-transform: uppercase;" required>
                             </div>
 
                             <div class="col-span-1">
-                                <label class="form-label">Tono Variante</label>
+                                <label class="form-label">Color</label>
                                 <div style="display: flex; gap: 8px; align-items: center;">
                                     <input type="color" id="add-color-hex" value="#d4ba92" style="width: 40px; height: 43px; padding: 0; cursor: pointer; border-radius: 4px; border: 1px solid #ddd;">
                                     <input type="text" id="add-color-nombre" placeholder="Ej: Rojo" oninput="validarLetras(this); detectarColor(this.value);" style="flex: 1;">
@@ -109,29 +109,21 @@
                             </div>
 
                             <div class="col-span-full">
-                                <label class="form-label">Fotos (De esta variante)</label>
+                                <label class="form-label">Fotos de la publicación</label>
                                 <label for="add-img" class="custom-file-upload" id="label-add-img">
                                     <i class="fas fa-camera"></i> <span>Abrir Galería</span>
                                 </label>
                                 <input type="file" id="add-img" accept="image/*" multiple style="display: none;" onchange="mostrarNombreArchivo(this, 'label-add-img', 'Abrir Galería')">
                             </div>
 
-                            <div class="col-span-full" id="talles-builder-container" style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-top: 15px;">
-                                <h4 style="margin-top:0; margin-bottom:15px; font-size:1rem; color:#111; text-transform:uppercase; text-align:center; font-weight:800;">Stock por Talles</h4>
-                                
-                                <label style="font-size: 0.9rem; font-weight: 700; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px;">
-                                    <input type="checkbox" id="chk-unico" onchange="toggleTalleUnico()" style="margin: 0; width: 18px; height: 18px; accent-color: var(--brand-brown);"> Es Talle Único
-                                </label>
-                                
-                                <div id="talles-builder-ui" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;"></div>
-                                
-                                <div id="talle-unico-container" style="display: none; text-align: center;">
-                                    <input type="number" id="add-stock-unico" placeholder="Stock Total" style="padding: 12px; font-size: 1rem; font-weight: bold; width: 150px; text-align: center; margin: 0 auto; display: block; border: 1px solid #ccc; border-radius: 6px;" min="0">
+                            <div class="col-span-full" id="stock-colores-container" style="display:inline-flex; flex-direction:column; align-items:flex-start; background:#fff; border:2px dashed #ccc; border-radius:12px; padding:20px; margin-top:15px; width:auto; min-width:190px;">
+                                <h4 style="margin:0 0 16px; font-size:1rem; color:#555; text-transform:uppercase; font-weight:800; line-height:1.1;"><i class="fas fa-palette"></i> Colores de<br>este modelo</h4>
+                                <div style="display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;">
+                                    <div id="colores-builder-ui" style="display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start;"></div>
+                                    <button type="button" id="btn-add-color-stock-ui" onclick="agregarColorStockDesdeCampos()" title="Añadir color" style="width:52px; height:52px; border-radius:50%; border:2px dashed #aaa; background:#fff; color:#999; display:flex; align-items:center; justify-content:center; font-size:1.6rem; cursor:pointer;">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
                                 </div>
-                                
-                                <button type="button" class="btn-secundario" id="btn-add-talle-ui" style="padding: 10px 20px; font-size: 0.85rem; width: auto; margin: 20px auto 0; display: block;" onclick="agregarTalleUI('', 0)">
-                                    <i class="fas fa-plus"></i> Añadir Talle
-                                </button>
                             </div>
                             
                             <div class="col-span-full">
@@ -150,7 +142,7 @@
                 <div class="table-responsive">
                     <table>
                         <thead>
-                            <tr><th>Foto</th><th>Producto</th><th>Efectivo ($)</th><th>Tarjeta ($)</th><th>Talles y Stock Real</th><th style="text-align: center;">Acción</th></tr>
+                            <tr><th>Foto</th><th>Producto</th><th>Efectivo ($)</th><th>Tarjeta ($)</th><th>Colores y Stock Real</th><th style="text-align: center;">Acción</th></tr>
                         </thead>
                         <tbody id="body-inventario"></tbody>
                     </table>

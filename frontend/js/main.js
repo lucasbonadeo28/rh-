@@ -26,6 +26,7 @@ let currentModalImageIndex = 0;
 let imagenSeleccionadaUrl = '';     
 let indexImagenSeleccionada = 1;
 
+const TIPO_STOCK_COLORES = 'stock_por_color';
 const ordenTallesGlobal = ['S', 'M', 'L', 'XL', 'XXL', 'ÚNICO'];
 function sortTalles(a, b) {
     let ia = ordenTallesGlobal.indexOf(a.toUpperCase());
@@ -33,6 +34,69 @@ function sortTalles(a, b) {
     if (ia === -1) ia = 99; 
     if (ib === -1) ib = 99;
     return ia - ib;
+}
+
+function normalizarCodigoModelo(valor) {
+    return String(valor || '').trim().toUpperCase();
+}
+
+function obtenerCodigoAgrupacion(producto) {
+    return normalizarCodigoModelo(producto && producto.codigo_modelo ? producto.codigo_modelo : producto && producto.nombre);
+}
+
+function obtenerClaveAgrupacion(producto) {
+    return obtenerCodigoAgrupacion(producto).replace(/[^a-zA-Z0-9]/g, '-');
+}
+
+function tieneColorCargado(producto) {
+    return Boolean((producto && producto.color_nombre) || (producto && producto.color_hex) || esInventarioPorColor(producto && producto.inventario_talles));
+}
+
+function esInventarioPorColor(inventario) {
+    return inventario && inventario.tipo === TIPO_STOCK_COLORES && Array.isArray(inventario.colores);
+}
+
+function obtenerColoresInventario(inventario) {
+    if (!esInventarioPorColor(inventario)) return [];
+    return inventario.colores.map(color => ({
+        nombre: String(color.nombre || '').trim(),
+        hex: color.hex || '#d4ba92',
+        stock: parseInt(color.stock) || 0
+    })).filter(color => color.nombre);
+}
+
+function escaparTextoAttr(valor) {
+    return String(valor || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function generarTallesCardHTML(inventario) {
+    if (esInventarioPorColor(inventario)) return '';
+
+    const tallesDisponibles = new Set();
+    if (inventario && typeof inventario === 'object') {
+        Object.entries(inventario).forEach(([talle, cant]) => {
+            if (parseInt(cant) > 0) tallesDisponibles.add(talle);
+        });
+    }
+
+    const tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
+    if (tallesArray.length === 0) return '';
+
+    if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
+        return `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
+    }
+
+    return `<div class="card-talles-container">` +
+        tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') +
+        `</div>`;
+}
+
+function calcularStockTotal(producto) {
+    if (!producto || !producto.inventario_talles || typeof producto.inventario_talles !== 'object') return 0;
+    if (esInventarioPorColor(producto.inventario_talles)) {
+        return obtenerColoresInventario(producto.inventario_talles).reduce((acc, color) => acc + color.stock, 0);
+    }
+    return Object.values(producto.inventario_talles).reduce((acc, cant) => acc + (parseInt(cant) || 0), 0);
 }
 
 function getColorSeguro(v) {
@@ -50,7 +114,12 @@ function getColorSeguro(v) {
         'militar': '#4b5320', 'marino': '#000080', 'camel': '#c19a6b', 'fucsia': '#ff00ff',
         'suela': '#c19a6b', 'francia': '#318ce7', 'melange': '#d3d3d3',
         'oliva': '#808000', 'coral': '#ff7f50', 'lila': '#c8a2c8',
-        'chocolate': '#d2691e', 'ladrillo': '#b22222', 'cafe': '#6f4e37'
+        'chocolate': '#d2691e', 'ladrillo': '#b22222', 'cafe': '#6f4e37',
+        'vison': '#ccb8a5', 'tiza': '#f5f5f0', 'esmeralda': '#50c878',
+        'turquesa': '#40e0d0', 'salmon': '#fa8072', 'terracota': '#e2725b',
+        'habano': '#593c1f', 'crudo': '#f3e5ab', 'hueso': '#e3dac9',
+        'lima': '#bfff00', 'ocre': '#cc7722', 'guinda': '#800000',
+        'ciruela': '#dda0dd', 'pastel': '#aec6cf', 'ingles': '#1b4d3e'
     };
 
     for (let c in mapaFront) {
@@ -423,7 +492,7 @@ function ejecutarBusquedaPredictiva(event) {
         const unicos = [];
         const codigosVistos = new Set();
         filtrados.forEach(p => {
-            const code = p.codigo_modelo || p.nombre;
+            const code = obtenerCodigoAgrupacion(p);
             if(!codigosVistos.has(code)) {
                 codigosVistos.add(code);
                 unicos.push(p);
@@ -497,7 +566,7 @@ function aplicarFiltrosCatalogo() {
         if (tallesSeleccionados.length > 0) {
             listaFiltrada = listaFiltrada.filter(p => {
                 if (!p || !p.inventario_talles) return false;
-                return tallesSeleccionados.some(talle => p.inventario_talles[talle] !== undefined);
+                return tallesSeleccionados.some(talle => parseInt(p.inventario_talles[talle]) > 0);
             });
         }
 
@@ -529,16 +598,7 @@ function generarGridHTML(listaRaw) {
 
     if (filtrandoFavoritos) {
         return listaRaw.map(vDefault => {
-            let stockTotalPrenda = 0;
-            let tallesDisponibles = new Set();
-            if (vDefault.inventario_talles && typeof vDefault.inventario_talles === 'object') {
-                Object.entries(vDefault.inventario_talles).forEach(([talle, cant]) => {
-                    if (parseInt(cant) > 0) {
-                        stockTotalPrenda += parseInt(cant);
-                        tallesDisponibles.add(talle);
-                    }
-                });
-            }
+            let stockTotalPrenda = calcularStockTotal(vDefault);
             const productoAgotado = stockTotalPrenda <= 0;
             const esFav = 'active'; 
             const nombre = vDefault.nombre || 'Producto sin nombre';
@@ -547,20 +607,19 @@ function generarGridHTML(listaRaw) {
             const arrayFotos = obtenerArrayImagenes(vDefault.imagen_url);
             const imgUrl = arrayFotos[0];
 
-            let tallesHTML = '';
-            let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
-            if (tallesArray.length > 0) {
-                if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                    tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
-                } else {
-                    tallesHTML = `<div class="card-talles-container">` + 
-                                 tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
-                                 `</div>`;
-                }
-            }
+            const tallesHTML = generarTallesCardHTML(vDefault.inventario_talles);
 
-            const colorVal = getColorSeguro(vDefault);
-            const circulosHTML = `<div class="colores-container" style="justify-content: center;"><div class="color-circle active" style="background-color: ${colorVal}; pointer-events: none;" title="${vDefault.color_nombre || vDefault.nombre}"></div></div>`;
+            let circulosHTML = '';
+            if (esInventarioPorColor(vDefault.inventario_talles)) {
+                const colores = obtenerColoresInventario(vDefault.inventario_talles);
+                circulosHTML = `<div class="colores-container" style="justify-content: center;">` + colores.map((color, index) => {
+                    const sinStock = color.stock <= 0 ? 'opacity:0.35;' : '';
+                    return `<div class="color-circle ${index === 0 ? 'active' : ''}" style="background-color: ${color.hex}; pointer-events: none; ${sinStock}" title="${color.nombre}"></div>`;
+                }).join('') + `</div>`;
+            } else {
+                const colorVal = getColorSeguro(vDefault);
+                circulosHTML = `<div class="colores-container" style="justify-content: center;"><div class="color-circle active" style="background-color: ${colorVal}; pointer-events: none;" title="${vDefault.color_nombre || vDefault.nombre}"></div></div>`;
+            }
 
             return `
             <div class="card" id="card-fav-${vDefault.id}">
@@ -570,6 +629,7 @@ function generarGridHTML(listaRaw) {
                     <img loading="lazy" src="${imgUrl}">
                 </div>
                 <div class="card-info">
+                    ${circulosHTML}
                     <h4 onclick="abrirDetalle(${vDefault.id})" style="margin-top: 10px;">${nombre}</h4>
                     <div class="precios-container" onclick="abrirDetalle(${vDefault.id})">
                         <p class="p-tarj">$${pTarj}</p>
@@ -588,13 +648,11 @@ function generarGridHTML(listaRaw) {
     const listaAgrupada = [];
 
     listaRaw.forEach(p => {
-        const codigoModeloSafe = (p.codigo_modelo && String(p.codigo_modelo).trim() !== '') ? String(p.codigo_modelo).trim().toUpperCase() : String(p.nombre || 'SIN NOMBRE').trim().toUpperCase();
-        const claveAgrupacion = codigoModeloSafe.replace(/[^a-zA-Z0-9]/g, '-');
+        const claveAgrupacion = obtenerClaveAgrupacion(p);
 
         if (!grupos[claveAgrupacion]) {
             let todasLasVariantes = productosCargados.filter(prod => {
-                const pCode = (prod.codigo_modelo && String(prod.codigo_modelo).trim() !== '') ? String(prod.codigo_modelo).trim().toUpperCase() : String(prod.nombre || 'SIN NOMBRE').trim().toUpperCase();
-                return pCode.replace(/[^a-zA-Z0-9]/g, '-') === claveAgrupacion;
+                return obtenerClaveAgrupacion(prod) === claveAgrupacion;
             });
             
             if (!todasLasVariantes || todasLasVariantes.length === 0) {
@@ -611,20 +669,12 @@ function generarGridHTML(listaRaw) {
     });
 
     return listaAgrupada.map(item => {
-        const vDefault = item.variantes[0]; 
+        const vDefault = item.variantes.find(v => calcularStockTotal(v) > 0) || item.variantes[0]; 
         
         let stockTotalPrenda = 0;
-        let tallesDisponibles = new Set();
 
         item.variantes.forEach(v => {
-            if (v.inventario_talles && typeof v.inventario_talles === 'object') {
-                Object.entries(v.inventario_talles).forEach(([talle, cant]) => {
-                    if (parseInt(cant) > 0) {
-                        stockTotalPrenda += parseInt(cant);
-                        tallesDisponibles.add(talle);
-                    }
-                });
-            }
+            stockTotalPrenda += calcularStockTotal(v);
         });
 
         const productoAgotado = stockTotalPrenda <= 0;
@@ -636,26 +686,24 @@ function generarGridHTML(listaRaw) {
         const imgUrl = arrayFotos[0];
 
         let circulosHTML = '';
-        if (item.variantes.length > 1) {
+        if (esInventarioPorColor(vDefault.inventario_talles)) {
+            const colores = obtenerColoresInventario(vDefault.inventario_talles);
+            circulosHTML = `<div class="colores-container">` + colores.map((color, index) => {
+                const sinStock = color.stock <= 0 ? 'opacity:0.35;' : '';
+                return `<div class="color-circle ${index === 0 ? 'active' : ''}" style="background-color: ${color.hex}; pointer-events: none; ${sinStock}" title="${color.nombre}"></div>`;
+            }).join('') + `</div>`;
+        } else if (item.variantes.length > 1) {
             circulosHTML = `<div class="colores-container">` + item.variantes.map((v, index) => {
-                const isAct = index === 0 ? 'active' : '';
+                const isAct = v.id === vDefault.id ? 'active' : '';
                 const colorVal = getColorSeguro(v);
                 return `<div class="color-circle ${isAct}" style="background-color: ${colorVal};" onclick="cambiarVarianteCard(event, '${item.clave}', ${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
             }).join('') + `</div>`;
+        } else if (tieneColorCargado(vDefault)) {
+            const colorVal = getColorSeguro(vDefault);
+            circulosHTML = `<div class="colores-container"><div class="color-circle active" style="background-color: ${colorVal}; pointer-events: none;" title="${vDefault.color_nombre || vDefault.nombre}"></div></div>`;
         }
 
-        let tallesHTML = '';
-        let tallesArray = Array.from(tallesDisponibles).sort(sortTalles);
-        
-        if (tallesArray.length > 0) {
-            if (tallesArray.includes('ÚNICO') && tallesArray.length === 1) {
-                tallesHTML = `<div class="card-talles-container"><span class="talle-badge">TALLE ÚNICO</span></div>`;
-            } else {
-                tallesHTML = `<div class="card-talles-container">` + 
-                             tallesArray.filter(t => t !== 'ÚNICO').map(t => `<span class="talle-badge">${t}</span>`).join('') + 
-                             `</div>`;
-            }
-        }
+        const tallesHTML = generarTallesCardHTML(vDefault.inventario_talles);
 
         return `
         <div class="card" id="card-${item.clave}">
@@ -671,7 +719,7 @@ function generarGridHTML(listaRaw) {
                     <p class="p-tarj" id="ptarj-${item.clave}">$${pTarj}</p>
                     <p class="p-efvo" id="pefvo-${item.clave}"><strong>$${pEfvo}</strong> con<br>Transferencia/depósito</p>
                 </div>
-                ${tallesHTML}
+                <div id="talles-${item.clave}">${tallesHTML}</div>
                 <button id="btn-${item.clave}" class="btn-card-add ${productoAgotado ? 'disabled' : ''}" ${productoAgotado ? 'disabled' : `onclick="abrirDetalle(${vDefault.id})"`} data-id="${vDefault.id}">
                     ${productoAgotado ? 'AGOTADO' : 'AGREGAR AL CARRITO'}
                 </button>
@@ -690,12 +738,13 @@ function cambiarVarianteCard(event, claveGrupo, idVariante) {
     document.querySelector(`#nom-${claveGrupo}`).innerText = variante.nombre || 'Producto';
     document.querySelector(`#ptarj-${claveGrupo}`).innerText = `$${variante.precio_tarjeta || variante.tarjeta || 0}`;
     document.querySelector(`#pefvo-${claveGrupo}`).innerHTML = `<strong>$${variante.precio_efectivo || variante.efectivo || 0}</strong> con<br>Transferencia/depósito`;
+    const tallesCard = document.querySelector(`#talles-${claveGrupo}`);
+    if (tallesCard) tallesCard.innerHTML = generarTallesCardHTML(variante.inventario_talles);
 
     const btn = document.querySelector(`#btn-${claveGrupo}`);
     btn.setAttribute('data-id', idVariante);
 
-    let totalStock = 0;
-    if (variante.inventario_talles) Object.values(variante.inventario_talles).forEach(c => totalStock += parseInt(c)||0);
+    let totalStock = calcularStockTotal(variante);
 
     if(totalStock <= 0) {
         btn.innerText = 'AGOTADO'; btn.disabled = true; btn.classList.add('disabled');
@@ -860,25 +909,46 @@ function seleccionarTalleDOM(elemento, talle) {
     elemento.classList.add('selected'); talleTemporal = talle;
 }
 
+function seleccionarColorStock(elemento, colorNombre) {
+    const hermanos = elemento.parentElement.querySelectorAll('.color-circle');
+    hermanos.forEach(el => el.classList.remove('active'));
+    elemento.classList.add('active');
+    talleTemporal = colorNombre;
+
+    const txtColor = document.getElementById('det-color-nombre');
+    if (txtColor) txtColor.innerText = colorNombre;
+}
+
 function abrirDetalle(id) { 
     prodSeleccionado = productosCargados.find(p => p.id === parseInt(id)); 
     if(!prodSeleccionado) return;
 
     talleTemporal = null; 
 
-    const codigoModeloSafe = (prodSeleccionado.codigo_modelo && String(prodSeleccionado.codigo_modelo).trim() !== '') ? String(prodSeleccionado.codigo_modelo).trim().toUpperCase() : String(prodSeleccionado.nombre || 'SIN NOMBRE').trim().toUpperCase();
-    const claveAgrupacion = codigoModeloSafe.replace(/[^a-zA-Z0-9]/g, '-');
+    const claveAgrupacion = obtenerClaveAgrupacion(prodSeleccionado);
 
     const variantes = productosCargados.filter(p => {
-        const pCode = (p.codigo_modelo && String(p.codigo_modelo).trim() !== '') ? String(p.codigo_modelo).trim().toUpperCase() : String(p.nombre || 'SIN NOMBRE').trim().toUpperCase();
-        return pCode.replace(/[^a-zA-Z0-9]/g, '-') === claveAgrupacion;
+        return obtenerClaveAgrupacion(p) === claveAgrupacion;
     });
 
     const seccionColores = document.getElementById('seccion-colores-modal');
     const contColores = document.getElementById('det-colores-container');
     const txtColor = document.getElementById('det-color-nombre');
 
-    if (variantes.length > 1) {
+    if (esInventarioPorColor(prodSeleccionado.inventario_talles)) {
+        const colores = obtenerColoresInventario(prodSeleccionado.inventario_talles);
+        const primerDisponible = colores.find(color => color.stock > 0);
+
+        seccionColores.style.display = 'block';
+        txtColor.innerText = primerDisponible ? primerDisponible.nombre : 'Sin stock';
+        talleTemporal = primerDisponible ? primerDisponible.nombre : null;
+        contColores.innerHTML = colores.map(color => {
+            const activo = primerDisponible && color.nombre === primerDisponible.nombre ? 'active' : '';
+            const sinStock = color.stock <= 0 ? 'opacity:0.35; cursor:not-allowed;' : '';
+            const click = color.stock > 0 ? `onclick="seleccionarColorStock(this, '${escaparTextoAttr(color.nombre)}')"` : `onclick="mostrarToast('Este color se encuentra agotado', 'error')"`;
+            return `<div class="color-circle ${activo}" style="background-color: ${color.hex}; width: 32px; height: 32px; margin-right: 5px; ${sinStock}" ${click} title="${color.nombre}"></div>`;
+        }).join('');
+    } else if (variantes.length > 1) {
         seccionColores.style.display = 'block';
         txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
         contColores.innerHTML = variantes.map(v => {
@@ -886,6 +956,11 @@ function abrirDetalle(id) {
             const colorVal = getColorSeguro(v);
             return `<div class="color-circle ${isAct}" style="background-color: ${colorVal}; width: 32px; height: 32px; margin-right: 5px;" onclick="abrirDetalle(${v.id})" title="${v.color_nombre || v.nombre}"></div>`;
         }).join('');
+    } else if (tieneColorCargado(prodSeleccionado)) {
+        seccionColores.style.display = 'block';
+        txtColor.innerText = prodSeleccionado.color_nombre || 'Seleccionado';
+        const colorVal = getColorSeguro(prodSeleccionado);
+        contColores.innerHTML = `<div class="color-circle active" style="background-color: ${colorVal}; width: 32px; height: 32px; margin-right: 5px; pointer-events: none;" title="${prodSeleccionado.color_nombre || prodSeleccionado.nombre}"></div>`;
     } else {
         seccionColores.style.display = 'none';
     }
@@ -929,7 +1004,13 @@ function abrirDetalle(id) {
     const tituloTalles = document.getElementById('titulo-talles');
     
     if(prodSeleccionado.inventario_talles) { 
-        if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
+        if(esInventarioPorColor(prodSeleccionado.inventario_talles)) {
+            if(tituloTalles) tituloTalles.style.display = 'none';
+            const hayStock = obtenerColoresInventario(prodSeleccionado.inventario_talles).some(color => color.stock > 0);
+            containerTalles.innerHTML = hayStock
+                ? `<p style="font-size:0.9rem; color:var(--secondary); font-weight:700; margin:0;">Elegí un color disponible.</p>`
+                : `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`;
+        } else if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
             if(tituloTalles) tituloTalles.style.display = 'none';
             const stockUnico = parseInt(prodSeleccionado.inventario_talles['ÚNICO']) || 0;
             if(stockUnico <= 0) { containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`; talleTemporal = null; } 
@@ -963,16 +1044,21 @@ function cerrarDetalle() {
 
 function agregarDesdeDetalle() { 
     let talleElegido = "Único"; 
-    if(prodSeleccionado.inventario_talles && prodSeleccionado.inventario_talles['ÚNICO'] === undefined) { 
+    const inventarioPorColor = esInventarioPorColor(prodSeleccionado.inventario_talles);
+
+    if(inventarioPorColor) {
+        if(!talleTemporal) return mostrarToast("Por favor elegí un color disponible", "error");
+        talleElegido = talleTemporal;
+    } else if(prodSeleccionado.inventario_talles && prodSeleccionado.inventario_talles['ÚNICO'] === undefined) { 
         if(!talleTemporal) return mostrarToast("Por favor elegí un talle disponible", "error"); 
         talleElegido = talleTemporal; 
     } else { talleElegido = 'ÚNICO'; }
     
-    const talleFinal = `${talleElegido} (Foto ${indexImagenSeleccionada})`;
+    const talleFinal = inventarioPorColor ? talleElegido : `${talleElegido} (Foto ${indexImagenSeleccionada})`;
     const idUnico = `${prodSeleccionado.id}-${talleFinal}`; 
     const item = carrito.find(i => i.idUnico === idUnico); 
     
-    const colorNombre = prodSeleccionado.color_nombre ? prodSeleccionado.color_nombre : '';
+    const colorNombre = inventarioPorColor ? talleElegido : (prodSeleccionado.color_nombre ? prodSeleccionado.color_nombre : '');
 
     if(item) { item.cantidad++; } 
     else { 
@@ -1209,8 +1295,8 @@ async function finalizarCompra() {
     const payload = { 
         total: totalFinal, metodo_pago: metodo, costoEnvio: costoEnvio, cupon_usado: cuponAplicado.codigo, 
         cliente: { nombre: nombreGuardar, apellido: apellidoGuardar, email: document.getElementById('chk-mail').value, telefono: document.getElementById('chk-tel').value, direccion: document.getElementById('chk-dir').value }, 
-        productos: carrito.map(p => ({ id: p.id, nombre: p.color ? `${p.nombre} (${p.color})` : p.nombre, talle: p.talle, cantidad: p.cantidad, precio_pagado: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta), precio: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) })) 
-    };
+        productos: carrito.map(p => ({ id: p.id, nombre: p.color && p.color !== p.talle ? `${p.nombre} (${p.color})` : p.nombre, talle: p.talle, cantidad: p.cantidad, precio_pagado: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta), precio: (metodo === 'transferencia' ? p.precio_efectivo : p.precio_tarjeta) })) 
+    }; 
 
     try {
         if (metodo === 'transferencia') {
