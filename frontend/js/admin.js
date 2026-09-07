@@ -36,6 +36,25 @@ const colorDefectoHex = '#d4ba92';
 const TIPO_STOCK_COLORES = 'stock_por_color';
 const tallesPorColorDefault = ['S', 'M', 'L', 'XL', 'XXL', 'ÚNICO'];
 
+function sortTalles(a, b) {
+    const aTexto = String(a || '').toUpperCase();
+    const bTexto = String(b || '').toUpperCase();
+    const aNum = parseInt(aTexto);
+    const bNum = parseInt(bTexto);
+    const aEsNum = !Number.isNaN(aNum) && String(aNum) === aTexto;
+    const bEsNum = !Number.isNaN(bNum) && String(bNum) === bTexto;
+
+    if (aEsNum && bEsNum) return aNum - bNum;
+
+    let ia = tallesPorColorDefault.indexOf(aTexto);
+    let ib = tallesPorColorDefault.indexOf(bTexto);
+    if (ia === -1) ia = 99;
+    if (ib === -1) ib = 99;
+    if (ia !== ib) return ia - ib;
+
+    return aTexto.localeCompare(bTexto);
+}
+
 function normalizarCodigoModelo(valor) {
     return String(valor || '').trim().toUpperCase();
 }
@@ -155,6 +174,43 @@ function detectarColorFila(input) {
     }
 }
 
+function crearHtmlTalleColor(talle = '', stock = 0) {
+    return `
+        <div class="builder-color-talle-row" style="display:grid; grid-template-columns:58px 52px 22px; gap:4px; align-items:center;">
+            <input type="text" class="builder-color-talle-nombre" value="${talle}" placeholder="Talle" style="width:58px; text-transform:uppercase; text-align:center; border:1px solid #ddd; border-radius:5px; padding:4px 2px; font-size:0.68rem; font-weight:800; outline:none;">
+            <input type="number" class="builder-color-talle-stock" value="${stock}" min="0" placeholder="0" style="width:52px; text-align:center; border:1px solid #ddd; border-radius:5px; padding:4px 2px; font-size:0.72rem; font-weight:800; outline:none;">
+            <button type="button" onclick="this.closest('.builder-color-talle-row').remove()" title="Borrar talle" style="width:22px; height:22px; border:none; border-radius:50%; background:#eee; color:#777; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+}
+
+function agregarTalleAColor(btn, talle = '', stock = 0) {
+    const colorRow = btn ? btn.closest('.builder-color-row') : null;
+    const lista = colorRow ? colorRow.querySelector('.builder-color-talles-list') : null;
+    if (!lista) return;
+
+    const filaVacia = Array.from(lista.querySelectorAll('.builder-color-talle-row')).find(row => {
+        const inputTalle = row.querySelector('.builder-color-talle-nombre');
+        const inputStock = row.querySelector('.builder-color-talle-stock');
+        return inputTalle && !inputTalle.value.trim() && inputStock && (parseInt(inputStock.value) || 0) === 0;
+    });
+
+    if (filaVacia) {
+        const inputTalle = filaVacia.querySelector('.builder-color-talle-nombre');
+        if (inputTalle) inputTalle.focus();
+        return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = crearHtmlTalleColor(talle, stock).trim();
+    const nuevaFila = wrapper.firstElementChild;
+    lista.appendChild(nuevaFila);
+    const inputTalle = nuevaFila.querySelector('.builder-color-talle-nombre');
+    if (inputTalle) inputTalle.focus();
+}
+
 function mostrarNombreArchivo(input, labelId, textoBase) {
     const label = document.getElementById(labelId);
     if (!label) return;
@@ -174,22 +230,21 @@ function agregarColorStockUI(nombre = '', stock = 0, hex = colorDefectoHex, tall
     if (!container) return;
 
     const tallesFinales = normalizarTallesColor({ stock, talles });
-    const tallesHtml = tallesPorColorDefault.map(talle => `
-        <label style="display:flex; flex-direction:column; align-items:center; gap:3px; font-size:0.62rem; font-weight:800; color:#666;">
-            <span>${talle}</span>
-            <input type="number" class="builder-color-talle-stock" data-talle="${talle}" value="${tallesFinales[talle] || 0}" min="0" style="width:44px; text-align:center; border:1px solid #ddd; border-radius:5px; padding:4px 2px; font-size:0.72rem; font-weight:800; outline:none;">
-        </label>
-    `).join('');
+    const tallesParaMostrar = Object.keys(tallesFinales).length > 0 ? Object.keys(tallesFinales) : tallesPorColorDefault;
+    const tallesHtml = tallesParaMostrar.map(talle => crearHtmlTalleColor(talle, tallesFinales[talle] || 0)).join('');
 
     const div = document.createElement('div');
     div.className = 'builder-color-row';
-    div.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:7px; min-width:190px; position:relative; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:12px;';
+    div.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:8px; min-width:190px; position:relative; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:12px;';
     div.innerHTML = `
         <input type="color" class="builder-color-hex" value="${hex || colorDefectoHex}" title="Color" style="width:52px; height:52px; padding:0; border:2px solid #111; border-radius:50%; cursor:pointer; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.18);">
         <input type="text" placeholder="Color opcional" value="${nombre}" class="builder-color-nombre" oninput="validarLetras(this); detectarColorFila(this);" style="width:130px; text-align:center; text-transform:capitalize; border:1px solid #ddd; border-radius:5px; padding:6px 4px; font-size:0.76rem; font-weight:700; outline:none;">
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:4px;">
+        <div class="builder-color-talles-list" style="display:flex; flex-direction:column; gap:5px; margin-top:2px;">
             ${tallesHtml}
         </div>
+        <button type="button" onclick="agregarTalleAColor(this)" style="border:1px dashed #aaa; background:#fff; color:#666; border-radius:8px; padding:5px 9px; font-size:0.68rem; font-weight:800; cursor:pointer;">
+            <i class="fas fa-plus"></i> TALLE
+        </button>
         <button type="button" style="position:absolute; top:-7px; right:0; background:#e74c3c; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;" onclick="this.parentNode.remove()" title="Eliminar color"><i class="fas fa-times"></i></button>
     `;
     container.appendChild(div);
@@ -241,9 +296,11 @@ function obtenerColoresDesdeFormulario() {
         const nombre = nombreInput ? nombreInput.value.trim() : '';
         const hex = hexInput ? hexInput.value : colorDefectoHex;
         const talles = {};
-        fila.querySelectorAll('.builder-color-talle-stock').forEach(input => {
-            const talle = input.getAttribute('data-talle');
-            if (talle) talles[talle] = parseInt(input.value) || 0;
+        fila.querySelectorAll('.builder-color-talle-row').forEach(row => {
+            const talleInput = row.querySelector('.builder-color-talle-nombre');
+            const stockInput = row.querySelector('.builder-color-talle-stock');
+            const talle = talleInput ? talleInput.value.trim().toUpperCase() : '';
+            if (talle) talles[talle] = stockInput ? parseInt(stockInput.value) || 0 : 0;
         });
         return {
             nombre: obtenerNombreColorFinal(nombre, hex, index),
@@ -593,7 +650,8 @@ function renderStock() {
             totalStockPrenda = colores.reduce((acc, color) => acc + color.stock, 0);
             tallesHtml = colores.map(color => {
                 const tallesColor = normalizarTallesColor(color);
-                const inputsTalles = tallesPorColorDefault.map(talle => `
+                const tallesFila = Object.keys(tallesColor).length > 0 ? Object.keys(tallesColor).sort(sortTalles) : tallesPorColorDefault;
+                const inputsTalles = tallesFila.map(talle => `
                     <label style="display:flex; flex-direction:column; align-items:center; gap:2px; font-size:0.58rem; font-weight:800; color:#666;">
                         <span>${talle}</span>
                         <input type="number" class="color-talle-input-fila-${p.id}" data-color="${color.nombre}" data-hex="${color.hex}" data-talle="${talle}" value="${tallesColor[talle] || 0}" min="0" style="width:42px; padding:3px 2px; text-align:center; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:#111;">

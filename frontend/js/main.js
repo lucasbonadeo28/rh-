@@ -30,11 +30,22 @@ let indexImagenSeleccionada = 1;
 const TIPO_STOCK_COLORES = 'stock_por_color';
 const ordenTallesGlobal = ['S', 'M', 'L', 'XL', 'XXL', 'ÚNICO'];
 function sortTalles(a, b) {
-    let ia = ordenTallesGlobal.indexOf(a.toUpperCase());
-    let ib = ordenTallesGlobal.indexOf(b.toUpperCase());
+    const aTexto = String(a || '').toUpperCase();
+    const bTexto = String(b || '').toUpperCase();
+    const aNum = parseInt(aTexto);
+    const bNum = parseInt(bTexto);
+    const aEsNum = !Number.isNaN(aNum) && String(aNum) === aTexto;
+    const bEsNum = !Number.isNaN(bNum) && String(bNum) === bTexto;
+
+    if (aEsNum && bEsNum) return aNum - bNum;
+
+    let ia = ordenTallesGlobal.indexOf(aTexto);
+    let ib = ordenTallesGlobal.indexOf(bTexto);
     if (ia === -1) ia = 99; 
     if (ib === -1) ib = 99;
-    return ia - ib;
+    if (ia !== ib) return ia - ib;
+
+    return aTexto.localeCompare(bTexto);
 }
 
 function normalizarCodigoModelo(valor) {
