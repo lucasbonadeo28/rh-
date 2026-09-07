@@ -85,12 +85,25 @@ function calcularStockDesdeInventario(inventario) {
 
 function detectarColor(texto) {
     const hex = document.getElementById('add-color-hex');
+    if (!hex) return;
     const colorLower = texto.toLowerCase().trim();
     if(mapaColores[colorLower]) {
         hex.value = mapaColores[colorLower];
     }
     const circuloActual = document.getElementById('circulo-color-actual');
     if(circuloActual) circuloActual.style.backgroundColor = hex.value;
+}
+
+function detectarColorFila(input) {
+    if (!input) return;
+    const fila = input.closest('.builder-color-row');
+    if (!fila) return;
+
+    const hexInput = fila.querySelector('.builder-color-hex');
+    const colorDetectado = mapaColores[input.value.toLowerCase().trim()];
+    if (hexInput && colorDetectado) {
+        hexInput.value = colorDetectado;
+    }
 }
 
 function mostrarNombreArchivo(input, labelId, textoBase) {
@@ -112,14 +125,16 @@ function agregarColorStockUI(nombre = '', stock = 0, hex = colorDefectoHex) {
     if (!container) return;
 
     const div = document.createElement('div');
-    div.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:7px; width:66px; position:relative;';
+    div.className = 'builder-color-row';
+    div.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:7px; width:76px; position:relative;';
     div.innerHTML = `
         <input type="color" class="builder-color-hex" value="${hex || colorDefectoHex}" title="Color" style="width:52px; height:52px; padding:0; border:2px solid #111; border-radius:50%; cursor:pointer; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.18);">
-        <input type="text" placeholder="Color" value="${nombre}" class="builder-color-nombre" style="width:66px; text-align:center; text-transform:capitalize; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.72rem; font-weight:700; outline:none;">
-        <input type="number" placeholder="Stock" value="${stock}" class="builder-color-stock" min="0" style="width:58px; text-align:center; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.75rem; font-weight:800; outline:none;">
+        <input type="text" placeholder="Nombre" value="${nombre}" class="builder-color-nombre" oninput="validarLetras(this); detectarColorFila(this);" style="width:76px; text-align:center; text-transform:capitalize; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.72rem; font-weight:700; outline:none;">
+        <input type="number" placeholder="Stock" value="${stock}" class="builder-color-stock" min="0" style="width:62px; text-align:center; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.75rem; font-weight:800; outline:none;">
         <button type="button" style="position:absolute; top:-7px; right:0; background:#e74c3c; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;" onclick="this.parentNode.remove()" title="Eliminar color"><i class="fas fa-times"></i></button>
     `;
     container.appendChild(div);
+    return div;
 }
 
 function renderizarColoresStockBuilder(colores = []) {
@@ -135,19 +150,24 @@ function renderizarColoresStockBuilder(colores = []) {
 }
 
 function agregarColorStockDesdeCampos() {
-    const nombreInput = document.getElementById('add-color-nombre');
-    const hexInput = document.getElementById('add-color-hex');
-    const nombre = nombreInput ? nombreInput.value.trim() : '';
-    const hex = hexInput ? hexInput.value : '#ffffff';
+    const filas = Array.from(document.querySelectorAll('#colores-builder-ui > .builder-color-row'));
+    const filaVacia = filas.find(fila => {
+        const nombreInput = fila.querySelector('.builder-color-nombre');
+        return nombreInput && !nombreInput.value.trim();
+    });
 
-    const repetido = nombre && Array.from(document.querySelectorAll('.builder-color-nombre')).some(input => input.value.trim().toLowerCase() === nombre.toLowerCase());
-    if (repetido) {
-        return mostrarToastAdmin("Ese color ya está cargado en el stock.", "error");
+    if (filaVacia) {
+        const nombreInput = filaVacia.querySelector('.builder-color-nombre');
+        if (nombreInput) {
+            nombreInput.focus();
+            nombreInput.select();
+        }
+        return mostrarToastAdmin("Completá ese color antes de agregar otro.", "error");
     }
 
-    agregarColorStockUI(nombre, 0, nombre ? hex : '#ffffff');
-    if (nombreInput) nombreInput.value = '';
-    if (hexInput) hexInput.value = colorDefectoHex;
+    const nuevaFila = agregarColorStockUI('', 0, '#ffffff');
+    const nuevoNombre = nuevaFila ? nuevaFila.querySelector('.builder-color-nombre') : null;
+    if (nuevoNombre) nuevoNombre.focus();
 }
 
 function obtenerColoresDesdeFormulario() {
@@ -162,20 +182,6 @@ function obtenerColoresDesdeFormulario() {
             stock: stockInput ? parseInt(stockInput.value) || 0 : 0
         };
     }).filter(color => color.nombre);
-
-    const nombrePrincipal = document.getElementById('add-color-nombre') ? document.getElementById('add-color-nombre').value.trim() : '';
-    const hexPrincipal = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : colorDefectoHex;
-
-    if (nombrePrincipal && !colores.some(color => color.nombre.toLowerCase() === nombrePrincipal.toLowerCase())) {
-        const filaLibreConStock = filas.find(fila => {
-            const nombreInput = fila.querySelector('.builder-color-nombre');
-            const stockInput = fila.querySelector('.builder-color-stock');
-            return nombreInput && !nombreInput.value.trim() && stockInput && (parseInt(stockInput.value) || 0) > 0;
-        });
-
-        const stockPrincipal = filaLibreConStock ? parseInt(filaLibreConStock.querySelector('.builder-color-stock').value) || 0 : 0;
-        colores.push({ nombre: nombrePrincipal, hex: hexPrincipal, stock: stockPrincipal });
-    }
 
     return colores;
 }
@@ -306,16 +312,6 @@ window.prepararNuevaVariante = function(codigoModelo) {
 };
 
 window.addEventListener('DOMContentLoaded', () => {
-    document.addEventListener('input', function(e) {
-        if(e.target && e.target.id === 'add-color-nombre') {
-            detectarColor(e.target.value);
-        }
-        if(e.target && e.target.id === 'add-color-hex') {
-            const circuloActual = document.getElementById('circulo-color-actual');
-            if(circuloActual) circuloActual.style.backgroundColor = e.target.value;
-        }
-    });
-
     const imgInput = document.getElementById('add-img');
     if (imgInput) {
         imgInput.addEventListener('change', async function() {
@@ -674,8 +670,6 @@ function resetFormularioAdmin() {
     if(document.getElementById('add-precio-efvo')) document.getElementById('add-precio-efvo').value = '';
     if(document.getElementById('add-descripcion')) document.getElementById('add-descripcion').value = '';
     if(document.getElementById('add-codigo-modelo')) document.getElementById('add-codigo-modelo').value = '';
-    if(document.getElementById('add-color-hex')) document.getElementById('add-color-hex').value = '#d4ba92';
-    if(document.getElementById('add-color-nombre')) document.getElementById('add-color-nombre').value = '';
     renderizarColoresStockBuilder();
 
     const chkUnico = document.getElementById('chk-unico');
@@ -722,10 +716,6 @@ function editarProducto(id) {
     document.getElementById('add-codigo-modelo').value = producto.codigo_modelo || '';
     document.getElementById('add-categoria').value = producto.categoria || '';
     
-    if(producto.color_hex) document.getElementById('add-color-hex').value = producto.color_hex;
-    else document.getElementById('add-color-hex').value = colorDefectoHex;
-    document.getElementById('add-color-nombre').value = '';
-
     if (esInventarioPorColor(producto.inventario_talles)) {
         renderizarColoresStockBuilder(obtenerColoresInventario(producto.inventario_talles));
     } else if (producto.color_nombre || producto.color_hex) {
@@ -879,8 +869,6 @@ async function crearOActualizarProducto(e) {
     const efvo = document.getElementById('add-precio-efvo') ? document.getElementById('add-precio-efvo').value : '';
     const desc = document.getElementById('add-descripcion') ? document.getElementById('add-descripcion').value.trim() : '';
     const codigoModelo = document.getElementById('add-codigo-modelo') ? document.getElementById('add-codigo-modelo').value.trim().toUpperCase() : '';
-    const colorNombre = document.getElementById('add-color-nombre') ? document.getElementById('add-color-nombre').value.trim() : '';
-    const colorHex = document.getElementById('add-color-hex') ? document.getElementById('add-color-hex').value : colorDefectoHex;
 
     if (!nombre || !categoria || !tarj || !efvo || !codigoModelo) { 
         return mostrarToastAdmin("Completá nombre, categoría, precios y código de modelo.", "error"); 
@@ -890,10 +878,27 @@ async function crearOActualizarProducto(e) {
         return mostrarToastAdmin("Añadí al menos 1 foto.", "error");
     }
 
+    const filasColor = Array.from(document.querySelectorAll('#colores-builder-ui > .builder-color-row'));
+    const filaSinNombreConStock = filasColor.some(fila => {
+        const nombreFila = fila.querySelector('.builder-color-nombre') ? fila.querySelector('.builder-color-nombre').value.trim() : '';
+        const stockFila = fila.querySelector('.builder-color-stock') ? parseInt(fila.querySelector('.builder-color-stock').value) || 0 : 0;
+        return !nombreFila && stockFila > 0;
+    });
+
+    if (filaSinNombreConStock) {
+        return mostrarToastAdmin("Hay un color con stock pero sin nombre.", "error");
+    }
+
     const coloresStock = obtenerColoresDesdeFormulario();
 
     if (coloresStock.length === 0) {
         return mostrarToastAdmin("Agregá al menos un color al stock.", "error");
+    }
+
+    const nombresNormalizados = coloresStock.map(color => color.nombre.toLowerCase());
+    const hayColorRepetido = nombresNormalizados.some((nombreColor, index) => nombresNormalizados.indexOf(nombreColor) !== index);
+    if (hayColorRepetido) {
+        return mostrarToastAdmin("No repitas el mismo color en el stock.", "error");
     }
 
     const inventarioFinal = crearInventarioPorColor(coloresStock);
