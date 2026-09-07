@@ -34,6 +34,7 @@ const mapaColores = {
 
 const colorDefectoHex = '#d4ba92'; 
 const TIPO_STOCK_COLORES = 'stock_por_color';
+const tallesPorColorDefault = ['S', 'M', 'L', 'XL', 'XXL', 'ÚNICO'];
 
 function normalizarCodigoModelo(valor) {
     return String(valor || '').trim().toUpperCase();
@@ -73,27 +74,54 @@ function obtenerNombreColorFinal(nombre, hex, indice) {
     return `Color ${indice + 1}`;
 }
 
+function normalizarTallesColor(color) {
+    const talles = {};
+
+    if (color && color.talles && typeof color.talles === 'object') {
+        Object.entries(color.talles).forEach(([talle, cantidad]) => {
+            const talleFinal = String(talle || '').trim().toUpperCase();
+            if (talleFinal) talles[talleFinal] = parseInt(cantidad) || 0;
+        });
+    } else if (color && parseInt(color.stock) > 0) {
+        talles['ÚNICO'] = parseInt(color.stock) || 0;
+    }
+
+    return talles;
+}
+
+function calcularStockColor(color) {
+    return Object.values(normalizarTallesColor(color)).reduce((acc, cantidad) => acc + (parseInt(cantidad) || 0), 0);
+}
+
 function esInventarioPorColor(inventario) {
     return inventario && inventario.tipo === TIPO_STOCK_COLORES && Array.isArray(inventario.colores);
 }
 
 function obtenerColoresInventario(inventario) {
     if (!esInventarioPorColor(inventario)) return [];
-    return inventario.colores.map((color, index) => ({
-        nombre: obtenerNombreColorFinal(color.nombre, color.hex, index),
-        hex: color.hex || colorDefectoHex,
-        stock: parseInt(color.stock) || 0
-    }));
+    return inventario.colores.map((color, index) => {
+        const talles = normalizarTallesColor(color);
+        return {
+            nombre: obtenerNombreColorFinal(color.nombre, color.hex, index),
+            hex: color.hex || colorDefectoHex,
+            talles,
+            stock: Object.values(talles).reduce((acc, cantidad) => acc + (parseInt(cantidad) || 0), 0)
+        };
+    });
 }
 
 function crearInventarioPorColor(colores) {
     return {
         tipo: TIPO_STOCK_COLORES,
-        colores: colores.map((color, index) => ({
-            nombre: obtenerNombreColorFinal(color.nombre, color.hex, index),
-            hex: color.hex || colorDefectoHex,
-            stock: parseInt(color.stock) || 0
-        }))
+        colores: colores.map((color, index) => {
+            const talles = normalizarTallesColor(color);
+            return {
+                nombre: obtenerNombreColorFinal(color.nombre, color.hex, index),
+                hex: color.hex || colorDefectoHex,
+                talles,
+                stock: Object.values(talles).reduce((acc, cantidad) => acc + (parseInt(cantidad) || 0), 0)
+            };
+        })
     };
 }
 
@@ -141,17 +169,27 @@ function mostrarNombreArchivo(input, labelId, textoBase) {
     }
 }
 
-function agregarColorStockUI(nombre = '', stock = 0, hex = colorDefectoHex) {
+function agregarColorStockUI(nombre = '', stock = 0, hex = colorDefectoHex, talles = null) {
     const container = document.getElementById('colores-builder-ui');
     if (!container) return;
 
+    const tallesFinales = normalizarTallesColor({ stock, talles });
+    const tallesHtml = tallesPorColorDefault.map(talle => `
+        <label style="display:flex; flex-direction:column; align-items:center; gap:3px; font-size:0.62rem; font-weight:800; color:#666;">
+            <span>${talle}</span>
+            <input type="number" class="builder-color-talle-stock" data-talle="${talle}" value="${tallesFinales[talle] || 0}" min="0" style="width:44px; text-align:center; border:1px solid #ddd; border-radius:5px; padding:4px 2px; font-size:0.72rem; font-weight:800; outline:none;">
+        </label>
+    `).join('');
+
     const div = document.createElement('div');
     div.className = 'builder-color-row';
-    div.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:7px; width:76px; position:relative;';
+    div.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:7px; min-width:190px; position:relative; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:12px;';
     div.innerHTML = `
         <input type="color" class="builder-color-hex" value="${hex || colorDefectoHex}" title="Color" style="width:52px; height:52px; padding:0; border:2px solid #111; border-radius:50%; cursor:pointer; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.18);">
-        <input type="text" placeholder="Opcional" value="${nombre}" class="builder-color-nombre" oninput="validarLetras(this); detectarColorFila(this);" style="width:76px; text-align:center; text-transform:capitalize; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.72rem; font-weight:700; outline:none;">
-        <input type="number" placeholder="Stock" value="${stock}" class="builder-color-stock" min="0" style="width:62px; text-align:center; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.75rem; font-weight:800; outline:none;">
+        <input type="text" placeholder="Color opcional" value="${nombre}" class="builder-color-nombre" oninput="validarLetras(this); detectarColorFila(this);" style="width:130px; text-align:center; text-transform:capitalize; border:1px solid #ddd; border-radius:5px; padding:6px 4px; font-size:0.76rem; font-weight:700; outline:none;">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:4px;">
+            ${tallesHtml}
+        </div>
         <button type="button" style="position:absolute; top:-7px; right:0; background:#e74c3c; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;" onclick="this.parentNode.remove()" title="Eliminar color"><i class="fas fa-times"></i></button>
     `;
     container.appendChild(div);
@@ -167,7 +205,7 @@ function renderizarColoresStockBuilder(colores = []) {
         agregarColorStockUI('', 0, '#ffffff');
         return;
     }
-    colores.forEach(color => agregarColorStockUI(color.nombre, color.stock, color.hex));
+    colores.forEach(color => agregarColorStockUI(color.nombre, color.stock, color.hex, color.talles));
 }
 
 function agregarColorStockDesdeCampos() {
@@ -175,9 +213,8 @@ function agregarColorStockDesdeCampos() {
     const filaVacia = filas.find(fila => {
         const nombreInput = fila.querySelector('.builder-color-nombre');
         const hexInput = fila.querySelector('.builder-color-hex');
-        const stockInput = fila.querySelector('.builder-color-stock');
         const sinNombre = nombreInput && !nombreInput.value.trim();
-        const sinStock = !stockInput || (parseInt(stockInput.value) || 0) === 0;
+        const sinStock = Array.from(fila.querySelectorAll('.builder-color-talle-stock')).every(input => (parseInt(input.value) || 0) === 0);
         const sinColorElegido = !hexInput || String(hexInput.value || '').toLowerCase() === '#ffffff';
         return sinNombre && sinStock && sinColorElegido;
     });
@@ -201,14 +238,18 @@ function obtenerColoresDesdeFormulario() {
     const colores = filas.map((fila, index) => {
         const nombreInput = fila.querySelector('.builder-color-nombre');
         const hexInput = fila.querySelector('.builder-color-hex');
-        const stockInput = fila.querySelector('.builder-color-stock');
         const nombre = nombreInput ? nombreInput.value.trim() : '';
         const hex = hexInput ? hexInput.value : colorDefectoHex;
-        const stock = stockInput ? parseInt(stockInput.value) || 0 : 0;
+        const talles = {};
+        fila.querySelectorAll('.builder-color-talle-stock').forEach(input => {
+            const talle = input.getAttribute('data-talle');
+            if (talle) talles[talle] = parseInt(input.value) || 0;
+        });
         return {
             nombre: obtenerNombreColorFinal(nombre, hex, index),
             hex,
-            stock
+            talles,
+            stock: Object.values(talles).reduce((acc, cantidad) => acc + (parseInt(cantidad) || 0), 0)
         };
     }).filter(color => color.stock > 0 || String(color.hex || '').toLowerCase() !== '#ffffff');
 
@@ -550,13 +591,27 @@ function renderStock() {
         if (esInventarioPorColor(inventario)) {
             const colores = obtenerColoresInventario(inventario);
             totalStockPrenda = colores.reduce((acc, color) => acc + color.stock, 0);
-            tallesHtml = colores.map(color => `
-                <div style="display:inline-flex; align-items:center; gap:6px; background:#f5f5f5; padding:6px 10px; border-radius:6px; border:1px solid #ddd; margin-right:5px; margin-bottom:5px;">
-                    <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${color.hex}; border:1px solid #ccc;"></span>
-                    <span style="font-size:0.85rem; font-weight:800; color:#111;">${color.nombre}:</span>
-                    <input type="number" class="color-input-fila-${p.id}" data-color="${color.nombre}" data-hex="${color.hex}" value="${color.stock}" min="0" style="width:55px; padding:4px; text-align:center; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:#111;">
+            tallesHtml = colores.map(color => {
+                const tallesColor = normalizarTallesColor(color);
+                const inputsTalles = tallesPorColorDefault.map(talle => `
+                    <label style="display:flex; flex-direction:column; align-items:center; gap:2px; font-size:0.58rem; font-weight:800; color:#666;">
+                        <span>${talle}</span>
+                        <input type="number" class="color-talle-input-fila-${p.id}" data-color="${color.nombre}" data-hex="${color.hex}" data-talle="${talle}" value="${tallesColor[talle] || 0}" min="0" style="width:42px; padding:3px 2px; text-align:center; border:1px solid #ccc; border-radius:4px; font-weight:bold; color:#111;">
+                    </label>
+                `).join('');
+
+                return `
+                <div style="display:inline-flex; flex-direction:column; align-items:flex-start; gap:6px; background:#f5f5f5; padding:8px 10px; border-radius:8px; border:1px solid #ddd; margin-right:5px; margin-bottom:5px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="display:inline-block; width:14px; height:14px; border-radius:50%; background:${color.hex}; border:1px solid #ccc;"></span>
+                        <span style="font-size:0.85rem; font-weight:800; color:#111;">${color.nombre}</span>
+                        <small style="font-size:0.72rem; color:#27ae60; font-weight:800;">${color.stock}</small>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(6, auto); gap:5px;">
+                        ${inputsTalles}
+                    </div>
                 </div>
-            `).join('');
+            `}).join('');
             if (colores.length === 0) tallesHtml = `<span style="color:red; font-size:0.8rem; font-weight:bold;">Sin colores cargados</span>`;
         } else if (inventario['ÚNICO'] !== undefined) {
             totalStockPrenda = parseInt(inventario['ÚNICO']) || 0;
@@ -631,18 +686,21 @@ async function guardarEdicionFila(id, event) {
     const tarj = document.getElementById(`tarj-${id}`).value;
     
     let inventarioFinal = {};
-    const inputsColores = document.querySelectorAll(`.color-input-fila-${id}`);
+    const inputsColoresTalles = document.querySelectorAll(`.color-talle-input-fila-${id}`);
     const inputUnico = document.getElementById(`talle-unico-${id}`);
     
-    if (inputsColores.length > 0) {
-        const colores = [];
-        inputsColores.forEach(input => {
-            colores.push({
-                nombre: input.getAttribute('data-color'),
-                hex: input.getAttribute('data-hex'),
-                stock: parseInt(input.value) || 0
-            });
+    if (inputsColoresTalles.length > 0) {
+        const coloresPorNombre = {};
+        inputsColoresTalles.forEach(input => {
+            const nombre = input.getAttribute('data-color');
+            const hex = input.getAttribute('data-hex');
+            const talle = input.getAttribute('data-talle');
+            if (!coloresPorNombre[nombre]) {
+                coloresPorNombre[nombre] = { nombre, hex, talles: {} };
+            }
+            coloresPorNombre[nombre].talles[talle] = parseInt(input.value) || 0;
         });
+        const colores = Object.values(coloresPorNombre);
         inventarioFinal = crearInventarioPorColor(colores);
     } else if (inputUnico) {
         inventarioFinal['ÚNICO'] = parseInt(inputUnico.value) || 0;
@@ -751,7 +809,7 @@ function editarProducto(id) {
         renderizarColoresStockBuilder([{
             nombre: producto.color_nombre || 'Color',
             hex: producto.color_hex || colorDefectoHex,
-            stock: calcularStockDesdeInventario(producto.inventario_talles)
+            talles: producto.inventario_talles || { 'ÚNICO': calcularStockDesdeInventario(producto.inventario_talles) }
         }]);
     } else {
         renderizarColoresStockBuilder();

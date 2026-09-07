@@ -20,6 +20,7 @@ let vistaActual = 'home';
 let categoriaActual = 'Todos';
 let ordenActual = 'default';
 let talleTemporal = null; 
+let colorTemporal = null; 
 
 let modalImages = [];
 let currentModalImageIndex = 0;
@@ -56,13 +57,33 @@ function esInventarioPorColor(inventario) {
     return inventario && inventario.tipo === TIPO_STOCK_COLORES && Array.isArray(inventario.colores);
 }
 
+function normalizarTallesColor(color) {
+    const talles = {};
+
+    if (color && color.talles && typeof color.talles === 'object') {
+        Object.entries(color.talles).forEach(([talle, cantidad]) => {
+            const talleFinal = String(talle || '').trim().toUpperCase();
+            if (talleFinal) talles[talleFinal] = parseInt(cantidad) || 0;
+        });
+    } else if (color && parseInt(color.stock) > 0) {
+        talles['ÚNICO'] = parseInt(color.stock) || 0;
+    }
+
+    return talles;
+}
+
 function obtenerColoresInventario(inventario) {
     if (!esInventarioPorColor(inventario)) return [];
-    return inventario.colores.map(color => ({
-        nombre: String(color.nombre || '').trim(),
-        hex: color.hex || '#d4ba92',
-        stock: parseInt(color.stock) || 0
-    })).filter(color => color.nombre);
+    return inventario.colores.map((color, index) => {
+        const talles = normalizarTallesColor(color);
+        const nombre = String(color.nombre || '').trim() || `Color ${index + 1}`;
+        return {
+            nombre,
+            hex: color.hex || '#d4ba92',
+            talles,
+            stock: Object.values(talles).reduce((acc, cantidad) => acc + (parseInt(cantidad) || 0), 0)
+        };
+    }).filter(color => color.nombre);
 }
 
 function escaparTextoAttr(valor) {
@@ -70,10 +91,15 @@ function escaparTextoAttr(valor) {
 }
 
 function generarTallesCardHTML(inventario) {
-    if (esInventarioPorColor(inventario)) return '';
-
     const tallesDisponibles = new Set();
-    if (inventario && typeof inventario === 'object') {
+
+    if (esInventarioPorColor(inventario)) {
+        obtenerColoresInventario(inventario).forEach(color => {
+            Object.entries(color.talles || {}).forEach(([talle, cant]) => {
+                if (parseInt(cant) > 0) tallesDisponibles.add(talle);
+            });
+        });
+    } else if (inventario && typeof inventario === 'object') {
         Object.entries(inventario).forEach(([talle, cant]) => {
             if (parseInt(cant) > 0) tallesDisponibles.add(talle);
         });
@@ -566,6 +592,11 @@ function aplicarFiltrosCatalogo() {
         if (tallesSeleccionados.length > 0) {
             listaFiltrada = listaFiltrada.filter(p => {
                 if (!p || !p.inventario_talles) return false;
+                if (esInventarioPorColor(p.inventario_talles)) {
+                    return obtenerColoresInventario(p.inventario_talles).some(color =>
+                        tallesSeleccionados.some(talle => parseInt((color.talles || {})[talle]) > 0)
+                    );
+                }
                 return tallesSeleccionados.some(talle => parseInt(p.inventario_talles[talle]) > 0);
             });
         }
@@ -913,10 +944,58 @@ function seleccionarColorStock(elemento, colorNombre) {
     const hermanos = elemento.parentElement.querySelectorAll('.color-circle');
     hermanos.forEach(el => el.classList.remove('active'));
     elemento.classList.add('active');
-    talleTemporal = colorNombre;
+    colorTemporal = colorNombre;
+    talleTemporal = null;
 
     const txtColor = document.getElementById('det-color-nombre');
     if (txtColor) txtColor.innerText = colorNombre;
+
+    renderizarTallesColorSeleccionado(colorNombre);
+}
+
+function renderizarTallesColorSeleccionado(colorNombre) {
+    const containerTalles = document.getElementById('det-talles-container');
+    const tituloTalles = document.getElementById('titulo-talles');
+    if (!containerTalles || !prodSeleccionado || !esInventarioPorColor(prodSeleccionado.inventario_talles)) return;
+
+    const color = obtenerColoresInventario(prodSeleccionado.inventario_talles).find(c => c.nombre === colorNombre);
+    if (!color) {
+        containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Color no disponible</p>`;
+        talleTemporal = null;
+        return;
+    }
+
+    const talles = normalizarTallesColor(color);
+    const entradas = Object.entries(talles).sort((a, b) => sortTalles(a[0], b[0]));
+    const disponibles = entradas.filter(([, stock]) => parseInt(stock) > 0);
+
+    if (disponibles.length === 0) {
+        if(tituloTalles) tituloTalles.style.display = 'none';
+        containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`;
+        talleTemporal = null;
+        return;
+    }
+
+    if (disponibles.length === 1 && disponibles[0][0] === 'ÚNICO') {
+        if(tituloTalles) tituloTalles.style.display = 'none';
+        containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--success); font-weight:800; margin:0;">Talle Único</p>`;
+        talleTemporal = 'ÚNICO';
+        return;
+    }
+
+    if(tituloTalles) tituloTalles.style.display = 'block';
+    const primerDisponible = disponibles[0] ? disponibles[0][0] : null;
+    talleTemporal = primerDisponible;
+
+    containerTalles.innerHTML = entradas
+        .filter(([talle]) => talle !== 'ÚNICO')
+        .map(([talle, stock]) => {
+            const stockNum = parseInt(stock) || 0;
+            const sinStock = stockNum <= 0 ? 'sin-stock' : '';
+            const seleccionado = talle === primerDisponible ? 'selected' : '';
+            const onclick = stockNum > 0 ? `onclick="seleccionarTalleDOM(this, '${escaparTextoAttr(talle)}')"` : `onclick="mostrarToast('Este talle se encuentra agotado', 'error')"`;
+            return `<div class="talle-label ${sinStock} ${seleccionado}" ${onclick}>${talle}</div>`;
+        }).join('');
 }
 
 function abrirDetalle(id) { 
@@ -924,6 +1003,7 @@ function abrirDetalle(id) {
     if(!prodSeleccionado) return;
 
     talleTemporal = null; 
+    colorTemporal = null;
 
     const claveAgrupacion = obtenerClaveAgrupacion(prodSeleccionado);
 
@@ -941,7 +1021,7 @@ function abrirDetalle(id) {
 
         seccionColores.style.display = 'block';
         txtColor.innerText = primerDisponible ? primerDisponible.nombre : 'Sin stock';
-        talleTemporal = primerDisponible ? primerDisponible.nombre : null;
+        colorTemporal = primerDisponible ? primerDisponible.nombre : null;
         contColores.innerHTML = colores.map(color => {
             const activo = primerDisponible && color.nombre === primerDisponible.nombre ? 'active' : '';
             const sinStock = color.stock <= 0 ? 'opacity:0.35; cursor:not-allowed;' : '';
@@ -1005,11 +1085,11 @@ function abrirDetalle(id) {
     
     if(prodSeleccionado.inventario_talles) { 
         if(esInventarioPorColor(prodSeleccionado.inventario_talles)) {
-            if(tituloTalles) tituloTalles.style.display = 'none';
-            const hayStock = obtenerColoresInventario(prodSeleccionado.inventario_talles).some(color => color.stock > 0);
-            containerTalles.innerHTML = hayStock
-                ? `<p style="font-size:0.9rem; color:var(--secondary); font-weight:700; margin:0;">Elegí un color disponible.</p>`
-                : `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`;
+            if (colorTemporal) renderizarTallesColorSeleccionado(colorTemporal);
+            else {
+                if(tituloTalles) tituloTalles.style.display = 'none';
+                containerTalles.innerHTML = `<p style="font-size:1.1rem; color:var(--danger); font-weight:800; margin:0;">Agotado</p>`;
+            }
         } else if(prodSeleccionado.inventario_talles['ÚNICO'] !== undefined) { 
             if(tituloTalles) tituloTalles.style.display = 'none';
             const stockUnico = parseInt(prodSeleccionado.inventario_talles['ÚNICO']) || 0;
@@ -1047,7 +1127,8 @@ function agregarDesdeDetalle() {
     const inventarioPorColor = esInventarioPorColor(prodSeleccionado.inventario_talles);
 
     if(inventarioPorColor) {
-        if(!talleTemporal) return mostrarToast("Por favor elegí un color disponible", "error");
+        if(!colorTemporal) return mostrarToast("Por favor elegí un color disponible", "error");
+        if(!talleTemporal) return mostrarToast("Por favor elegí un talle disponible", "error");
         talleElegido = talleTemporal;
     } else if(prodSeleccionado.inventario_talles && prodSeleccionado.inventario_talles['ÚNICO'] === undefined) { 
         if(!talleTemporal) return mostrarToast("Por favor elegí un talle disponible", "error"); 
@@ -1055,10 +1136,10 @@ function agregarDesdeDetalle() {
     } else { talleElegido = 'ÚNICO'; }
     
     const talleFinal = inventarioPorColor ? talleElegido : `${talleElegido} (Foto ${indexImagenSeleccionada})`;
-    const idUnico = `${prodSeleccionado.id}-${talleFinal}`; 
+    const idUnico = inventarioPorColor ? `${prodSeleccionado.id}-${colorTemporal}-${talleFinal}` : `${prodSeleccionado.id}-${talleFinal}`; 
     const item = carrito.find(i => i.idUnico === idUnico); 
     
-    const colorNombre = inventarioPorColor ? talleElegido : (prodSeleccionado.color_nombre ? prodSeleccionado.color_nombre : '');
+    const colorNombre = inventarioPorColor ? colorTemporal : (prodSeleccionado.color_nombre ? prodSeleccionado.color_nombre : '');
 
     if(item) { item.cantidad++; } 
     else { 
