@@ -52,27 +52,48 @@ function escaparTextoAttr(valor) {
     return String(valor || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
+function capitalizarColor(nombre) {
+    const texto = String(nombre || '').trim();
+    return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : '';
+}
+
+function obtenerNombreColorPorHex(hex) {
+    const hexNormalizado = String(hex || '').toLowerCase();
+    const entrada = Object.entries(mapaColores).find(([, valorHex]) => valorHex.toLowerCase() === hexNormalizado);
+    return entrada ? capitalizarColor(entrada[0]) : '';
+}
+
+function obtenerNombreColorFinal(nombre, hex, indice) {
+    const nombreLimpio = capitalizarColor(nombre);
+    if (nombreLimpio) return nombreLimpio;
+
+    const nombreDetectado = obtenerNombreColorPorHex(hex);
+    if (nombreDetectado) return nombreDetectado;
+
+    return `Color ${indice + 1}`;
+}
+
 function esInventarioPorColor(inventario) {
     return inventario && inventario.tipo === TIPO_STOCK_COLORES && Array.isArray(inventario.colores);
 }
 
 function obtenerColoresInventario(inventario) {
     if (!esInventarioPorColor(inventario)) return [];
-    return inventario.colores.map(color => ({
-        nombre: String(color.nombre || '').trim(),
+    return inventario.colores.map((color, index) => ({
+        nombre: obtenerNombreColorFinal(color.nombre, color.hex, index),
         hex: color.hex || colorDefectoHex,
         stock: parseInt(color.stock) || 0
-    })).filter(color => color.nombre);
+    }));
 }
 
 function crearInventarioPorColor(colores) {
     return {
         tipo: TIPO_STOCK_COLORES,
-        colores: colores.map(color => ({
-            nombre: String(color.nombre || '').trim(),
+        colores: colores.map((color, index) => ({
+            nombre: obtenerNombreColorFinal(color.nombre, color.hex, index),
             hex: color.hex || colorDefectoHex,
             stock: parseInt(color.stock) || 0
-        })).filter(color => color.nombre)
+        }))
     };
 }
 
@@ -129,7 +150,7 @@ function agregarColorStockUI(nombre = '', stock = 0, hex = colorDefectoHex) {
     div.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:7px; width:76px; position:relative;';
     div.innerHTML = `
         <input type="color" class="builder-color-hex" value="${hex || colorDefectoHex}" title="Color" style="width:52px; height:52px; padding:0; border:2px solid #111; border-radius:50%; cursor:pointer; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.18);">
-        <input type="text" placeholder="Nombre" value="${nombre}" class="builder-color-nombre" oninput="validarLetras(this); detectarColorFila(this);" style="width:76px; text-align:center; text-transform:capitalize; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.72rem; font-weight:700; outline:none;">
+        <input type="text" placeholder="Opcional" value="${nombre}" class="builder-color-nombre" oninput="validarLetras(this); detectarColorFila(this);" style="width:76px; text-align:center; text-transform:capitalize; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.72rem; font-weight:700; outline:none;">
         <input type="number" placeholder="Stock" value="${stock}" class="builder-color-stock" min="0" style="width:62px; text-align:center; border:1px solid #ddd; border-radius:5px; padding:5px 4px; font-size:0.75rem; font-weight:800; outline:none;">
         <button type="button" style="position:absolute; top:-7px; right:0; background:#e74c3c; color:#fff; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-size:0.7rem; display:flex; align-items:center; justify-content:center;" onclick="this.parentNode.remove()" title="Eliminar color"><i class="fas fa-times"></i></button>
     `;
@@ -153,7 +174,12 @@ function agregarColorStockDesdeCampos() {
     const filas = Array.from(document.querySelectorAll('#colores-builder-ui > .builder-color-row'));
     const filaVacia = filas.find(fila => {
         const nombreInput = fila.querySelector('.builder-color-nombre');
-        return nombreInput && !nombreInput.value.trim();
+        const hexInput = fila.querySelector('.builder-color-hex');
+        const stockInput = fila.querySelector('.builder-color-stock');
+        const sinNombre = nombreInput && !nombreInput.value.trim();
+        const sinStock = !stockInput || (parseInt(stockInput.value) || 0) === 0;
+        const sinColorElegido = !hexInput || String(hexInput.value || '').toLowerCase() === '#ffffff';
+        return sinNombre && sinStock && sinColorElegido;
     });
 
     if (filaVacia) {
@@ -172,16 +198,19 @@ function agregarColorStockDesdeCampos() {
 
 function obtenerColoresDesdeFormulario() {
     const filas = Array.from(document.querySelectorAll('#colores-builder-ui > div'));
-    const colores = filas.map(fila => {
+    const colores = filas.map((fila, index) => {
         const nombreInput = fila.querySelector('.builder-color-nombre');
         const hexInput = fila.querySelector('.builder-color-hex');
         const stockInput = fila.querySelector('.builder-color-stock');
+        const nombre = nombreInput ? nombreInput.value.trim() : '';
+        const hex = hexInput ? hexInput.value : colorDefectoHex;
+        const stock = stockInput ? parseInt(stockInput.value) || 0 : 0;
         return {
-            nombre: nombreInput ? nombreInput.value.trim() : '',
-            hex: hexInput ? hexInput.value : colorDefectoHex,
-            stock: stockInput ? parseInt(stockInput.value) || 0 : 0
+            nombre: obtenerNombreColorFinal(nombre, hex, index),
+            hex,
+            stock
         };
-    }).filter(color => color.nombre);
+    }).filter(color => color.stock > 0 || String(color.hex || '').toLowerCase() !== '#ffffff');
 
     return colores;
 }
@@ -876,17 +905,6 @@ async function crearOActualizarProducto(e) {
 
     if (imagenesCargadas.length === 0) {
         return mostrarToastAdmin("Añadí al menos 1 foto.", "error");
-    }
-
-    const filasColor = Array.from(document.querySelectorAll('#colores-builder-ui > .builder-color-row'));
-    const filaSinNombreConStock = filasColor.some(fila => {
-        const nombreFila = fila.querySelector('.builder-color-nombre') ? fila.querySelector('.builder-color-nombre').value.trim() : '';
-        const stockFila = fila.querySelector('.builder-color-stock') ? parseInt(fila.querySelector('.builder-color-stock').value) || 0 : 0;
-        return !nombreFila && stockFila > 0;
-    });
-
-    if (filaSinNombreConStock) {
-        return mostrarToastAdmin("Hay un color con stock pero sin nombre.", "error");
     }
 
     const coloresStock = obtenerColoresDesdeFormulario();
